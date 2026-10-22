@@ -1,0 +1,80 @@
+# 构建产物：可随时用 node scripts/build.mjs --offline 重生成
+/dist/*.html
+/pathflow/dist/
+/pictorial/dist/
+
+# 交付包：不随源码走版本库，单独归档（本目录整体是投稿附件）
+/dist/投稿材料/
+
+# 依赖：只留 package.json 与 lock，依赖用 npm ci 还原
+node_modules/
+/pathflow/node_modules/
+
+# 临时区：调试脚本、截图、测试夹具、浏览器 profile
+/tmp/
+/pictorial/tmp/*.png
+/pictorial/tmp/edgeprof*
+/tmp/edgeprof*
+/tmp/pfcase-v56/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 系统杂项
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 本机会话数据（工作记忆、任务日志），不随仓库走
+/.workbuddy/
+
+# 注意：pictorial/tmp/gen 是画传成图的**原始母版**，不是缓存，
+#      因此上面只排除 tmp 下的 png 与 profile，不排除 gen/ 整个目录。
+#      若确实要把它移出版本库，请单独归档后再删，否则画传无法重排。
+
+# ══════════════════════════════════════════════════════════════════
+# GitHub Pages 发布仓库：只保留「能重建站点」的最小集（约 6 MB）
+#   口径：仓库是**发布载体**，不是项目备份。母版与内部文档留在本地，
+#   请按 STORAGE.md 单独备份，别指望这个仓库兜底。
+# ══════════════════════════════════════════════════════════════════
+
+# 发布装配目录（scripts/make-pages.mjs 生成）与全部构建产物
+/_site/
+/dist/
+
+# 站点运行数据脚本：由 data/terms.json 生成，CI 里重建
+/site/data/terms.js
+
+# 不参与站点构建的大件（母版、备份、课程页、编辑器、测试夹具）
+/pictorial/
+/marx-book/
+/backup/
+/assets/
+/pathflow/
+/tests/
+/reference/
+/lessons/
+
+# 内容生产工具链（PDF/OCR 核验、画传排版、取词脚本，含 5 个 .pkl 索引，共 16 MB）
+# 站点构建不需要它；需要溯源时在本地跑，见 TECH-NOTES.md
+/tools/
+
+# 数据的历史快照（16 个，合计约 13 MB）
+/data/*.bak*
+
+# 项目内部文档与阶段交接：留在本地，不进公开仓库
+/PHASE1.md
+/PHASE2.md
+/PHASE3.md
+/PHASE4.md
+/HANDOFF.md
+/NOTES.md
+/STORAGE.md
+/RESOURCES.md
+/MISSION.md
+/IA-*.md
+/TheEight网站动画分析报告.md
+/使用手册.docx
+/learning-records/
+

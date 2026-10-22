@@ -1,0 +1,81 @@
+# GitHub Pages 发布流水线
+#
+# 触发：推送到 main（或手动 Run workflow）
+# 三步：构建单文件产物 → 装配发布目录 → 上传并部署
+#
+# 为什么在 CI 里构建而不是提交产物：
+#   ① 产物 3.4 MB，提交进仓库会让每次改动都产生二元大文件，历史膨胀；
+#   ② 用自定义工作流发布时，GitHub 的「10 次构建/小时」软限不适用；
+#   ③ 站点是零依赖 Node 脚本，CI 里不需要 npm install，构建约几秒。
+#
+# 需要的仓库设置：Settings → Pages → Build and deployment → Source = GitHub Actions
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一条发布流水线；不取消正在进行的部署，避免半成品上线
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # 读取站点最终地址（含自定义域名），供 canonical / og:image 使用
+      - name: Resolve site base URL
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build offline single-file site
+        run: node scripts/build.mjs --offline
+
+      - name: Assemble publish directory
+        run: node scripts/make-pages.mjs --base "${{ steps.pages.outputs.base_url }}"
+
+      # 上线前的机器校验：产物存在、体积合理、索引与 404 到位
+      - name: Verify publish directory
+        run: |
+          set -e
+          test -s _site/index.html || { echo "缺少 index.html"; exit 1; }
+          test -s _site/404.html   || { echo "缺少 404.html"; exit 1; }
+          test -f _site/.nojekyll  || { echo "缺少 .nojekyll"; exit 1; }
+          grep -q 'name="robots" content="index,follow"' _site/index.html || { echo "robots 未改为 index,follow"; exit 1; }
+          grep -q 'rel="canonical"' _site/index.html || { echo "缺少 canonical"; exit 1; }
+          size=$(wc -c < _site/index.html)
+          echo "index.html = $size bytes"
+          [ "$size" -gt 2000000 ] || { echo "产物异常偏小，疑似构建不完整"; exit 1; }
+          du -sh _site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

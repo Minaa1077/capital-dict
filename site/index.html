@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>《资本论》学习平台</title>
+<meta name="description" content="《资本论》学习平台：AI 的一句话、原典直引、当代场景、学界争鸣。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23640a0e'/%3E%3Cpath d='M32 20L14 26v24l18-6z' fill='%23fdfcfa'/%3E%3Cpath d='M32 20l18 6v24l-18-6z' fill='%23fdfcfa' opacity='.72'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#640a0e">
+<meta property="og:type" content="website">
+<meta property="og:title" content="《资本论》学习平台">
+<meta property="og:description" content="给没学过政治经济学的人，一条能读懂的路：每条词条都有 AI 的一句话、原典直引与学界争鸣。">
+<meta property="og:image" content="assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- ══════════════ 黑夜模式：首屏定色（v54）══════════════
+     这段必须**同步执行**且放在样式表之前：它在首帧绘制前就把
+     data-theme 写到 <html> 上，所以深色读者看不到中间那一下白闪。
+     若放进 app.js（构建时被内联到 </body> 之前），首屏已经用浅色画过一次，
+     就会「白一下再变深」—— 既是闪烁，也是实打实的 CLS。
+     逻辑与 app.js 里的 Theme 模块一致，但刻意写成独立的一份：
+     这里不能依赖任何尚未解析的东西，也不能再引外部文件。 -->
+<script>
+(function () {
+  var KEY = "capital-theme-v1";
+  var t = null;                                   /* null = 还没决定，跟系统走 */
+  try { t = localStorage.getItem(KEY); } catch (e) { t = null; }
+  if (t !== "light" && t !== "dark") t = null;  /* 存了别的东西就当没存 */
+  if (!t) {
+    try {
+      /* 首次访问：跟随系统偏好。matchMedia 不存在的老浏览器一律按浅色，
+         那也正是本来的默认行为 —— 浅色永远是不会被这套机制弄坏的那一档。 */
+      t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ? "dark" : "light";
+    } catch (e) { t = "light"; }
+  }
+  var d = document.documentElement;
+  d.setAttribute("data-theme", t);
+  /* 把「本次是否由用户手动指定」记在属性上，app.js 里的 Theme 模块要读它，
+     用来决定要不要继续跟随系统变化（手动设过之后就不该被系统改回去）。 */
+  if (t === "light" || t === "dark") d.setAttribute("data-theme-src", "init");
+})();
+</script>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<!-- ══════════════ 开屏动画（v31 · 词标遮罩放大揭幕） ══════════════
+     三页分页：0 封面（正中花体词标「Das Kapital」）→ 1 揭幕完成 → 2 导览。
+     翻页不动淡入淡出：把词标那层遮罩放大到撑满视口来「揭开」下一页，
+     底图虚化同步递减。滚轮向下翻页、向上回页；首页向上忽略；页 2 向下＝退场。 -->
+<div id="intro-veil" role="presentation" aria-hidden="true"
+     style="position:fixed;inset:0;z-index:2000;background:#3d0608">
+  <div class="iv-mask">
+    <!-- 开屏底图：特里尔马克思故居（布吕肯巷 10 号），红金调色版
+         源图 tools/intro/make-intro-photo.py 生成 → site/assets/intro-house.jpg
+         （遮罩由 site.css 的 .iv-mask 负责：正中挖出「Das Kapital」花体词标 —— 笔画里
+           透出底图、笔画外留给当前页暗红底；翻页时整层放大，词标撑满视口即为揭幕。
+           词标路径 tools/intro/make-wordmark.py 从字体转出 → site/assets/intro-wordmark.svg）
+         以上两者离线单文件由 scripts/build.mjs 自动内联为 base64，勿改为外部引用 -->
+    <div class="iv-media"></div>
+  </div>
+  <!-- 文字衬底：只随揭幕进度淡入（--iv-mz），保证页 1/2 文案压在照片上仍清晰 -->
+  <div class="iv-scrim" aria-hidden="true"></div>
+  <span class="iv-frame"></span>
+  <div class="iv-ui">
+    <div class="iv-page iv-p0">
+      <!-- .kp ＝「作品名文本」统一类：字号由 CSS 变量 --kp-scale 一处控制（见 site.css v40 块），
+           元素自己只管 --kp-base 基准值，层级比例因此保持不变 -->
+      <p class="iv-kicker kp"><span class="iv-spark">✷</span>第一届全国高校《资本论》读书会青年研讨会<span class="iv-spark">✷</span></p>
+      <p class="iv-title kp">《资本论》学习平台</p>
+    </div>
+    <div class="iv-page iv-p1">
+      <p class="iv-quote">在科学上没有平坦的大道，只有不畏劳苦沿着陡峭山路攀登的人，才有希望达到光辉的顶点。</p>
+      <p class="iv-quote-cite kp">—— 马克思《资本论》法文版序言</p>
+    </div>
+    <div class="iv-page iv-p2">
+      <p class="iv-stats">词条 × 原典 × 争鸣 × 工具</p>
+      <p class="iv-enter">一条能读懂的路，从这里开始</p>
+    </div>
+  </div>
+  <span class="iv-dots"><i></i><i></i><i></i></span>
+  <p class="iv-hint">滚轮向下继续 · 点击任意处跳过</p>
+</div>
+<noscript><style>#intro-veil{display:none!important}</style></noscript>
+
+<!-- 故居门牌注记：仅在开屏第 3 页（导览页，索引 2）出现（门闩＝开屏状态机给 body
+     加的 .iv-cap 类，判据 cur === LAST），第 1、2 页与退出开屏后一律 display:none。
+     固定定位、不吃点击、不参与布局流，因此前两页既不占位也不影响揭幕动画；
+     坐标与「为什么锚在 67% / 60.7%」见 site.css 末尾 .house-cap。
+     措辞按需求原文，一字不改。 -->
+<p class="house-cap">德国特里尔市布吕肯街10号——马克思故居</p>
+
+<!-- 跳转链接：键盘用户按一次 Tab 就能跳过顶栏与搜索框，直接进正文。
+     用 button 而不是 #锚点——本站路由挂在 hash 上，真跳锚点会把页面路由打乱。 -->
+<button class="skip" type="button" data-skip>跳到正文（跳过导航与搜索）</button>
+
+<!-- 换页播报：单页应用换了 hash 内容全换，但不刷新页面，
+     读屏软件不会主动告知。这里给它一个礼貌播报区。 -->
+<p id="route-live" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+
+<!-- 顶线细条：会议名，随页面滚走；深红吸顶栏在下 -->
+<div class="topline">
+  <div class="topline-inner">
+    <span class="tl-star">★</span>
+    <span class="kp">第一届全国高校《资本论》读书会青年研讨会</span>
+    <span class="tl-star">★</span>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <a class="kp" href="#/">《资本论》学习平台</a>
+    </div>
+
+    <button class="nav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="navLinks">菜单</button>
+
+    <!-- 顶栏一级七项，二级只挂在「工具」下（那张由脚本按 TOOLS 注册表现填，
+         免得两处名单各写一份、日久走样）。
+         原「词条」那一栏的五项按「同一件事合成一页」重新安置，一级栏位因此净减两项：
+           门类总览 ＋ 三卷目录树  →  总览（页内切换）
+           按标签浏览 ＋ 首字母索引  →  索引（页内切换）
+           概念关系图                →  关系图（画布在 pathflow.html 里）
+         另：「创作说明」并入「关于」，不再单列；「阅读器」保持一级入口。 -->
+    <nav class="navlinks" id="navLinks">
+      <a class="nav-link" href="#/" data-route="">首页</a>
+      <a class="nav-link" href="#/tax" data-route="tax">总览</a>
+      <a class="nav-link" href="#/idx" data-route="idx">索引</a>
+
+      <div class="nav-item">
+        <a class="nav-link" href="#/tools" data-route="tools">工具</a>
+        <button class="nav-caret" type="button" aria-expanded="false"
+                aria-label="展开「工具」菜单"></button>
+        <div class="nav-panel nav-panel-wide">
+          <div class="nav-panel-inner" id="navTools"></div>
+        </div>
+      </div>
+
+      <a class="nav-link" href="#/reader" data-route="reader">阅读器</a>
+      <a class="nav-link" href="#/graph" data-route="graph">关系图</a>
+      <a class="nav-link" href="#/manual" data-route="manual">使用手册</a>
+      <a class="nav-link" href="#/about" data-route="about">关于</a>
+    </nav>
+
+    <!-- 主题切换：放在搜索框左边 —— 顶栏右侧是全站每页都在、视线必经的一处。
+         aria-pressed 报当前是「暗色开/关」，label 里始终写明按下之后会变成什么，
+         这样读屏用户与鼠标用户拿到的是同一个信息（aria-label 不会随状态变，
+         所以 label 文本由脚本跟着改）。data-theme 挂在 <html> 上（首屏脚本已定）。 -->
+    <button class="theme-btn" id="themeBtn" type="button"
+            aria-pressed="false" aria-label="切换到黑夜模式" title="切换到黑夜模式">
+      <span class="theme-ico" aria-hidden="true"></span>
+    </button>
+
+    <div class="searchwrap">
+      <input id="topQ" type="search" autocomplete="off" placeholder="搜词条 / 原典引文 / 争鸣观点" aria-label="搜索词条、原典引文与争鸣观点" title="词条名、拼音首字母、原典引文正文、争鸣观点、自己的笔记都在检索范围内">
+      <div class="results" id="topR" hidden></div>
+    </div>
+  </div>
+</header>
+
+<!-- tabindex="-1"：换页后把焦点交给正文区，读屏接着往下念，
+     而不是让用户 Tab 半天回到顶栏。-1 表示不进 Tab 序列，只接受脚本聚焦。 -->
+<main class="main" id="view" tabindex="-1">
+  <noscript>
+    <p class="note">这个站点需要 JavaScript 才能渲染词条。请在浏览器中启用 JavaScript 后重新打开。</p>
+  </noscript>
+</main>
+
+<footer class="foot">
+  <p id="footStatus"></p>
+  <p>原典依据：《马克思恩格斯选集》第2卷，中共中央马克思恩格斯列宁斯大林著作编译局译，北京：人民出版社，2012年版；《资本论》全三卷，北京：人民出版社，2004年版。</p>
+  <p>体例参照 GB/T 7714—2015《信息与文献 参考文献著录规则》。</p>
+</footer>
+
+<script src="data/terms.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
