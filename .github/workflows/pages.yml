@@ -57,6 +57,8 @@ jobs:
           test -s _site/index.html || { echo "缺少 index.html"; exit 1; }
           test -s _site/404.html   || { echo "缺少 404.html"; exit 1; }
           test -f _site/.nojekyll  || { echo "缺少 .nojekyll"; exit 1; }
+          test -s _site/marx-pictorial.html || { echo "缺少画传子页，画传入口会 404"; exit 1; }
+          test -s _site/pathflow.html       || { echo "缺少关系图子页，关系图入口会 404"; exit 1; }
           grep -q 'name="robots" content="index,follow"' _site/index.html || { echo "robots 未改为 index,follow"; exit 1; }
           grep -q 'rel="canonical"' _site/index.html || { echo "缺少 canonical"; exit 1; }
           size=$(wc -c < _site/index.html)

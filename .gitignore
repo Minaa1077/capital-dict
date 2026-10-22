@@ -41,7 +41,7 @@ desktop.ini
 
 # 发布装配目录（scripts/make-pages.mjs 生成）与全部构建产物
 /_site/
-/dist/
+/dist/*
 
 # 站点运行数据脚本：由 data/terms.json 生成，CI 里重建
 /site/data/terms.js
@@ -77,4 +77,10 @@ desktop.ini
 /TheEight网站动画分析报告.md
 /使用手册.docx
 /learning-records/
+
+# 反排除：主站 iframe 按相对路径内嵌的两个子页产物，
+# 缺一个，线上的「画传」「关系图」入口就是 404（v62 实案）。
+# 它们无法在 CI 里重建（画传靠 pictorial 工程链、关系图靠 React 工程），必须随仓库走。
+!dist/marx-pictorial.html
+!dist/pathflow.html
 

@@ -36,6 +36,12 @@ const has = (name) => argv.includes("--" + name);
 const OUT = path.resolve(ROOT, arg("out", "_site"));
 const SRC = path.join(ROOT, "dist", "capital-dict-offline.html");
 const OG = path.join(ROOT, "site", "assets", "og-cover.png");
+/* 主站 iframe 按相对路径内嵌的两个子页（app.js：src="marx-pictorial.html" / "pathflow.html"）。
+   缺一个，线上「画传」「关系图」入口就是 404；两者无法在 CI 重建，必须已存在于 dist/。 */
+const SUBPAGES = [
+  { file: "marx-pictorial.html", min: 3_000_000, label: "画传子站" },
+  { file: "pathflow.html", min: 300_000, label: "关系图编辑器" },
+];
 
 let domain = arg("domain", "").trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
 let base = (arg("base", "") || process.env.PAGES_BASE || "").trim();
@@ -52,6 +58,10 @@ function fail(msg) {
 
 if (!existsSync(SRC)) fail("缺少 dist/capital-dict-offline.html，请先跑 node scripts/build.mjs --offline");
 if (!existsSync(OG)) fail("缺少 site/assets/og-cover.png（社交分享封面）");
+for (const sp of SUBPAGES) {
+  if (!existsSync(path.join(ROOT, "dist", sp.file)))
+    fail("缺少 dist/" + sp.file + "（" + sp.label + "）——主站入口会 404，请先重建该子工程产物");
+}
 
 const html = await readFile(SRC, "utf8");
 if (html.length < 1_000_000) fail("产物异常偏小（" + (html.length / 1024).toFixed(1) + " KB），请重建");
@@ -83,6 +93,9 @@ await mkdir(OUT, { recursive: true });
 
 await writeFile(path.join(OUT, "index.html"), out, "utf8");
 await copyFile(OG, path.join(OUT, "og-cover.png"));
+for (const sp of SUBPAGES) {
+  await copyFile(path.join(ROOT, "dist", sp.file), path.join(OUT, sp.file));
+}
 
 /* 404：本站是 hash 路由，正常不会产生深链接 404；这里只兜「手输错路径」。
    带 hash 的访问直接回首页并把 hash 原样带回去（如 /#/c/phil）。 */
@@ -140,7 +153,9 @@ await writeFile(
   path.join(OUT, "sitemap.xml"),
   '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    "  <url><loc>" + baseUrl + "</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n" +
+    [baseUrl, ...SUBPAGES.map((sp) => baseUrl + sp.file)]
+      .map((u) => "  <url><loc>" + u + "</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n")
+      .join("") +
     "</urlset>\n",
   "utf8"
 );
@@ -159,6 +174,10 @@ console.log("  站点根地址  " + baseUrl + (baseUrl.includes("example.github.
 console.log("  index.html  " + kb(idx.length) + "   md5 " + md5(idx) + (md5(idx) === md5(srcBuf) ? "（与 dist 一致）" : "（已增补 head，内容不同属正常）"));
 console.log("  404.html    " + kb((await stat(path.join(OUT, "404.html"))).size));
 console.log("  og-cover    " + kb((await stat(path.join(OUT, "og-cover.png"))).size));
+for (const sp of SUBPAGES) {
+  const b = await readFile(path.join(OUT, sp.file));
+  console.log("  " + sp.file.padEnd(21) + kb(b.length) + "   md5 " + md5(b) + "（" + sp.label + "）");
+}
 console.log("  附：robots.txt / sitemap.xml / .nojekyll" + (domain ? " / CNAME(" + domain + ")" : ""));
 console.log("");
 console.log("下一步：");
