@@ -1,0 +1,5 @@
+# 换行符策略
+# 默认交给各人本地配置（core.autocrlf）；但「发布子页产物」必须逐字节原样入库——
+# 它们是与 dist/ 交付件 md5 对账的基准，经不起任何 CRLF↔LF 转换（v62 实案：差 2261 字节）。
+dist/marx-pictorial.html -text
+dist/pathflow.html -text
