@@ -600,8 +600,8 @@ await goto("#/statement");
 check("旧地址 #/statement 落到「关于」页，地址栏归一到 #/about",
   window.location.hash === "#/about" && !!doc.querySelector('.navlinks a[data-route="about"]'));
 
-check("关于页只讲数据与核验状态，不再有创作说明段与页签",
-  !!view().querySelector("#about-data") &&
+check("关于页只讲建站说明，不再有数据台账与创作说明段",
+  !!view().querySelector("#about-intro") &&
   !view().querySelector("#about-credit") &&
   !view().querySelector(".about-jump") &&
   !/创作说明|AIGC|投稿/.test(text()));

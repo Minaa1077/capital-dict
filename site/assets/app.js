@@ -759,21 +759,6 @@
     };
   })();
 
-  /* ---------------- 条形图 ----------------
-     零依赖：纯 div + 百分比宽度。不引图表库，离线单文件版才能继续双击即开。 */
-  function barChart(rows) {
-    var max = 1;
-    rows.forEach(function (r) { if (r.n > max) max = r.n; });
-    return '<div class="bars">' + rows.map(function (r, i) {
-      var pct = (r.n / max * 100).toFixed(2);
-      var tone = r.tone || "c" + (i % 4);
-      return '<div class="bar-row">' +
-        '<span class="bar-k" title="' + esc(r.k) + '">' + esc(r.k) + "</span>" +
-        '<span class="bar-track"><i class="' + tone + '" style="width:' + pct + '%"></i></span>' +
-        '<span class="bar-v">' + r.n + "</span></div>";
-    }).join("") + "</div>";
-  }
-
   /* ---------------- 搜索 ---------------- */
 
   function score(t, q) {
@@ -2251,163 +2236,24 @@
      33 页中英正文，只额外附加美术描述层），所以合并不丢内容。
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ================= 关于（数据与核验状态） ================= */
+  /* ================= 关于（建站说明） ================= */
 
   function viewAbout() {
+    var st = stats();
     return '<p class="crumb"><a href="#/">首页</a> / 关于</p>' +
       '<h1 class="page-title">关于</h1>' +
-      '<p class="note">这一页说明<b>数据从哪来、核到什么程度</b>：' +
-      "哪些引文已核到具体出处，哪些仍在补录，都按现状列出。</p>" +
-      '<section class="about-sec" id="about-data">' + aboutDataBody() + "</section>";
-  }
-
-  /* —— 数据与核验状态 —— */
-  function aboutDataBody() {
-    var st = stats();
-    var total = st.total;
-    var withQuote = st.quoted;
-    var pendingQuote = st.pending;
-    var locPage = st.locPage;
-    var locLevel = st.locLevel;
-    var locFront = st.locFront;
-    var locPaper = st.locPaper;
-    var locLaw = st.locLaw;
-
-    function row(k, v) { return "<tr><td>" + k + "</td><td>" + v + "</td></tr>"; }
-
-    /* 三张条形图。都用「词条数」作单位，因为读者关心的是
-       「有多少条能直接用」，而不是内部有多少条引文记录。 */
-    var quoteRows = [
-      { k: "图书 · 已核到印刷页", n: locPage, tone: "c0" },
-      { k: "报纸 · 已核到见报日期", n: locPaper, tone: "c1" },
-      { k: "法律条文 · 已核到条款", n: locLaw, tone: "c2" },
-      { k: "卷首文献 · 书中不印页码", n: locFront, tone: "c3" },
-      { k: "引文待补录", n: pendingQuote, tone: "c4" }
-    ].filter(function (r) { return r.n > 0; });
-
-    var schRows = [
-      { k: "已写入立场 · 文献已核", n: TERMS.filter(function (t) { return stanceCount(t, true) > 0; }).length, tone: "c0" },
-      { k: "已写入立场 · 文献待核", n: TERMS.filter(function (t) { return stanceCount(t) > stanceCount(t, true); }).length, tone: "c1" },
-      { k: "仅列出争鸣点 · 文献待查", n: st.scholarLead, tone: "c2" },
-      { k: "尚未补录", n: Math.max(0, total - st.scholarTopic - st.scholarLead), tone: "c4" }
-    ].filter(function (r) { return r.n > 0; });
-
-    return '<h2 class="sec-title">数据与核验状态<span class="more">数字由词条库现算，不手写</span></h2>' +
-      '<p class="note">词条释义、原典引文与学界争鸣三类内容，各自的来源与核验进度都按现状列在下面：' +
-      "已完成的部分标出核对到什么程度，未完成的部分如实标为待核、待补录。</p>" +
-
-      '<figure class="ms-figure">' +
-        '<div class="ms-figure-img"></div>' +
-        "<figcaption>马克思为《资本论》做的工作手稿页（约 1860 年）。图片来自维基共享资源（Wikimedia Commons），公有领域。</figcaption>" +
-      "</figure>" +
-      '<h3 class="sec-title">一眼看清进度</h3>' +
-      '<div class="charts">' +
-        '<div class="chart"><h3>原典引文的溯源方式<span class="ch-n">共 ' + total + " 条词条</span></h3>" +
-          barChart(quoteRows) +
-          '<p class="ch-note">图书类给出该书<strong>实际印刷的页码</strong>，报纸类给出<strong>见报日期</strong>，' +
-          "照注翻书查报即可对上原句。</p></div>" +
-        '<div class="chart"><h3>学界争鸣栏的完成度<span class="ch-n">共 ' + total + " 条词条</span></h3>" +
-          barChart(schRows) +
-          '<p class="ch-note">累计 ' + st.scholarStance + " 方立场，其中 " + st.scholarCited +
-          " 方的作者、篇名、刊名、年、期、页码已逐项核到公开权威来源。</p></div>" +
-      "</div>" +
-      TAXES.map(function (tx) {
-        return '<div class="charts" style="margin-top:1rem"><div class="chart">' +
-          "<h3>" + esc(tx.name) + " · 词条分布<span class=\"ch-n\">" +
-          (tx.cats || []).reduce(function (a, c) { return a + termsIn(c.id).length; }, 0) + " 条</span></h3>" +
-          barChart((tx.cats || []).map(function (c) {
-            return { k: c.name, n: termsIn(c.id).length };
-          })) + "</div></div>";
-      }).join("") +
-
-      '<h3 class="sec-title">核验状态</h3>' +
-      '<table style="width:100%;border-collapse:collapse;font-size:.9rem">' +
-        row("词条总数", total + " 条") +
-        row("原典引文已补录", withQuote + " 条") +
-        row("其中：图书（已核到具体印刷页）", locPage + " 条" +
-            (locFront ? "（另有卷首献词 1 条，书中该页不印页码）" : "")) +
-        row("其中：文献（已核到见报日期）", locPaper + " 条") +
-        row("其中：法律条文（已核到条款）", locLaw + " 条") +
-        row("原典引文待补录", pendingQuote + " 条（均已标明应引的篇章或文献）") +
-        row("学界争鸣已补录", st.scholarTopic + " 条" +
-            (st.scholarStance ? "（共 " + st.scholarStance + " 方立场，其中文献已核 " + st.scholarCited + " 方）" : "")) +
-        row("学界争鸣待补录", (total - st.scholarTopic) + " 条" +
-            (st.scholarLead ? "（其中 " + st.scholarLead + " 条已列出争鸣点）" : "")) +
-      "</table>" +
-      '<p class="note" style="margin-top:.6rem">词条页上的核验标记按<b>文献类型</b>分四种，含义各不相同，都指' +
-      '「引文<strong>逐字</strong>取自该出处」：' +
-      '<span class="chip ok">页码已核</span> 给出该书该页<strong>实际印刷的页码</strong>；' +
-      '<span class="chip ok">版次已核</span> 给出该文在《人民日报》的<strong>见报日期</strong>；' +
-      '<span class="chip ok">条款已核</span> 给出法律<strong>条款号</strong>；' +
-      '<span class="chip">卷首文献</span> 指扉页献词一类不印页码的卷首页。照注翻书／查报即可查到原句。<br>' +
-      '<b>《资本论》各条</b>的引注分两套口径、各自自洽：一部分依据 <b>《马克思恩格斯选集》第 2 卷（人民出版社 2012 年版）</b>' +
-      '里的《资本论》节选；另一部分依据 <b>《资本论》全三卷单行本（人民出版社 2004 年版）</b>，' +
-      '覆盖节选未收的段落（第二、三卷多章）与卷首献词、法文版序言。每条引注标明版本，不混用两套页码。<br>' +
-      '<b>当代中国文献</b>（党的文件、政府工作报告、重要讲话）依《人民日报》见报日期核对，' +
-      '不写版次——这与中央文献出版社《习近平关于……论述摘编》的引注体例一致，也是这类文献在学术写作中的通行引法。<br>' +
-      '另有一类词条（卢卡奇、阿尔都塞、大卫·哈维等西方马克思主义人物，以及版本与传播史条目）' +
-      '<strong>依据本就不在马恩著作中</strong>，页面会明确标出，不套用《资本论》页码。<br>' +
-      '<b>「学界争鸣」栏</b>属下面所说的<b>阐释层</b>，规矩与引文不同：转述他人观点只能自己重写，不整段照搬；' +
-      '每方立场都必须自带出处，格式为「参见 作者：《篇名》，《刊名》年(期)：页码。」；' +
-      '一条词条按「争鸣议题 → 各方立场」组织，同一议题下尽量并置<strong>不同判断</strong>，' +
-      '让读者看到的是争论本身，而不是一家之言。标 <span class="chip ok">文献已核</span> 的，' +
-      '其作者、篇名、刊名、年、期、页码均已逐项对照公开权威来源（期刊官网题录、' +
-      '万方／维普的规范引用格式、人大复印资料转载页）；标 <span class="chip warn">文献待核</span> 的尚未核到页码，' +
-      '页面如实标出，不冒充已核。</p>' +
-
-      '<h3 class="sec-title">三层资料来源</h3>' +
-      "<table style=\"width:100%;border-collapse:collapse;font-size:.9rem\">" +
-        row("原典层（马恩著作）", "可原文直引，必须标注版本与页码。依据版本：" + esc(META.edition_main || "—")) +
-        row("阐释层（知网／研究著作）", "受著作权保护，<strong>只能自己重写释义</strong>，脚注写「参见 作者：《篇名》，《刊名》年(期)：页码。」") +
-        row("当代层（自撰当代例子）", "原创，不涉版权。这是「青年化」的落脚点，每条词条必须有一处。") +
-      "</table>" +
-
-      '<h3 class="sec-title">分类体系</h3>' +
-      '<p class="note">全站只用<b>知识板块</b>一个分类维度：每条词条归入哲学、政治经济学、' +
-      '科学社会主义三支中的一支，另挂若干主题标签，用作更具体的阅读线索。' +
-      esc(META.taxonomy_basis || "") + "</p>" +
-      TAXES.map(function (tx) {
-        return '<h3 class="sec-title">' + esc(tx.name) +
-          (tx.basis ? "（" + esc(tx.basis) + "）" : "") + "</h3>" +
-          '<table style="width:100%;border-collapse:collapse;font-size:.9rem">' +
-            (tx.cats || []).map(function (c) {
-              var have = termsIn(c.id).length;
-              return row(esc(c.name), have + " / " + (c.planned || 0) + " 条" + (have === 0 ? " · 待补" : ""));
-            }).join("") +
-            "<tr><td><b>合计</b></td><td><b>" +
-              (tx.cats || []).reduce(function (a, c) { return a + termsIn(c.id).length; }, 0) + " / " +
-              (tx.cats || []).reduce(function (a, c) { return a + (c.planned || 0); }, 0) + " 条</b></td></tr>" +
-          "</table>";
-      }).join("") +
-
-      '<h3 class="sec-title">关系类型</h3>' +
-      '<p class="note">' + (META.relations || []).map(function (r) {
-        return "<b>" + esc(r.name) + "</b>（" + esc(r.id) + "）";
-      }).join("　·　") + "</p>" +
-
-      '<h3 class="sec-title">下一步的待办</h3>' +
-      '<p class="note">① <b>补齐剩余 ' + pendingQuote + ' 条词条的原典引文与页码</b>（翻书核对，唯一必须人工完成的部分）。' +
-      '目前 ' + total + ' 条里已有 <b>' + withQuote + ' 条</b>逐字补入原文并核到具体出处，来路分明：' +
-      '<b>' + locPage + ' 条</b>核到图书的<strong>具体印刷页</strong>' +
-      '（底本为《马克思恩格斯选集》第 1—4 卷（2012 年版）、其中《资本论》各条另依《资本论》全三卷单行本（2004 年版）、' +
-      '毛泽东著作依 1991 年版《毛泽东选集》）；' +
-      '<b>' + locPaper + ' 条</b>核到《人民日报》<strong>见报日期</strong>；' +
-      '<b>' + locLaw + ' 条</b>核到<strong>法律条款</strong>' +
-      (locFront ? '，另有 1 条为不印页码的卷首献词' : '') + '。' +
-      '尚待补的 ' + pendingQuote + ' 条分三块：' +
-      '<b>西方马克思主义与当代思潮 14 条</b>（卢卡奇、阿尔都塞、大卫·哈维、物化、总体性、' +
-      '意识形态国家机器、文化霸权、单向度的人、空间的生产、认知资本主义等）依据本就不在马恩著作中，' +
-      '须按其本人著作的版本标注；' +
-      '<b>未收入《选集》的其他著作与人物 7 条</b>（《神圣家族》《帝国主义是资本主义的最高阶段》、' +
-      'MEGA²、亚当·斯密、大卫·李嘉图、魁奈、列宁）须另找底本；' +
-      '<b>版本与传播史 3 条</b>（《资本论》首个中译本、侯外庐与《资本论》中译、马克思主义早期传播）' +
-      '与其余 3 条（以人民为中心、人民群众、金融资本）须另议口径。' +
-      '② <b>补录学界争鸣栏</b>：已补 ' + st.scholarTopic + ' 条' +
-      (st.scholarStance ? '（共 ' + st.scholarStance + ' 方立场，其中 ' + st.scholarCited + ' 方文献已核）' : '') +
-      '，其余 ' + (total - st.scholarTopic) + ' 条待补；' +
-      '按「争鸣议题 → 各方立场 → 参见 作者：《篇名》，《刊名》年(期)：页码。」组织，同一议题下并置不同判断；' +
-      '③ 采集当代场景配图并逐张登记授权；' +
-      '④ 引文补录与配图授权登记随核对进度同步进行，补完一条标一条。</p>';
+      '<section class="about-sec" id="about-intro">' +
+      '<p class="note"><b>建站初衷。</b>本站是一份为研读《资本论》而建的学习资料库。' +
+      '原著概念密集、译名多样、引文出处分散，初读时常有「每个词都认识、意思却连不起来」的困难，' +
+      '查证一条引文更要来回翻书。为此，本站把 ' + st.total + ' 条核心术语整理成可检索的在线词条，' +
+      '逐条给出释义、原典引文与出处，使概念查得到、读得懂、对得上原文。</p>' +
+      '<p class="note"><b>建站目标。</b>力求做到三个「可」：一是<b>可溯源</b>——引文逐字录入，' +
+      '注明版本与页码，尚未完成的部分如实标注，不冒充已核；二是<b>可对照</b>——围绕有争议的问题' +
+      '并置学界的不同判断，呈现争论本身，而不是只给一家之言；三是<b>可贯通</b>——以概念关系图谱串联术语，' +
+      '配合学习与写作工具，把单个词条连成对整部著作的理解。</p>' +
+      '<p class="note"><b>希望你了解。</b>站内内容仍在持续补充与修订，标有「待核」「待补」的条目' +
+      '即当前正在完善的部分。希望这份可信赖、可追溯的参考，能陪伴每一位愿意翻开《资本论》的读者。</p>' +
+      "</section>";
   }
 
   /* ================= 创作说明 · AI 使用透明记录 =================
