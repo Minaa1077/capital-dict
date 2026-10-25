@@ -1977,10 +1977,6 @@
     if (!sub) {
       return '<p class="crumb"><a href="#/">首页</a> / ' + esc(tx.name) + " / " + esc(c.name) + "</p>" +
         '<h1 class="page-title">' + esc(c.name) + "</h1>" +
-        '<p class="note"><b>' + esc(tx.name) + "</b>维度" +
-          (tx.basis ? " · 依据：" + esc(tx.basis) : "") + "<br>" + esc(c.note || "") + "</p>" +
-        '<p class="note">计划收录 ' + c.planned + " 条，目前已有 " + list.length + " 条。" +
-        (list.length < c.planned ? "其余词条待补。" : "") + "</p>" +
         termList(list) +
         '<h2 class="sec-title">同一维度下的其他门类</h2>' +
         '<div class="sibs">' + sibs + "</div>";
