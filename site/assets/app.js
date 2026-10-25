@@ -759,6 +759,21 @@
     };
   })();
 
+  /* ---------------- 条形图 ----------------
+     零依赖：纯 div + 百分比宽度。不引图表库，离线单文件版才能继续双击即开。 */
+  function barChart(rows) {
+    var max = 1;
+    rows.forEach(function (r) { if (r.n > max) max = r.n; });
+    return '<div class="bars">' + rows.map(function (r, i) {
+      var pct = (r.n / max * 100).toFixed(2);
+      var tone = r.tone || "c" + (i % 4);
+      return '<div class="bar-row">' +
+        '<span class="bar-k" title="' + esc(r.k) + '">' + esc(r.k) + "</span>" +
+        '<span class="bar-track"><i class="' + tone + '" style="width:' + pct + '%"></i></span>' +
+        '<span class="bar-v">' + r.n + "</span></div>";
+    }).join("") + "</div>";
+  }
+
   /* ---------------- 搜索 ---------------- */
 
   function score(t, q) {
@@ -2253,6 +2268,37 @@
       '配合学习与写作工具，把单个词条连成对整部著作的理解。</p>' +
       '<p class="note"><b>希望你了解。</b>站内内容仍在持续补充与修订，标有「待核」「待补」的条目' +
       '即当前正在完善的部分。希望这份可信赖、可追溯的参考，能陪伴每一位愿意翻开《资本论》的读者。</p>' +
+      "</section>" +
+
+      /* —— 网站概览：进度图表（数字由词条库现算，不手写） —— */
+      '<section class="about-sec" id="about-overview">' +
+      '<h2 class="sec-title">网站概览<span class="more">数字由词条库现算，不手写</span></h2>' +
+      '<div class="charts">' +
+        '<div class="chart"><h3>原典引文的溯源方式<span class="ch-n">共 ' + st.total + " 条词条</span></h3>" +
+          barChart([
+            { k: "图书 · 已核到印刷页", n: st.locPage, tone: "c0" },
+            { k: "报纸 · 已核到见报日期", n: st.locPaper, tone: "c1" },
+            { k: "法律条文 · 已核到条款", n: st.locLaw, tone: "c2" },
+            { k: "卷首文献 · 书中不印页码", n: st.locFront, tone: "c3" },
+            { k: "引文待补录", n: st.pending, tone: "c4" }
+          ].filter(function (r) { return r.n > 0; })) +
+          '<p class="ch-note">图书类给出该书<strong>实际印刷的页码</strong>，报纸类给出<strong>见报日期</strong>，' +
+          "照注翻书查报即可对上原句。</p></div>" +
+        '<div class="chart"><h3>学界争鸣栏的完成度<span class="ch-n">共 ' + st.total + " 条词条</span></h3>" +
+          barChart([
+            { k: "已写入立场 · 文献已核", n: TERMS.filter(function (t) { return stanceCount(t, true) > 0; }).length, tone: "c0" },
+            { k: "已写入立场 · 文献待核", n: TERMS.filter(function (t) { return stanceCount(t) > stanceCount(t, true); }).length, tone: "c1" },
+            { k: "仅列出争鸣点 · 文献待查", n: st.scholarLead, tone: "c2" },
+            { k: "尚未补录", n: Math.max(0, st.total - st.scholarTopic - st.scholarLead), tone: "c4" }
+          ].filter(function (r) { return r.n > 0; })) +
+          '<p class="ch-note">累计 ' + st.scholarStance + " 方立场，其中 " + st.scholarCited +
+          " 方的作者、篇名、刊名、年、期、页码已逐项核到公开权威来源。</p></div>" +
+      "</div>" +
+      '<div class="charts" style="margin-top:1rem"><div class="chart">' +
+        "<h3>知识板块 · 词条分布<span class=\"ch-n\">共 " + st.total + " 条词条</span></h3>" +
+        barChart(TAXES.map(function (tx) {
+          return { k: tx.name, n: (tx.cats || []).reduce(function (a, c) { return a + termsIn(c.id).length; }, 0) };
+        })) + "</div></div>" +
       "</section>";
   }
 
