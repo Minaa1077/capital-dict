@@ -456,7 +456,9 @@ check("词条页全量展示：无 data-lv 隐藏逻辑", view().querySelectorAl
 check("一句话渲染", !!view().querySelector(".oneline"));
 check("原典直引区存在", !!view().querySelector(".block"));
 check("关联词条数 ≥ 4", view().querySelectorAll(".rel").length >= 4);
-check("脚注区存在", !!view().querySelector(".footnotes, .empty"));
+check("词条页不再渲染参考文献栏（已按需求整体移除）",
+  !view().querySelector(".footnotes") &&
+  ![...view().querySelectorAll(".b-label")].some((el) => el.textContent.includes("参考文献")));
 
 check("原典卡已渲染", view().querySelectorAll(".quote").length >= 1);
 /* —— 英文译名 + 哲学词条德文原词 —— */

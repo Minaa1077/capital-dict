@@ -2068,12 +2068,6 @@
           '<br><span class="dl-hint">此处应转述 2—3 篇代表性研究（含不同判断），按「参见 作者：《篇名》，《刊名》年(期)：页码。」标注出处；文献尚未补录。</span></p>'
         : '<p class="empty">本条的学界争鸣尚未补录。</p>');
 
-    var refs = (t.refs || []).length
-      ? '<ol class="footnotes">' + t.refs.map(function (r, i) {
-          return '<li><span class="fn-mark">[' + (i + 1) + "]" + "</span>" + esc(r) + "</li>";
-        }).join("") + "</ol>"
-      : '<p class="empty">参考文献条目待补。</p>';
-
     var cr = t.credit || {};
 
     /* 词条级工具条。复制内容都预先算好挂在 data-copy 上，
@@ -2155,10 +2149,6 @@
         '<p class="b-label">学界争鸣<span class="b-hint">' +
           (nStance ? nStance + " 方立场 · " : "") + "只能转述 · 脚注写「参见」</span></p>" +
         scholars +
-      "</div>" +
-
-      '<div class="block">' +
-        '<p class="b-label">参考文献</p>' + refs +
       "</div>" +
 
       "</article>";
