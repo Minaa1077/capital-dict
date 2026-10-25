@@ -390,7 +390,7 @@ check("全文检索：命中的那一段确实含所搜的词", (() => {
 
 await goto("#/idx");
 check("索引页渲染", view().querySelector("h1").textContent.trim() === "索引" &&
-  /按拼音排 A–Z/.test(text()) && view().querySelectorAll(".alpha").length === 1);
+  !/按拼音排/.test(text()) && view().querySelectorAll(".alpha").length === 1);
 check("索引页：两种模式共用一个切换控件，默认落在「按首字母浏览」", (() => {
   const seg = view().querySelector(".ttabs.idx-seg");
   if (!seg) return false;

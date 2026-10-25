@@ -1816,10 +1816,6 @@
     IDX_ST = st;
     return '<p class="crumb"><a href="#/">首页</a> / 索引</p>' +
       '<h1 class="page-title">索引</h1>' +
-      '<p class="note">两种找法共用这一页：<b>按首字母</b>是手上记得读音、' +
-      "不知道归哪一类时用；<b>按标签</b>是只记得议题、著作或它在原著里的位置时用。" +
-      "切模式只换下半屏，链接会把模式带上（例如 <code>#/idx?m=tag</code>），可以直接分享。" +
-      "</p>" +
       '<div class="ttabs idx-seg" role="tablist" aria-label="索引的两种找法">' +
         idxSegInner(st) + "</div>" +
       '<p class="sr-only" id="idx-live" role="status" aria-live="polite"></p>' +
@@ -1848,9 +1844,7 @@
     var all = TERMS.slice().sort(function (a, b) { return a.pinyin.localeCompare(b.pinyin); });
 
     if (!st.l) {
-      return '<p class="note">按拼音排 A–Z，全站 <b>' + all.length + "</b> 条词条一次列全。" +
-        "点上面任一字母只看以它开头的，再点同一字母回到全部。</p>" +
-        bar + termList(all);
+      return bar + termList(all);
     }
     var list = byInitial(st.l);
     return '<p class="note">以 <b>' + esc(st.l) + "</b> 开头的词条共 <b>" + list.length + "</b> 条。" +
@@ -1864,7 +1858,6 @@
     var all = tagsIndex();
     var kinds = { topic: [], place: [], work: [] };
     all.forEach(function (g) { if (kinds[g.kind]) kinds[g.kind].push(g); });
-    var total = all.reduce(function (a, g) { return a + g.n; }, 0);
 
     var kind = kinds[st.k] && kinds[st.k].length !== undefined ? st.k : "topic";
     var cur = kinds[kind] || [];
@@ -1878,10 +1871,7 @@
           p[1] + "<em>" + kinds[p[0]].length + "</em></a>";
       }).join("") + "</div>";
 
-    var head = '<p class="note">每条词条除了知识板块的归属，还挂着若干标签——它们指向更具体的' +
-      "阅读线索：「核心范畴」是可以先读的骨架，「当代议题」是能把概念接回今天的切口，" +
-      "「第一卷／第三篇」是原著位置。全站共 <b>" + all.length + " 个标签</b>、" + total +
-      " 次标注（一条词条可有多个标签）。</p>" + kindTabs +
+    var head = kindTabs +
       '<h2 class="sec-title slim">' + esc(label) +
         '<span class="more" id="tagcloud-count" data-n="' + cur.length + '">' + cur.length +
         " 个标签</span></h2>";
