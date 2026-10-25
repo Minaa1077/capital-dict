@@ -2168,22 +2168,6 @@
     return '<div class="pic">' +
       '<h1 class="pic-h1">马克思画传 · 重制版</h1>' +
       '<p class="pic-kicker">A Pictorial Biography &middot; Layered Parallax Edition</p>' +
-      '<p class="pic-lead">依据《马克思画传》（马克思诞辰 200 周年纪念版）重制的一册分层视差画册：' +
-        '三十三页生平加一页年表。每幅画拆成深景、中景、人物、前景四层，' +
-        '随滚动与指针产生不同速率的位移，叠上轻微的透视翻转；翻页整屏对齐，' +
-        '滚轮、方向键、手指滑动都能推进。' +
-        '每页正文与英译取自同一份底稿，措辞通俗，读给孩子听也成立；' +
-        '末尾的年表与三十四条语录供核对引用。</p>' +
-      '<ul class="pic-points">' +
-        '<li><b>分层立体</b>四层独立矢量图层，景深系数 0.4 / 0.9 / 1.5 / 2.2 依次递增，' +
-          '近景比远景走得快，画面因此有纵深而不是纸页相叠。</li>' +
-        '<li><b>整屏分页</b>原生滚动加 scroll-snap，一次手势一屏，不跳页、不留半页。</li>' +
-        '<li><b>移动端</b>无指针设备改用滚动进度驱动分层，不读姿态传感器、不弹权限框；' +
-          '系统开了「减少动态」就整本静止。</li>' +
-        '<li><b>画面重绘</b>服饰、建筑、器物按 19 世纪欧洲形制重画，' +
-          '人物面貌参照历史肖像照片的可见特征；原书页上的红圈蒙版与色块不再出现。</li>' +
-
-      '</ul>' +
       '<div class="pic-acts">' +
         '<a class="pic-btn pic-btn-main" href="marx-pictorial.html" target="_blank" rel="noopener">在新窗口打开画册 ↗</a>' +
         '<button class="pic-btn" type="button" data-pic-full>全屏预览</button>' +
