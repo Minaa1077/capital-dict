@@ -3318,6 +3318,13 @@
         "<span>术语占全文 <b>" + density.toFixed(1) + "%</b></span>" +
         "<span>其中 <b>" + readN + "</b> 条已读</span>" +
       "</div>" +
+      /* v57：一键复制分析摘要——把上面的结论折成一段纯文本，贴进笔记或论文草稿直接用 */
+      '<p class="ta-acts"><button type="button" class="tbtn" data-copy="' + esc(
+        "【文本分析摘要】\n有效字数 " + chars + "；命中术语 " + hits.length + " 条，共出现 " + times +
+          " 次，术语密度 " + density.toFixed(1) + "%；已读 " + readN + "/" + hits.length + "。\n" +
+          "知识板块分布：" + dimList.map(function (k) { return k + " " + dims[k]; }).join(" · ") + "\n" +
+          "高频术语：" + (hits.slice(0, 8).map(function (h) { return h.t.term + "×" + h.n; }).join("、") || "—")
+      ) + '">复制分析摘要</button></p>' +
       '<table class="ta-tbl tt-tbl"><thead>' +
         "<tr><th>术语</th><th>频次</th><th>知识板块</th><th>状态</th></tr>" +
       "</thead><tbody>" +
@@ -4074,6 +4081,9 @@
      TA_DF 只存勾选的词与纵轴口径；词集本身每次从 TA_RES 现算（文本变了词集就变），
      勾选沿用上次的选择，凑不齐两条时回落到总频次前 8。 */
   var TA_DF = { words: null, mode: "rate" };
+  /* v57：聚类网络图的着色口径。"cluster"＝连通分量（老口径），"domain"＝知识板块。
+     会话级状态即可——刷新回到默认的按簇着色。 */
+  var TA_NET = { by: "cluster" };
 
   function dfPrep(R) {
     var cand = {}, order = [];
@@ -4221,6 +4231,19 @@
     /* ③ 聚类网络图 */
     var netHtml;
     if (R.nodes.length >= 3 && R.ED.length) {
+      /* v57：按知识板块着色的口径——节点颜色跟着它所属的板块走（板块按命中次数
+         降序分配色号），图例铺在图下面；按簇着色（连通分量）仍是默认。 */
+      var domCount = {}, domOf = {};
+      R.nodes.forEach(function (id) {
+        var t = BY_ID[id];
+        if (!t) return;
+        domOf[id] = t.domain;
+        domCount[t.domain] = (domCount[t.domain] || 0) + 1;
+      });
+      var domList = Object.keys(domCount).sort(function (a, b) { return domCount[b] - domCount[a]; });
+      var domNo = {};
+      domList.forEach(function (d, i) { domNo[d] = i; });
+
       var svg = '<svg viewBox="0 0 640 370" class="ta-net" role="img" aria-label="术语共现网络图">';
       R.ED.forEach(function (e) {
         var a = R.P[e.a], b = R.P[e.b];
@@ -4235,7 +4258,8 @@
       });
       R.nodes.forEach(function (id, i) {
         var t = BY_ID[id], p = R.P[i];
-        var col = R.PALETTE[(colorOf[id] || 0) % R.PALETTE.length];
+        var ci = TA_NET.by === "domain" ? (domNo[domOf[id]] || 0) : (colorOf[id] || 0);
+        var col = R.PALETTE[ci % R.PALETTE.length];
         var rad = 5 + 5 * Math.sqrt((R.freqById[id] || 1) / Math.max(1, maxN));
         svg += '<a href="#/t/' + esc(id) + '"><circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
           '" r="' + rad.toFixed(1) + '" fill="' + col + '"/>' +
@@ -4245,9 +4269,25 @@
       svg += "</svg>";
       var cluKeys = Object.keys(R.clusters).filter(function (k) { return R.clusters[k].length > 1; });
       netHtml = '<div class="ta-sub" id="ta-net"><h3>聚类网络图</h3>' +
-        '<p class="tool-hint">词频前 ' + R.nodes.length + " 的术语按共现连边（≥2 句），连通的算一簇、同色。" +
-        "点节点可进词条。</p>" + svg +
-        (cluKeys.length
+        '<div class="df-bar" role="group" aria-label="着色方式">' +
+          '<span class="df-lab">着色：</span>' +
+          '<label class="df-opt"><input type="radio" name="ta-net-mode" value="cluster"' +
+            (TA_NET.by === "cluster" ? " checked" : "") + ">按簇（连通分量）</label>" +
+          '<label class="df-opt"><input type="radio" name="ta-net-mode" value="domain"' +
+            (TA_NET.by === "domain" ? " checked" : "") + ">按知识板块</label>" +
+        "</div>" +
+        '<p class="tool-hint">词频前 ' + R.nodes.length + " 的术语按共现连边（≥2 句）" +
+          (TA_NET.by === "domain"
+            ? "，颜色是所属知识板块。"
+            : "，连通的算一簇、同色。") +
+          "点节点可进词条。</p>" + svg +
+        (TA_NET.by === "domain"
+          ? '<p class="tt-dims">' + domList.map(function (d, i) {
+              return '<span style="border-bottom:3px solid ' + R.PALETTE[i % R.PALETTE.length] + '">' +
+                esc(catName(d)) + " <b>" + domCount[d] + "</b></span>";
+            }).join("") + "</p>"
+          : "") +
+        (cluKeys.length && TA_NET.by !== "domain"
           ? '<div class="ta-scroll"><table class="ta-tbl"><thead>' +
             taTh(["簇", "成员术语", "规模"]) + "</thead><tbody>" +
             cluKeys.map(function (k) {
@@ -4378,6 +4418,16 @@
         redrawDfChart();
       });
     }
+    /* v57：聚类网络图的着色切换——整块重算一次（布局是确定性的，图不会跳） */
+    var netBox = box.querySelector("#ta-net");
+    if (netBox) {
+      netBox.addEventListener("change", function (e) {
+        var inp = e.target;
+        if (!inp || inp.name !== "ta-net-mode") return;
+        TA_NET.by = inp.value;
+        renderTa();
+      });
+    }
   }
 
   /* 把 TA_RES 里对应块的数据整理成 xlsx 工作表 */
@@ -4455,12 +4505,12 @@
   }
 
   /* ================= 阅读辅助三件 =================
-     引文速查与格式化 · 概念对照表 · 三卷目录树。
+     原典引文检索 · 概念对照表 · 三卷目录树。
      与文本分析同一条约束：零依赖、file:// 可开、状态换页不丢。
      控件骨架在 viewTools() 里是静态的，本段只负责「往输出格里填内容」，
      输入框不重画，打字才不会丢焦点。 */
 
-  /* —— 1) 引文速查与格式化：在已核引文里检索，一键按体例复制 —— */
+  /* —— 1) 原典引文检索：在已核引文里检索，一键按体例复制 —— */
 
   var QS = { q: "", src: "all" };
   var QS_SRC = [
@@ -5090,7 +5140,7 @@
   }
 
   /* ================= 写作辅助四件 =================
-     检索词与检索式 · 参考文献汇总 · 笔记板 · 多语术语对照表。
+     检索词与检索式 · 笔记板 · 多语术语对照表。
      与阅读辅助同一套做法：控件骨架在 viewTools() 里静态摆好，
      本段只往输出格里填内容——输入框不重画，打字才不会丢焦点。
      两条纪律：
@@ -5334,236 +5384,14 @@
       "上方三个框是<b>整块</b>词条灌成的长式子（不受搜索框影响）。</p>";
   }
 
-  /* —— 2) 参考文献汇总：把 578 条争鸣引注拆成结构化文献，去重、排序、转 GB/T 7714 ——
-     引注的写法是照人写的，不是照机器写的：有的给卷号、有的给合期、有的给增刊，
-     还有几条压根没给出处。规则按站内实际写法逐类兜，兜不住的一律落到
-     「出处不全」并标出来——写文献综述时，先得知道哪几条拿不出手。 */
+  /* —— 3) 笔记板（思维导图）：一张可拖拽的画布，节点＝一条想法。
+     双击节点改文字，点选后按「＋」长出子节点；「导入词条」把词条页
+     「我的笔记」一键挂成子节点。图存在本机 capital-mind-v1 里，与学习
+     记录分开；导出 Markdown 按根到叶的层级缩进，直接贴进笔记软件。 */
 
-  var REF_KINDNAME = {
-    J: "期刊", M: "图书", N: "报纸", A: "文集析出",
-    W: "网络来源", X: "出处不全", Z: "需人工核"
-  };
-  var REF_OK = { J: 1, M: 1, N: 1, A: 1 };   // 可规范著录的几类
-  var REF = { by: "author", kind: "all", q: "" };
-  var _REF = null;
-
-  var REF_AUT = "^(?:([^》]{1,40})：)?";
-  var REF_PG = "(?:，第([\\d、—\\-]+)页)?";
-
-  function refParse(cite) {
-    var s = String(cite || "").replace(/^参见\s*/, "").replace(/。\s*$/, "").trim();
-    var m;
-    m = new RegExp(REF_AUT + "《(.+?)》，载(.+?)，(.*?)(\\d{4})年" + REF_PG + "$").exec(s);
-    if (m) {
-      var pb = refPub(m[4]);
-      return { kind: "A", author: m[1] || "", title: m[2],
-        src: m[3].replace(/^《|》$/g, ""), city: pb.city, pub: pb.pub,
-        year: +m[5], pages: m[6] || "", raw: cite };
-    }
-    m = new RegExp(REF_AUT + "《(.+?)》，《([^》]+?报)》[，,]?(\\d{4})年(\\d{1,2})月(\\d{1,2})日$").exec(s);
-    if (m) {
-      return { kind: "N", author: m[1] || "", title: m[2], src: m[3],
-        year: +m[4], date: m[4] + "-" + ("0" + m[5]).slice(-2) + "-" + ("0" + m[6]).slice(-2),
-        raw: cite };
-    }
-    m = new RegExp(REF_AUT + "《(.+?)》，《([^》]+?)》[，,]?(\\d{4})年(?:第(\\d+)卷)?第?([\\d、S]+)(期|辑)" + REF_PG + "$").exec(s);
-    if (m) {
-      return { kind: "J", author: m[1] || "", title: m[2], src: m[3], year: +m[4],
-        vol: m[5] || "", issue: m[6], unit: m[7], pages: m[8] || "", raw: cite };
-    }
-    m = new RegExp(REF_AUT + "《(.+?)》，(.+?)，(\\d{4})年" + REF_PG + "$").exec(s);
-    if (m) {
-      var pb2 = refPub(m[3]);
-      return { kind: "M", author: m[1] || "", title: m[2], city: pb2.city, pub: pb2.pub,
-        year: +m[4], pages: m[5] || "", raw: cite };
-    }
-    m = new RegExp(REF_AUT + "《(.+?)》，(.+?(?:网|网站))[，,]?(\\d{4})年(\\d{1,2})月(\\d{1,2})日$").exec(s);
-    if (m) {
-      return { kind: "W", author: m[1] || "", title: m[2], src: m[3],
-        year: +m[4], date: m[4] + "-" + ("0" + m[5]).slice(-2) + "-" + ("0" + m[6]).slice(-2),
-        raw: cite };
-    }
-    m = new RegExp(REF_AUT + "《(.+?)》，(.+?(?:网|网站))$").exec(s);
-    if (m) return { kind: "W", author: m[1] || "", title: m[2], src: m[3], raw: cite };
-    m = new RegExp(REF_AUT + "《(.+?)》，《([^》]+?)》(.+)$").exec(s);
-    if (m) return { kind: "Z", author: m[1] || "", title: m[2], src: m[3], note: m[4], raw: cite };
-    m = new RegExp(REF_AUT + "《(.+?)》$").exec(s);
-    if (m) return { kind: "X", author: m[1] || "", title: m[2], raw: cite };
-    return { kind: "X", author: "", title: s, raw: cite };
-  }
-
-  /* 「臧峰宇译，北京：北京师范大学出版社」→ 城市 + 出版社；拆不出就整串当出版社 */
-  function refPub(s) {
-    var m = /^(.*?)([^：，]{2,14})：([^：，]+)$/.exec(String(s || "").trim());
-    return m ? { city: m[2], pub: m[3] } : { city: "", pub: String(s || "").trim() };
-  }
-
-  /* 页码里的连接号统一成半角，顿号（跳页）改逗号：第20—24、73页 → 20-24,73 */
-  function refPg(s) {
-    return String(s || "").replace(/[—－–]/g, "-").replace(/、/g, ",");
-  }
-
-  function refGB(r) {
-    switch (r.kind) {
-      case "J":
-        return r.author + ". " + r.title + "[J]. " + r.src + ", " + r.year +
-          (r.vol ? ", " + r.vol + "卷" : "") +
-          (r.issue ? "(" + r.issue + (r.unit === "辑" ? "辑" : "") + ")" : "") +
-          (r.pages ? ": " + refPg(r.pages) : "") + ".";
-      case "N":
-        return r.author + ". " + r.title + "[N]. " + r.src + ", " + r.date + ".";
-      case "M":
-        return r.author + ". " + r.title + "[M]. " + (r.city ? r.city + ": " : "") + r.pub +
-          ", " + r.year + (r.pages ? ": " + refPg(r.pages) : "") + ".";
-      case "A":
-        return r.author + ". " + r.title + "[A]//" + r.src + ". " +
-          (r.city ? r.city + ": " : "") + r.pub + ", " + r.year +
-          (r.pages ? ": " + refPg(r.pages) : "") + ".";
-      default:
-        return "";
-    }
-  }
-
-  /* 去重 key：篇名里的引号先归一——同一篇文献一处写“ ”一处写「 」，
-     字面不同、文献是同一篇，不能因此排成两行。 */
-  function refKey(r) {
-    return r.kind + "|" + r.author + "|" +
-      String(r.title).replace(/[“”„「」『』]/g, "\"");
-  }
-
-  /* 去重：同一篇文献被多条词条引到，合并成一条并记下它出现在哪些词条里 */
-  function refIndex() {
-    if (_REF) return _REF;
-    var map = {}, order = [];
-    TERMS.forEach(function (t) {
-      (t.scholars || []).forEach(function (g) {
-        (g.stances || []).forEach(function (st) {
-          if (!st.cite) return;
-          var r = refParse(st.cite);
-          var k = refKey(r);
-          if (!map[k]) {
-            r.terms = []; r.verified = true; r.n = 0;
-            map[k] = r; order.push(k);
-          }
-          var e = map[k];
-          e.n++;
-          /* 同一篇一处带页码、一处不带：著录取带页码的版本 */
-          if (!e.pages && r.pages) e.pages = r.pages;
-          if (!e.vol && r.vol) e.vol = r.vol;
-          if (!e.issue && r.issue) e.issue = r.issue;
-          if (e.terms.indexOf(t.term) === -1) e.terms.push(t.term);
-          if (!st.verified) e.verified = false;
-        });
-      });
-    });
-    _REF = order.map(function (k) { return map[k]; });
-    return _REF;
-  }
-
-  function refCmp(a, b) {
-    var x = String(a.author || ""), y = String(b.author || "");
-    try {
-      return x.localeCompare(y, "zh-Hans-CN") ||
-        String(a.title).localeCompare(String(b.title), "zh-Hans-CN");
-    } catch (e) {
-      return x < y ? -1 : x > y ? 1 : 0;
-    }
-  }
-
-  function refSort(list, by) {
-    var L = list.slice();
-    if (by === "year") {
-      L.sort(function (a, b) { return (a.year || 9999) - (b.year || 9999) || refCmp(a, b); });
-    } else if (by === "kind") {
-      L.sort(function (a, b) {
-        if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
-        return refCmp(a, b);
-      });
-    } else if (by === "terms") {
-      L.sort(function (a, b) { return b.n - a.n || refCmp(a, b); });
-    } else {
-      L.sort(refCmp);
-    }
-    return L;
-  }
-
-  function refShown() {
-    var kw = REF.q.trim().toLowerCase();
-    return refSort(refIndex().filter(function (r) {
-      if (REF.kind !== "all" && r.kind !== REF.kind) return false;
-      if (kw && (r.author + " " + r.title + " " + (r.src || "") + " " + (r.raw || "") +
-        " " + (r.terms || []).join(" ")).toLowerCase().indexOf(kw) === -1) return false;
-      return true;
-    }), REF.by);
-  }
-
-  function refCounts() {
-    var c = { all: 0, ok: 0, bad: 0 }, byKind = {};
-    refIndex().forEach(function (r) {
-      c.all++;
-      byKind[r.kind] = (byKind[r.kind] || 0) + 1;
-      if (REF_OK[r.kind]) c.ok++; else c.bad++;
-    });
-    return { c: c, byKind: byKind };
-  }
-
-  function renderRef() {
-    var out = document.getElementById("ref-out");
-    if (!out) return;
-    var by = document.getElementById("ref-by"), kd = document.getElementById("ref-kind"),
-      q = document.getElementById("ref-q");
-    if (by) by.value = REF.by;
-    if (kd) kd.value = REF.kind;
-    if (q) q.value = REF.q;
-
-    var st = refCounts();
-    var badges = Object.keys(REF_KINDNAME).filter(function (k) { return st.byKind[k]; })
-      .map(function (k) {
-        return '<span class="ref-badge' + (REF_OK[k] ? "" : " warn") + '">' +
-          esc(REF_KINDNAME[k]) + " " + st.byKind[k] + "</span>";
-      }).join("");
-
-    var head = '<p class="qs-stat">全站 <b>' + refCiteCount() + "</b> 条争鸣引注，去重后 <b>" +
-      st.c.all + "</b> 条文献；其中 <b>" + st.c.ok + "</b> 条要素齐全、可直接转 GB/T 7714，" +
-      '<b class="warn-t">' + st.c.bad + "</b> 条出处不全或不便著录。</p>" +
-      '<p class="ref-badges">' + badges + "</p>";
-
-    var list = refShown();
-    if (!list.length) {
-      out.innerHTML = head + '<p class="empty">没有匹配的文献。</p>';
-      return;
-    }
-    var rows = list.map(function (r, i) {
-      var gb = refGB(r);
-      var meta = [];
-      if (r.n > 1) meta.push("被引 " + r.n + " 次");
-      if (r.terms && r.terms.length) meta.push("关联词条：" + r.terms.slice(0, 5).join("、") +
-        (r.terms.length > 5 ? " 等 " + r.terms.length + " 条" : ""));
-      if (!r.verified) meta.push('<span class="warn-t">文献待核</span>');
-      return '<li class="ref-item">' +
-        (gb
-          ? '<p class="ref-gb"><span class="ref-no">[' + (i + 1) + "]</span>" + esc(gb) +
-            '<button type="button" class="tbtn ref-cp" data-copy="' + esc(gb) + '">复制</button></p>'
-          : '<p class="ref-gb ref-nogb"><span class="ref-no">[' + (i + 1) + "]</span>" +
-            '<span class="chip warn">' + esc(REF_KINDNAME[r.kind]) + "，无法规范著录</span>" +
-            esc(r.raw) + "</p>") +
-        (meta.length ? '<p class="ref-meta">' + meta.join(" · ") + "</p>" : "") +
-        '</li>';
-    }).join("");
-    out.innerHTML = head +
-      '<ol class="ref-list">' + rows + "</ol>" +
-      (list.length < st.c.all
-        ? '<p class="tool-hint">当前筛选下显示 ' + list.length + " 条，共 " + st.c.all +
-          " 条。导出文件包含全部（按类型分表）。</p>" : "");
-  }
-
-
-  /* —— 3) 笔记板：把散在各词条下的笔记汇总到一处 ——
-     笔记本来就写在词条页，写的时候是「读到哪想到哪」；
-     回头要用的时候（比如写论文某一节）需要按板块重排。
-     数据仍在学习记录里，这里只是换个角度捞出来，不另存一份。 */
-
-  var NB = { group: "dom" };
+  var NBM = { nodes: [], next: 1, sel: 1, loaded: false, drag: null };
+  var NBM_KEY = "capital-mind-v1";
+  var NBM_W = 60, NBM_H = 26;   /* 节点宽高，连线端点要用 */
 
   function nbItems() {
     var notes = (LR.export_() || {}).notes || {};
@@ -5573,81 +5401,247 @@
       .sort(function (a, b) { return pySort(a.t, b.t); });
   }
 
-  function nbGroups() {
-    var items = nbItems();
-    if (NB.group === "flat") return [{ key: "", name: "全部笔记", items: items }];
-    var map = {}, order = [];
-    items.forEach(function (x) {
-      var k = x.t.domain;
-      if (!map[k]) { map[k] = []; order.push(k); }
-      map[k].push(x);
-    });
-    order.sort(function (a, b) {
-      return String(catName(a)).localeCompare(String(catName(b)), "zh-Hans-CN");
-    });
-    return order.map(function (k) { return { key: k, name: catName(k), items: map[k] }; });
+  function nbMapLoad() {
+    if (NBM.loaded) return;
+    NBM.loaded = true;
+    try {
+      var raw = localStorage.getItem(NBM_KEY);
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && d.nodes && d.nodes.length) {
+          NBM.nodes = d.nodes;
+          NBM.next = d.next || d.nodes.length + 1;
+          return;
+        }
+      }
+    } catch (e) { /* 隐身模式等存不了就当没有 */ }
+    NBM.nodes = [{ id: 1, p: 0, x: 60, y: 220, text: "《资本论》学习笔记" }];
+    NBM.next = 2;
   }
 
-  function nbMarkdown() {
-    var items = nbItems();
-    var out = ["# " + String(CM.work_title || "《资本论》学习平台") + " · 读书笔记", "",
-      "共 " + items.length + " 条笔记" + (NB.group === "flat" ? "" :
-        "（按知识板块分组）") + "，导出自站内学习记录。", ""];
-    nbGroups().forEach(function (g) {
-      if (g.key) out.push("## " + g.name + "（" + g.items.length + " 条）", "");
-      g.items.forEach(function (x) {
-        out.push("### " + x.t.term, "");
-        x.text.split(/\n+/).forEach(function (ln) { out.push("> " + ln); });
-        out.push("");
-      });
+  function nbMapSave() {
+    try {
+      localStorage.setItem(NBM_KEY, JSON.stringify({ nodes: NBM.nodes, next: NBM.next }));
+    } catch (e) { /* 存不进就算了，导出仍可用 */ }
+  }
+
+  function nbMapById(id) {
+    for (var i = 0; i < NBM.nodes.length; i++) if (NBM.nodes[i].id === id) return NBM.nodes[i];
+    return null;
+  }
+
+  function nbMapAdd(pid, text) {
+    var p = nbMapById(pid);
+    if (!p) return null;
+    /* 新节点落在父节点右侧；同父兄弟按序往下排，避免叠在一起 */
+    var sibs = NBM.nodes.filter(function (n) { return n.p === pid; });
+    var n = { id: NBM.next++, p: pid, x: p.x + 240, y: p.y + sibs.length * 56,
+      text: text || "新节点" };
+    NBM.nodes.push(n);
+    NBM.sel = n.id;
+    nbMapSave();
+    return n;
+  }
+
+  function nbMapDel(id) {
+    if (id === 1) return;                       /* 根节点不删 */
+    var n = nbMapById(id);
+    if (!n) return;
+    /* 子节点上提给祖父，分枝不断 */
+    NBM.nodes.forEach(function (x) { if (x.p === id) x.p = n.p; });
+    NBM.nodes = NBM.nodes.filter(function (x) { return x.id !== id; });
+    if (NBM.sel === id) NBM.sel = n.p;
+    nbMapSave();
+  }
+
+  function nbMapImport(name) {
+    var q = String(name || "").trim().toLowerCase();
+    if (!q) return null;
+    var t = null;
+    TERMS.forEach(function (x) {
+      if (t) return;
+      if (x.term.toLowerCase() === q) t = x;
     });
+    if (!t) TERMS.forEach(function (x) {
+      if (t) return;
+      if (x.term.toLowerCase().indexOf(q) === 0) t = x;
+    });
+    if (!t) TERMS.forEach(function (x) {
+      if (t) return;
+      if ((x.alias || []).some(function (a) { return String(a).toLowerCase().indexOf(q) === 0; })) t = x;
+    });
+    if (!t) return null;
+    var note = LR.getNote(t.id) || "";
+    var text = t.term + (note ? "：" + note.replace(/\s+/g, " ").slice(0, 140) : "（词条页还没写笔记）");
+    return { node: nbMapAdd(NBM.sel || 1, text), term: t };
+  }
+
+  function nbMapMarkdown() {
+    nbMapLoad();
+    var byP = {};
+    NBM.nodes.forEach(function (n) { (byP[n.p] = byP[n.p] || []).push(n); });
+    var out = ["# " + String(CM.work_title || "《资本论》学习平台") + " · 笔记导图", "",
+      "共 " + NBM.nodes.length + " 个节点，导出自本机笔记板。", ""];
+    var root = nbMapById(1);
+    if (root) out.push("- " + String(root.text || "").replace(/\n+/g, " "));
+    (function walk(pid, dep) {
+      (byP[pid] || []).forEach(function (n) {
+        out.push(new Array(dep + 1).join("  ") + "- " + String(n.text || "").replace(/\n+/g, " "));
+        walk(n.id, dep + 1);
+      });
+    })(1, 0);
     return out.join("\n");
   }
 
-  function nbEscape(s) { return esc(s).replace(/\n/g, "<br>"); }
-
-  function renderNb() {
-    var out = document.getElementById("nb-out");
-    if (!out) return;
-    var sel = document.getElementById("nb-group");
-    if (sel) sel.value = NB.group;
-
-    var items = nbItems();
-    if (!items.length) {
-      out.innerHTML = '<p class="empty">还没有笔记。在任意词条页下方的「我的笔记」里写一条，' +
-        "这里就会自动汇总——按知识板块重排，导出成 Markdown 直接贴进论文草稿。</p>";
-      return;
-    }
-    var gc = nbGroups();
-    var covers = {};
-    items.forEach(function (x) { covers[x.t.domain] = 1; });
-    var html = '<p class="qs-stat">共 <b>' + items.length + "</b> 条笔记，覆盖 <b>" +
-      Object.keys(covers).length + "</b> 个知识板块、" +
-      gc.filter(function (g) { return g.key; }).length + " 个分组。</p>";
-    html += gc.map(function (g) {
-      return '<section class="nb-group">' +
-        (g.key ? "<h3>" + esc(g.name) + "<em>" + g.items.length + "</em></h3>" : "") +
-        '<div class="nb-cards">' + g.items.map(function (x) {
-          return '<article class="nb-card"><h4><a href="#/t/' + esc(x.t.id) + '">' +
-            esc(x.t.term) + "</a>" + (x.t.en ? '<span class="nb-en">' + esc(x.t.en) + "</span>" : "") +
-            "</h4><p>" + nbEscape(x.text) + "</p></article>";
-        }).join("") + "</div></section>";
-    }).join("");
-    out.innerHTML = html;
+  function nbMapEdge(x1, y1, x2, y2) {
+    /* 三次贝塞尔：从父节点右缘横向探一段再折向子节点，比直线更像导图 */
+    var mx = Math.max((x1 + x2) / 2, x1 + 24);
+    return '<path class="nbm-edge" d="M' + x1 + " " + y1 + " C" + mx + " " + y1 + " " +
+      mx + " " + y2 + " " + x2 + " " + y2 + '"/>';
   }
 
-  /* —— 4) 多语术语对照表：中文—英文—德文三列，筛选后导出 ——
-     英译依 MECW／Penguin 英译本与官方外译名，德文原名依 MEW；
-     德文只覆盖哲学类词条（唯物史观、意识形态与拜物教批判两域及哲学著作），
-     不是每条都有——表里空着就是没有，不拿别的语言的拼写充数。 */
+  function renderNbMap() {
+    var wrap = document.getElementById("nbm-wrap");
+    if (!wrap) return;
+    nbMapLoad();
+    var CW = 1600, CH = 900;
+    var edges = "", nodes = "";
+    NBM.nodes.forEach(function (n) {
+      if (!n.p) return;
+      var p = nbMapById(n.p);
+      if (p) edges += nbMapEdge(p.x + NBM_W, p.y + NBM_H / 2, n.x, n.y + NBM_H / 2);
+    });
+    NBM.nodes.forEach(function (n) {
+      var cls = "nbm-node" + (n.id === 1 ? " nbm-root" : "") + (n.id === NBM.sel ? " nbm-sel" : "");
+      nodes += '<div class="' + cls + '" style="left:' + n.x + "px;top:" + n.y + 'px" data-id="' + n.id + '">' +
+        '<span class="nbm-txt">' + esc(n.text || "").replace(/\n/g, "<br>") + "</span>" +
+        '<span class="nbm-btns">' +
+          '<button type="button" title="加子节点" data-act="nbm-add" data-id="' + n.id + '">＋</button>' +
+          (n.id === 1 ? "" :
+            '<button type="button" title="删除节点" data-act="nbm-del" data-id="' + n.id + '">×</button>') +
+        "</span></div>";
+    });
+    wrap.innerHTML =
+      '<div class="nbm-canvas" id="nbm-canvas" tabindex="0" aria-label="笔记导图画布">' +
+        '<svg class="nbm-svg" width="' + CW + '" height="' + CH + '" aria-hidden="true">' + edges + "</svg>" +
+        nodes +
+      "</div>" +
+      '<p class="tool-hint">拖动节点摆放；双击改文字，回车或点别处确认；先点选一个节点，' +
+      "再按它的「＋」加子节点。图只存在这台机器的浏览器里。</p>";
+    nbMapBind();
+  }
 
-  var MT = { q: "", scope: "all" };
+  function nbMapBind() {
+    var canvas = document.getElementById("nbm-canvas");
+    if (!canvas) return;
+    canvas.addEventListener("pointerdown", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".nbm-node") : null;
+      if (!el || (ev.target.closest && ev.target.closest(".nbm-btns"))) return;
+      var id = +el.getAttribute("data-id");
+      var n = nbMapById(id);
+      if (!n) return;
+      NBM.sel = id;
+      var nodes = canvas.querySelectorAll(".nbm-node");
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].classList.toggle("nbm-sel", +nodes[i].getAttribute("data-id") === id);
+      }
+      NBM.drag = { id: id, sx: ev.clientX, sy: ev.clientY, ox: n.x, oy: n.y, el: el, moved: false };
+      try { el.setPointerCapture(ev.pointerId); } catch (e) { /* 老浏览器不给就算了 */ }
+      /* ⚠ 不在这里 preventDefault：按规范它会抑制后续兼容鼠标事件，
+         dblclick（双击编辑）就再也不会触发。防误选文字由 CSS user-select 负责。 */
+    });
+    canvas.addEventListener("dblclick", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".nbm-node") : null;
+      if (!el) return;
+      var n = nbMapById(+el.getAttribute("data-id"));
+      if (!n) return;
+      var span = el.querySelector(".nbm-txt");
+      if (!span || el.querySelector("textarea")) return;
+      var ta = document.createElement("textarea");
+      ta.value = n.text;
+      ta.rows = Math.max(2, String(n.text || "").split("\n").length);
+      span.style.display = "none";
+      el.insertBefore(ta, span);
+      ta.focus();
+      ta.select();
+      function commit() {
+        var v = ta.value.replace(/\s+$/, "");
+        if (v) n.text = v;
+        nbMapSave();
+        renderNbMap();
+      }
+      ta.addEventListener("blur", commit);
+      ta.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ta.blur(); }
+        if (e.key === "Escape") { ta.value = n.text; ta.blur(); }
+      });
+    });
+    if (!document.documentElement.__nbmMove) {
+      document.documentElement.__nbmMove = true;
+      document.addEventListener("pointermove", function (ev) {
+        if (!NBM.drag) return;
+        var d = NBM.drag;
+        var nx = Math.max(4, Math.min(1440, d.ox + ev.clientX - d.sx));
+        var ny = Math.max(4, Math.min(860, d.oy + ev.clientY - d.sy));
+        if (Math.abs(ev.clientX - d.sx) + Math.abs(ev.clientY - d.sy) > 3) d.moved = true;
+        d.el.style.left = nx + "px";
+        d.el.style.top = ny + "px";
+        NBM.drag.px = nx; NBM.drag.py = ny;
+        nbMapRedrawEdges();
+      });
+      document.addEventListener("pointerup", function () {
+        if (!NBM.drag) return;
+        var d = NBM.drag;
+        NBM.drag = null;
+        if (!d.moved) return;
+        var n = nbMapById(d.id);
+        if (n) { n.x = d.px; n.y = d.py; nbMapSave(); }
+        renderNbMap();
+      });
+    }
+  }
+
+  function nbMapRedrawEdges() {
+    var svg = document.querySelector("#nbm-canvas .nbm-svg");
+    if (!svg) return;
+    var edges = "";
+    NBM.nodes.forEach(function (n) {
+      if (!n.p) return;
+      var p = nbMapById(n.p);
+      if (p) {
+        var np = NBM.drag && NBM.drag.id === n.id ? { x: NBM.drag.px, y: NBM.drag.py } : n;
+        var pp = NBM.drag && NBM.drag.id === p.id ? { x: NBM.drag.px, y: NBM.drag.py } : p;
+        edges += nbMapEdge(pp.x + NBM_W, pp.y + NBM_H / 2, np.x, np.y + NBM_H / 2);
+      }
+    });
+    svg.innerHTML = edges;
+  }
+
+  function nbMapSay(msg) {
+    var m = document.getElementById("nbm-msg");
+    if (m) m.textContent = msg;
+  }
+
+  /* Markdown 表格：单元格里的竖线要转义，否则一张表就散了 */
+  function mdTable(rows) {
+    return ["| " + rows[0].join(" | ") + " |",
+      "| " + rows[0].map(function () { return "---"; }).join(" | ") + " |"]
+      .concat(rows.slice(1).map(function (r) {
+        return "| " + r.map(function (c) {
+          return String(c == null ? "" : c).replace(/\|/g, "\\|");
+        }).join(" | ") + " |";
+      })).join("\n");
+  }
+
+  var MT = { q: "", scope: "all", doms: [] };   /* v57：doms＝板块批量筛选，勾中的知识板块 id 列表 */
 
   function mtList() {
     var kw = MT.q.trim().toLowerCase();
     return TERMS.filter(function (t) {
       if (MT.scope === "de" && !t.de) return false;
       if (MT.scope.slice(0, 2) === "d:" && t.domain !== MT.scope.slice(2)) return false;
+      /* v57：板块批量筛选——勾了若干块时只留这些块里的词条（与上面的单选叠加） */
+      if (MT.doms.length && MT.doms.indexOf(t.domain) < 0) return false;
       if (kw) {
         var hay = [t.term, t.en || "", t.de || "", (t.alias || []).join(" "), t.pinyin].join(" ");
         if (hay.toLowerCase().indexOf(kw) === -1) return false;
@@ -5670,12 +5664,20 @@
     var q = document.getElementById("mt-q"), sc = document.getElementById("mt-scope");
     if (q) q.value = MT.q;
     if (sc) sc.value = MT.scope;
+    /* v57：板块勾选块的选中态跟着 MT.doms 回填（面板壳不动，只有勾要翻） */
+    var domBox = document.getElementById("mt-doms");
+    if (domBox) {
+      domBox.querySelectorAll("input[data-dom]").forEach(function (inp) {
+        inp.checked = MT.doms.indexOf(inp.getAttribute("data-dom")) >= 0;
+      });
+    }
 
     var list = mtList();
     var deN = TERMS.filter(function (t) { return t.de; }).length;
     var head = '<p class="qs-stat">全站 <b>' + TERMS.length + "</b> 条词条，英文名 <b>" +
       TERMS.filter(function (t) { return t.en; }).length + "</b> 条、德文原名 <b>" + deN +
-      "</b> 条（德文只收哲学类）。当前筛出 <b>" + list.length + "</b> 条。</p>";
+      "</b> 条（德文只收哲学类）。当前筛出 <b>" + list.length + "</b> 条" +
+      (MT.doms.length ? "（已勾 " + MT.doms.length + " 个板块）" : "") + "。</p>";
     if (!list.length) {
       out.innerHTML = head + '<p class="empty">没有匹配的词条。</p>';
       return;
@@ -5701,63 +5703,6 @@
 
   function dlText(fname, text, mime) {
     dlBytes(fname, new TextEncoder().encode(text), mime || "text/plain;charset=utf-8");
-  }
-
-  function refCiteCount() {
-    var n = 0;
-    TERMS.forEach(function (t) {
-      (t.scholars || []).forEach(function (g) {
-        (g.stances || []).forEach(function (st) { if (st.cite) n++; });
-      });
-    });
-    return n;
-  }
-
-  function refSheets() {
-    var list = refSort(refIndex(), "author");
-    function rowsOf(sub) {
-      return [["序号", "作者", "题名", "类型", "刊名/出版社", "年", "卷", "期", "页码",
-        "GB/T 7714 著录", "关联词条", "被引", "核验"]].concat(sub.map(function (r, i) {
-        return [String(i + 1), r.author, r.title, REF_KINDNAME[r.kind], r.src || r.pub || "",
-          r.year || "", r.vol || "", r.issue || "", r.pages || "", refGB(r) || "（无法规范著录）",
-          (r.terms || []).join("、"), r.n || 1, r.verified ? "文献已核" : "文献待核"];
-      }));
-    }
-    function pick(f) { return list.filter(f); }
-    var sheets = [{ name: "全部文献", rows: rowsOf(list) }];
-    var j = pick(function (r) { return r.kind === "J"; });
-    var m = pick(function (r) { return r.kind === "M" || r.kind === "A"; });
-    var n = pick(function (r) { return r.kind === "N"; });
-    var bad = pick(function (r) { return !REF_OK[r.kind]; });
-    if (j.length) sheets.push({ name: "期刊文献", rows: rowsOf(j) });
-    if (m.length) sheets.push({ name: "图书与析出", rows: rowsOf(m) });
-    if (n.length) sheets.push({ name: "报纸文献", rows: rowsOf(n) });
-    if (bad.length) sheets.push({ name: "出处不全", rows: rowsOf(bad) });
-    return sheets;
-  }
-
-  function refBlocks() {
-    var list = refSort(refIndex().filter(function (r) { return refGB(r); }), "author");
-    var bad = refSort(refIndex().filter(function (r) { return !refGB(r); }), "author");
-    var b = [
-      { t: "title", text: "参考文献" },
-      { t: "sub", text: String(CM.work_title || "") + " · 学界争鸣栏引注汇总" },
-      { t: "sub", text: cmAuthorLine() || "作者：（待填）" },
-      { t: "p", text: "本表汇总站内学界争鸣栏的全部引注，去重后共 " + refIndex().length +
-        " 条，其中 " + list.length + " 条要素齐全、按 GB/T 7714—2015 著录如下。" +
-        "排序按作者姓氏音序；同一作者再按篇名音序。" },
-      { t: "h2", text: "一、可规范著录的文献（" + list.length + " 条）" }
-    ];
-    list.forEach(function (r, i) { b.push({ t: "ref", text: "[" + (i + 1) + "] " + refGB(r) }); });
-    if (bad.length) {
-      b.push({ t: "h2", text: "二、出处不全，需回原刊补（" + bad.length + " 条）" });
-      b.push({ t: "p", text: "下列引注缺刊名、年期或可访问网址，无法按 GB/T 7714 著录，" +
-        "列出原样供核对——不替它们补一个看起来整齐的出处。" });
-      bad.forEach(function (r, i) {
-        b.push({ t: "ref", text: "[" + (i + 1) + "]（" + REF_KINDNAME[r.kind] + "）" + r.raw });
-      });
-    }
-    return b;
   }
 
   function mtBlocks() {
@@ -5816,35 +5761,6 @@
   }
 
 
-  /* Markdown 表格：单元格里的竖线要转义，否则一张表就散了 */
-  function mdTable(rows) {
-    return ["| " + rows[0].join(" | ") + " |",
-      "| " + rows[0].map(function () { return "---"; }).join(" | ") + " |"]
-      .concat(rows.slice(1).map(function (r) {
-        return "| " + r.map(function (c) {
-          return String(c == null ? "" : c).replace(/\|/g, "\\|");
-        }).join(" | ") + " |";
-      })).join("\n");
-  }
-
-  function refMarkdown() {
-    var list = refSort(refIndex().filter(function (r) { return refGB(r); }), "author");
-    var bad = refSort(refIndex().filter(function (r) { return !refGB(r); }), "author");
-    var out = ["# 参考文献 · 学界争鸣栏引注汇总", "",
-      "- 引注总数：" + refCiteCount() + " 条",
-      "- 去重后文献：" + refIndex().length + " 条",
-      "- 可规范著录：" + list.length + " 条（GB/T 7714—2015）",
-      "- 出处不全：" + bad.length + " 条", "",
-      "## 一、可规范著录的文献（" + list.length + " 条）", ""];
-    list.forEach(function (r, i) { out.push((i + 1) + ". " + refGB(r)); });
-    if (bad.length) {
-      out.push("", "## 二、出处不全，需回原刊补（" + bad.length + " 条）", "");
-      bad.forEach(function (r, i) {
-        out.push("- " + (i + 1) + ".（" + REF_KINDNAME[r.kind] + "）" + r.raw);
-      });
-    }
-    return out.join("\n");
-  }
 
   function mtMarkdown() {
     return ["# 多语术语对照表", "",
@@ -5885,31 +5801,35 @@
           try { nq.setSelectionRange(at, at); } catch (e) { /* 旧浏览器不给 setSelectionRange */ }
           nq.scrollTop = sc;
         }
-      } else if (el.id === "ref-q") { REF.q = el.value; renderRef(); }
+      }
       else if (el.id === "mt-q") { MT.q = el.value; renderMt(); }
     };
     if (!app.__kwDelegated) {
       app.addEventListener("input", inputHandler);
       app.__kwDelegated = true;
     }
-    var by = document.getElementById("ref-by"), kd = document.getElementById("ref-kind");
-    if (by) by.addEventListener("change", function () { REF.by = by.value; renderRef(); });
-    if (kd) kd.addEventListener("change", function () { REF.kind = kd.value; renderRef(); });
-    /* ref-q 的 input 监听已移到上面的委托里（原写法重绘后即失效） */
-    var ng = document.getElementById("nb-group");
-    if (ng) ng.addEventListener("change", function () { NB.group = ng.value; renderNb(); });
     var mq = document.getElementById("mt-q"), ms = document.getElementById("mt-scope");
     if (ms) ms.addEventListener("change", function () { MT.scope = ms.value; renderMt(); });
+    /* v57：板块批量筛选——面板壳是静态的，勾选块监听在这里绑一次即可 */
+    var mdoms = document.getElementById("mt-doms");
+    if (mdoms) mdoms.addEventListener("change", function (e) {
+      var inp = e.target;
+      if (!inp || !inp.hasAttribute || !inp.hasAttribute("data-dom")) return;
+      var d = inp.getAttribute("data-dom");
+      var at = MT.doms.indexOf(d);
+      if (inp.checked && at < 0) MT.doms.push(d);
+      if (!inp.checked && at >= 0) MT.doms.splice(at, 1);
+      renderMt();
+    });
     /* mt-q 的 input 监听同样已移到委托里 */
-    renderKw(); renderRef(); renderNb(); renderMt();
+    renderKw(); renderMt(); renderNbMap();
   }
 
 
   /* ================================================================
-     学习与记忆：自测引擎 · 间隔重复卡 · 生词卡导出 · 学习体检
+     学习与记忆：自测引擎 · 间隔重复卡 · 生词卡导出
      四件共用同一批本机数据（LR 里的已读、生词、错题、打卡、排期），
      题目与卡片都从既有词条现场生成，不另存一份题库——改了词条，题跟着变。
-     学习体检也是同一批数据的另一种读法：不新增存储，只把记录折成画像。
      ================================================================ */
 
   /* 确定性伪随机：同一个种子出同一套题。自测脚本靠它复现选出来的题，
@@ -6413,375 +6333,6 @@
       '<div id="cd-body">' + cardsBodyHTML() + "</div>" +
       '<p class="cd-note">Anki 用法：桌面版「文件 → 导入」，选这份 CSV，字段分隔符选逗号，' +
       "勾上「允许 HTML」即可；第一行是列名，Anki 靠它对应正反面字段。</p>" +
-      "</section>";
-  }
-
-  /* ---------------- 学习体检（掌握度总表 + 打卡日历） ---------------- */
-
-  function calStats() {
-    var days = LR.dayKeys(), hist = LR.quizHist();
-    var okSum = 0, nSum = 0;
-    hist.forEach(function (h) { okSum += h.ok; nSum += h.n; });
-    var q = srsQueue();
-    return {
-      dayCount: days.length,
-      streak: LR.streak(),
-      read: LR.readCount(),
-      total: TERMS.length,
-      star: LR.starCount(),
-      note: LR.noteCount(),
-      wrong: LR.quizWrongCount(),
-      quizTimes: hist.length,
-      quizOk: okSum,
-      quizN: nSum,
-      rate: nSum ? Math.round(okSum / nSum * 100) : 0,
-      due: q.filter(function (x) { return x.due; }).length,
-      cards: q.length,
-      first: days.length ? days[0] : "",
-      last: days.length ? days[days.length - 1] : ""
-    };
-  }
-
-  /* 打卡热力图：一列一周，每列 7 格。颜色的深浅按「那天读了几条」分档，
-     只打开没读也是浅色——来过了就得记一笔，这是打卡的本意。 */
-  function calHeatHTML(weeks, fake) {
-    var today = new Date(); today.setHours(12, 0, 0, 0);
-    var start = new Date(today);
-    start.setDate(start.getDate() - (weeks * 7 - 1));
-    start.setDate(start.getDate() - start.getDay());          // 对齐到周日
-    var readBy = (fake && fake.readBy) || LR.readByDay();
-    var opened = {};
-    if (fake && fake.opened) opened = fake.opened;
-    else LR.dayKeys().forEach(function (k) { opened[k] = 1; });
-
-    var html = '<div class="cal-heat">', d = new Date(start), guard = 0;
-    while (d <= today && guard++ < 400) {
-      var k = dayKey(d);
-      var n = readBy[k] || 0;
-      var lv = !opened[k] ? 0 : (n === 0 ? 1 : (n <= 3 ? 2 : (n <= 8 ? 3 : 4)));
-      html += '<i class="cal-cell lv' + lv + '" data-d="' + k + '" title="' + k +
-        (opened[k] ? " · 已读 " + n + " 条" : " · 未打开") + '"></i>';
-      d.setDate(d.getDate() + 1);
-    }
-    html += "</div>";
-    html += '<div class="cal-legend"><span>少</span>' +
-      [1, 2, 3, 4].map(function (i) { return '<i class="cal-cell lv' + i + '"></i>'; }).join("") +
-      "<span>多</span></div>";
-    return html;
-  }
-
-  /* 已读进度曲线：按日把新增已读累加起来，画一条折线。
-     没有时间戳的老数据画不出来，如实说，不假装有曲线。
-     参数 by 只为自测注入用；正常调用留空，直接取本机记录。 */
-  function calCurveSVG(by) {
-    by = by || LR.readByDay();
-    var keys = Object.keys(by).sort();
-    if (keys.length < 2) {
-      return '<p class="cal-nodata">还画不出曲线：已读记录要跨两天才有走势。' +
-        "（这条曲线只用「标记已读」的时间戳，不推算。）</p>";
-    }
-    var first = keys[0], last = keys[keys.length - 1];
-    var d0 = new Date(first + "T12:00:00"), d1 = new Date(last + "T12:00:00");
-    var span = Math.max(1, Math.round((d1 - d0) / 86400000));
-    var cum = 0, pts = [], max = 0, d = new Date(d0);
-    for (var i = 0; i <= span; i++) {
-      var k = dayKey(d);
-      cum += by[k] || 0;
-      if (cum > max) max = cum;
-      pts.push({ x: i, y: cum, k: k });
-      d.setDate(d.getDate() + 1);
-    }
-    var W = 660, H = 150, PL = 34, PB = 20;
-    var x = function (i) { return PL + i / span * (W - PL - 8); };
-    var y = function (v) { return H - PB - (max ? v / max * (H - PB - 12) : 0); };
-    var line = pts.map(function (p) { return x(p.x).toFixed(1) + "," + y(p.y).toFixed(1); }).join(" ");
-    var area = line + " " + x(span).toFixed(1) + "," + (H - PB) + " " + x(0).toFixed(1) + "," + (H - PB);
-    return '<svg class="cal-curve" viewBox="0 0 ' + W + " " + H + '" role="img" ' +
-      'aria-label="按日累计已读词条数，' + first + " 至 " + last + "，共 " + cum + ' 条">' +
-      '<line x1="' + PL + '" y1="' + (H - PB) + '" x2="' + (W - 8) + '" y2="' + (H - PB) + '" class="cal-axis"/>' +
-      '<line x1="' + PL + '" y1="12" x2="' + PL + '" y2="' + (H - PB) + '" class="cal-axis"/>' +
-      '<polygon class="cal-area" points="' + area + '"/>' +
-      '<polyline class="cal-line" points="' + line + '"/>' +
-      '<text x="' + PL + '" y="10" class="cal-t">' + max + "</text>" +
-      '<text x="' + PL + '" y="' + (H - 6) + '" class="cal-t">' + esc(first) + "</text>" +
-      '<text x="' + (W - 8) + '" y="' + (H - 6) + '" class="cal-t end">' + esc(last) + "</text>" +
-      "</svg>";
-  }
-
-  /* ---------------- 学习体检（能力画像） ----------------
-     掌握度口径（全部由本机记录现算，不新增存储、不猜数）：
-       40% 已读率 + 30% 正确率 + 20% 笔记覆盖率 + 10% 复习按时率
-     分母取「已读条数」而非全部条数：没读过的组不该按「错」扣分，
-     没读过的组与读得差的组是两回事——前者返回 null，表里显示「未触」，
-     不记 0 分，免得一张全红的表把「还没开始」说成「掌握得差」。 */
-  function hcScore(list) {
-    var n = (list || []).length;
-    if (!n) return null;
-    var today = todayKey();
-    var read = 0, note = 0, wrong = 0, cards = 0, due = 0;
-    list.forEach(function (t) {
-      if (LR.isRead(t.id)) read++;
-      if ((LR.getNote(t.id) || "").length >= 8) note++;   // 少于 8 字的笔记更像随手划一下
-      var w = LR.quizWrong()[t.id] || 0;
-      if (w) wrong += Math.min(w, 3);
-      var c = LR.srsGet(t.id);
-      if (c) { cards++; if (c.due && c.due <= today) due++; }
-    });
-    if (!read) return { n: n, read: 0, note: 0, wrong: 0, cards: cards, due: due, score: null };
-    var readRate = read / n;
-    var acc = Math.max(0, 1 - wrong / read);
-    var noteRate = Math.min(1, note / read);
-    var keepRate = cards ? 1 - due / cards : 1;   // 没排卡的不扣分
-    return {
-      n: n, read: read, note: note, wrong: wrong, cards: cards, due: due,
-      readRate: readRate, acc: acc, noteRate: noteRate, keep: keepRate,
-      score: Math.round(40 * readRate + 30 * acc + 20 * noteRate + 10 * keepRate)
-    };
-  }
-
-  function hcBand(s) {
-    if (!s || s.score === null || s.score === undefined) return { k: "none", t: "未触" };
-    if (s.score >= 70) return { k: "good", t: "稳" };
-    if (s.score >= 45) return { k: "mid", t: "待补" };
-    return { k: "low", t: "薄" };
-  }
-
-  /* 掌握度的统计单元：知识板块（全站只有一个分类维度，逐块看） */
-  function hcCells() {
-    var dom = (taxById("domain") || {}).cats || [];
-    return dom.map(function (d) {
-      var list = TERMS.filter(function (t) { return t.domain === d.id; });
-      return { d: d, list: list, s: hcScore(list) };
-    });
-  }
-
-  /* 薄弱环节：只认「有词条且已经开了头、分数却低」的板块。
-     一条没读过的板块不计入薄弱——那是「没到过」，不是「薄弱」。 */
-  function hcWeak(cells) {
-    return cells.filter(function (x) { return x.list.length >= 3 && x.s && x.s.score !== null; })
-      .sort(function (a, b) { return a.s.score - b.s.score; })
-      .slice(0, 3);
-  }
-
-  /* 今日补强：错题最重，其次是到期卡，再是没读过的，最后按是否落在薄弱环节加权。
-     每条都给出「凭什么选它」的理由，不做没有交代的推荐。 */
-  function hcPlan(limit, weak) {
-    var today = todayKey();
-    var weakDom = {};
-    (weak || []).forEach(function (x) { weakDom[x.d.id] = 1; });
-    var out = TERMS.map(function (t) {
-      var s = 0, why = [];
-      var w = LR.quizWrong()[t.id] || 0;
-      if (w) { s += 60 * Math.min(w, 3); why.push("错过 " + w + " 次"); }
-      var c = LR.srsGet(t.id);
-      if (c && c.due && c.due <= today) { s += 45; why.push("到期待复习"); }
-      if (!LR.isRead(t.id)) { s += 25; why.push("还没读"); }
-      else if ((LR.getNote(t.id) || "").length < 8) { s += 8; why.push("读过没留笔记"); }
-      if (LR.isStar(t.id)) { s += 10; why.push("在生词本"); }
-      if (weakDom[t.domain]) { s += 15; why.push("落在薄弱环节"); }
-      return { t: t, s: s, why: why };
-    }).filter(function (x) { return x.s > 0; })
-      .sort(function (a, b) {
-        if (a.s !== b.s) return b.s - a.s;
-        return pySort(a.t, b.t);
-      })
-      .slice(0, limit || 5);
-    return out;
-  }
-
-  /* 掌握度总表：一行一个知识板块，末列是掌握度（色带照旧） */
-  function hcMatrixHTML(cells) {
-    var dom = (taxById("domain") || {}).cats || [];
-    var at = {};
-    cells.forEach(function (x) { at[x.d.id] = x; });
-
-    var head = '<tr><th class="hc-corner">知识板块</th><th>条数</th><th>已读</th>' +
-      "<th>错题</th><th>待复习</th>" +
-      '<th class="hc-th-total">掌握度</th></tr>';
-
-    var body = dom.map(function (d) {
-      var cell = at[d.id];
-      var s = cell ? cell.s : null;
-      var b = hcBand(s);
-      var n = cell ? cell.list.length : 0;
-      var tip = d.name + "：" + n + " 条" + (s && s.score !== null
-        ? "，已读 " + s.read + "，错题 " + s.wrong + "，掌握度 " + s.score
-        : "，还没读过");
-      return '<tr><th class="hc-rh" title="' + esc(d.name) + '">' + esc(d.short || d.name) + "</th>" +
-        "<td>" + n + "</td>" +
-        "<td>" + (s ? s.read : 0) + "</td>" +
-        "<td>" + (s ? s.wrong : 0) + "</td>" +
-        "<td>" + (s ? s.due : 0) + "</td>" +
-        '<td class="hc-c hc-total hc-' + b.k + '" title="' + esc(tip) + '"><b>' +
-          (b.k === "none" ? "–" : s.score) + "</b></td></tr>";
-    }).join("");
-
-    var total = hcScore(TERMS), tb = hcBand(total);
-    var foot = '<tr><th class="hc-rh hc-foot-h">全站</th>' +
-      "<td>" + TERMS.length + "</td><td>" + total.read + "</td>" +
-      "<td>" + total.wrong + "</td><td>" + total.due + "</td>" +
-      '<td class="hc-c hc-foot hc-foot-all hc-' + tb.k + '"><b>' +
-        (tb.k === "none" ? "–" : total.score) + "</b></td></tr>";
-
-    return '<table class="hc-mx"><thead>' + head + "</thead><tbody>" + body + foot + "</tbody></table>" +
-      '<div class="hc-legend">' +
-        '<span><i class="hc-sw hc-good"></i>稳 ≥70</span>' +
-        '<span><i class="hc-sw hc-mid"></i>待补 45–69</span>' +
-        '<span><i class="hc-sw hc-low"></i>薄 &lt;45</span>' +
-        '<span><i class="hc-sw hc-none"></i>未触（一条没读，不计分）</span>' +
-      "</div>" +
-      '<p class="tool-hint">每行是一个知识板块：条数、已读、错题、待复习，末列是掌握度。' +
-      "口径：40% 已读率 ＋ 30% 正确率（1 − 错题占已读之比）＋ 20% 笔记覆盖率 ＋ 10% 复习按时率；" +
-      "分母用「已读」不用「全部」，所以「还没读」不背「掌握得差」的名。</p>";
-  }
-
-  function hcSection() {
-    var all = hcScore(TERMS);
-    var cells = hcCells();
-    var weak = hcWeak(cells);
-    var plan = hcPlan(5, weak);
-    var fresh = !LR.readCount() && !LR.quizHist().length;
-
-    var weakHTML = weak.length
-      ? '<ul class="hc-weak">' + weak.map(function (x) {
-          return "<li><b>" + esc(x.d.short || x.d.name) + "</b>" +
-            '<span class="hc-ws">掌握度 ' + x.s.score + "</span>" +
-            '<span class="hc-wr">已读 ' + x.s.read + "/" + x.s.n +
-            (x.s.wrong ? " · 错题 " + x.s.wrong : "") +
-            (x.s.due ? " · 到期 " + x.s.due : "") + "</span>" +
-            '<button type="button" class="tbtn" data-act="hc-cell" data-d="' + esc(x.d.id) +
-              '">加进讲义</button></li>';
-        }).join("") + "</ul>"
-      : '<p class="hc-none-note">还看不出薄弱环节：至少要有 3 条词条、且已经开了头的板块才计入。' +
-        "先把某一个板块连着读几条，这里就有东西可看了。</p>";
-
-    var planHTML = plan.length
-      ? '<ol class="hc-plan">' + plan.map(function (x) {
-          return "<li>" +
-            '<a class="hc-pt" href="#/t/' + esc(x.t.id) + '">' + esc(x.t.term) + "</a>" +
-            '<span class="hc-why">' + x.why.map(function (w) { return "<i>" + esc(w) + "</i>"; }).join("") + "</span>" +
-            '<button type="button" class="tbtn" data-act="hc-add" data-id="' + esc(x.t.id) +
-              '" title="加进讲义，导出或投影时直接用">加进讲义</button>' +
-            "</li>";
-        }).join("") + "</ol>"
-      : '<p class="hc-none-note">今天没有非做不可的条目。要么都很熟，要么一条还没开始——' +
-        "随便挑一条词条标个已读，这里就会开始说话。</p>";
-
-    var scope = "";
-    if (weak.length) scope = "d:" + weak[0].d.id;   // 最薄的板块就是今天该补的方向
-
-    return '<h3 class="cal-h">掌握度总表<span>按知识板块</span></h3>' +
-      (fresh ? '<p class="hc-fresh">这台机器上还没有学习记录，所以整张表都是「未触」。' +
-        '先从<a href="#/c/dom-zzjj">马克思主义政治经济学</a>或<a href="#/tags/topic">核心范畴标签</a>里挑几条读起，' +
-        "读过、标过、测过之后，这张表才开始有信息。</p>" : "") +
-      hcMatrixHTML(cells) +
-      '<h3 class="cal-h">薄弱环节<span>按掌握度排，最薄的排前</span></h3>' + weakHTML +
-      '<h3 class="cal-h">今日补强<span>五条，附选择理由</span></h3>' + planHTML +
-      '<div class="wa-acts cm-noprint">' +
-        '<button class="tt-btn primary" type="button" data-act="hc-word">导出体检报告 Word</button>' +
-        '<button class="tt-btn" type="button" data-act="hc-fill">把这五条加进讲义</button>' +
-        (scope ? '<button class="tt-btn" type="button" data-act="hc-quiz" data-scope="' + esc(scope) +
-          '">按最薄弱的板块出题</button>' : "") +
-        '<button class="tt-btn" type="button" data-act="hc-pj">投影这五条</button>' +
-        '<span class="hc-msg" id="hc-msg" role="status"></span>' +
-      "</div>";
-  }
-
-  /* 体检面板里的一次性回执：加了几条、备了几道题，说完就淡出，不占版面 */
-  var hcMsgTimer = null;
-  function hcSay(msg) {
-    var el = document.getElementById("hc-msg");
-    if (!el) return;
-    el.textContent = msg;
-    if (hcMsgTimer) clearTimeout(hcMsgTimer);
-    hcMsgTimer = setTimeout(function () { el.textContent = ""; }, 4500);
-  }
-
-  /* 体检报告：一页纸，矩阵以表格给出，补强清单带理由，末行写清数据来源 */
-  function hcBlocks() {
-    var all = hcScore(TERMS);
-    var cells = hcCells();
-    var weak = hcWeak(cells);
-    var plan = hcPlan(5, weak);
-    var s = calStats();
-    var b = [
-      { t: "title", text: "《资本论》学习平台 · 学习体检报告" },
-      { t: "sub", text: "生成日期 " + todayKey() + " · 数据来源：本机浏览器学习记录（已读 / 自测 / 间隔重复 / 笔记），不联网" }
-    ];
-    b.push({ t: "h2", text: "一、总览" });
-    b.push({ t: "p", text: "词条 " + s.total + " 条，已读 " + s.read + " 条（" +
-      (s.total ? Math.round(s.read / s.total * 100) : 0) + "%）；生词本 " + s.star +
-      " 条，笔记 " + s.note + " 条；自测 " + s.quizTimes + " 次" +
-      (s.quizTimes ? "（正确率 " + s.rate + "%）" : "") +
-      "，待复习 " + s.due + " 张；累计打开 " + s.dayCount + " 天，连续 " + s.streak + " 天。" });
-    b.push({ t: "p", text: "整体掌握度 " + (all && all.score !== null ? all.score : "—") +
-      "（口径：40% 已读率 ＋ 30% 正确率 ＋ 20% 笔记覆盖率 ＋ 10% 复习按时率；分母取已读条数，未读的格子不计分）。" });
-
-    b.push({ t: "h2", text: "二、知识板块掌握度" });
-    var dom = (taxById("domain") || {}).cats || [];
-    var at = {};
-    cells.forEach(function (x) { at[x.d.id] = x; });
-    var rows = [["知识板块", "条数", "已读", "错题", "待复习", "掌握度"]];
-    dom.forEach(function (d) {
-      var cell = at[d.id];
-      var sc = cell && cell.s ? cell.s : null;
-      rows.push([d.name, String(cell ? cell.list.length : 0),
-        String(sc ? sc.read : 0), String(sc ? sc.wrong : 0), String(sc ? sc.due : 0),
-        sc && sc.score !== null ? String(sc.score) : "–"]);
-    });
-    rows.push(["全站", String(TERMS.length), String(all ? all.read : 0),
-      String(all ? all.wrong : 0), String(all ? all.due : 0),
-      all && all.score !== null ? String(all.score) : "–"]);
-    b.push({ t: "table", rows: rows });
-
-    b.push({ t: "h2", text: "三、薄弱环节" });
-    if (weak.length) {
-      weak.forEach(function (x, i) {
-        b.push({ t: "p", text: (i + 1) + ". " + x.d.name +
-          "：掌握度 " + x.s.score + "，该板块 " + x.s.n + " 条、已读 " + x.s.read + " 条" +
-          (x.s.wrong ? "、错题 " + x.s.wrong : "") + (x.s.due ? "、到期 " + x.s.due + " 张" : "") + "。" });
-      });
-    } else b.push({ t: "small", text: "尚无可判定的薄弱环节（需同一板块内至少 3 条词条且已开始阅读）。" });
-
-    b.push({ t: "h2", text: "四、今日补强五条" });
-    if (plan.length) {
-      plan.forEach(function (x, i) {
-        b.push({ t: "p", text: (i + 1) + ". " + x.t.term + "：" + x.why.join("、") + "。" });
-        b.push({ t: "small", text: "　" + (x.t.oneline || "") });
-      });
-    } else b.push({ t: "small", text: "暂无待补条目。" });
-
-    b.push({ t: "small", text: "本报告的每一个数字都可由本机记录复算；掌握度是自查工具，不是考核依据。" });
-    return b;
-  }
-
-  function calPanel() {
-    var s = calStats();
-    var rate = s.total ? Math.round(s.read / s.total * 100) : 0;
-    return '<section class="tool-card" id="cal">' +
-      "<h2>学习体检</h2>" +
-      '<p class="tool-sub">把本机的学习记录折成一张能力画像：<b>掌握度总表</b>看哪块薄，' +
-      "<b>今日补强</b>给你该先看的五条；下面还有打卡热力图与已读进度曲线。" +
-      "掌握度按下面写明的口径计分，各项都列出依据。</p>" +
-      '<div class="cal-sum">' +
-        '<span class="cal-k"><b>' + s.dayCount + "</b>累计打开天数</span>" +
-        '<span class="cal-k"><b>' + s.streak + "</b>连续天数</span>" +
-        '<span class="cal-k"><b>' + s.read + "</b>/" + s.total + "已读（" + rate + "%）</span>" +
-        '<span class="cal-k"><b>' + s.star + "</b>生词本</span>" +
-        '<span class="cal-k"><b>' + s.note + "</b>笔记</span>" +
-        '<span class="cal-k"><b>' + s.quizTimes + "</b>次自测" +
-          (s.quizTimes ? "（正确率 " + s.rate + "%）" : "") + "</span>" +
-        '<span class="cal-k"><b>' + s.due + "</b>张待复习</span>" +
-      "</div>" +
-      hcSection() +
-      '<h3 class="cal-h">打卡热力图<span>近 26 周</span></h3>' +
-      calHeatHTML(26) +
-      '<h3 class="cal-h">已读进度曲线<span>按日累计</span></h3>' +
-      calCurveSVG() +
-      (s.first ? '<p class="cal-foot">本机记录起于 ' + esc(s.first) + "，最近一次打卡 " + esc(s.last) + "。</p>"
-        : '<p class="cal-foot">还没有打卡记录。</p>') +
-      '<p class="cal-note">这些数据只存在这台机器的浏览器里，' +
-      "不上传、不注册，换台机器就看不到。</p>" +
       "</section>";
   }
 
@@ -8499,7 +8050,7 @@
       { id: "tt", n: "文本分析", on: 1,
         w: "读入本地文档或粘贴文本，统计术语出现与分布，看清一批材料在谈什么。",
         s: "写文献综述前先摸清一批材料都在谈什么，或回头检查自己写的段落术语用得对不对。" },
-      { id: "qs", n: "引文速查", on: 1,
+      { id: "qs", n: "原典引文检索", on: 1,
         w: "按关键词、出处或章节名，在已核过页码的原典引文里查原句与出处。",
         s: "写论文要引《资本论》原文时，不必再翻书核页码，直接用核过的版本。" },
       { id: "ct", n: "概念对照表", on: 1,
@@ -8513,9 +8064,6 @@
       { id: "kw", n: "检索词与检索式", on: 1,
         w: "把词条译成数据库认的检索式，并给出同义与近义表达。",
         s: "上知网检索文献之前先把检索式定下来，避免漏检或检索过窄。" },
-      { id: "ref", n: "参考文献汇总", on: 1,
-        w: "把引过的文献汇成一份表，按 GB/T 7714—2015 排好著录格式。",
-        s: "写文献综述时批量取格式，不用一条条手敲；顺带看清哪几条引注拿不出手。" },
       { id: "nb", n: "笔记板", on: 1,
         w: "按词条记笔记，随读随写，可整份导出带走。",
         s: "论文某一节写不动时，回看此前零散记下的想法。" },
@@ -8533,9 +8081,6 @@
       { id: "cards", n: "生词卡导出", on: 1,
         w: "把标过的生词导出成卡片，打印或另存都行。",
         s: "想离开电脑、用手机或纸卡背术语时。" },
-      { id: "cal", n: "学习体检", on: 1,
-        w: "看自己读了多少、测得怎样、哪些门类还空着。",
-        s: "读了一阵子之后回头看：哪一块其实没读进去，今天该先补哪五条。" }
     ]},
     { g: "分析与教学", d: "把概念之间的关系讲清楚，把内容拿去讲。", items: [
       { id: "path", n: "概念关系图编辑器", on: 1,
@@ -8595,7 +8140,7 @@
         }).join("") + "</div>";
     }).join("") +
       '<div class="np-foot"><a href="#/tools"><b>工具台总览</b>' +
-      "<i>十六件一览：" + TOOL_ON + " 件能用，" +
+      "<i>十四件一览：" + TOOL_ON + " 件能用，" +
       (TOOL_FLAT.length - TOOL_ON) + " 件在规划</i></a></div>";
   }
 
@@ -8649,14 +8194,16 @@
       ((taxById("domain") || {}).cats || []).map(function (c) {
         return '<option value="' + esc(c.id) + '">' + esc(c.name) + "</option>";
       }).join("");
-    var refKindOpts = '<option value="all">全部类型</option>' +
-      Object.keys(REF_KINDNAME).map(function (k) {
-        return '<option value="' + k + '">' + esc(REF_KINDNAME[k]) + "</option>";
-      }).join("");
     var mtScopeOpts = '<option value="all">全部词条</option><option value="de">仅有德文原名</option>' +
       ((taxById("domain") || {}).cats || []).map(function (c) {
         return '<option value="d:' + esc(c.id) + '">' + esc(c.name) + "</option>";
       }).join("");
+    /* v57：板块批量筛选——一组可多选的勾选块，与上面的单选范围、搜索词叠加生效 */
+    var mtDomChips = ((taxById("domain") || {}).cats || []).map(function (c) {
+      return '<label class="df-word"><input type="checkbox" data-dom="' + esc(c.id) + '">' +
+        esc(c.short || c.name) + "</label>";
+    }).join("") +
+      '<button type="button" class="tbtn" data-act="mt-dom-clear">清空板块</button>';
 
     /* 十一件能用的工具，各是一段现成界面；规划中的由 planPanel 兜底。
        全部留在 DOM 里、只给非当前那几段加 hidden——切回来时输入不丢、
@@ -8692,7 +8239,7 @@
       "</section>",
 
       qs: '<section class="tool-card" id="qs">' +
-        "<h2>引文速查与格式化</h2>" +
+        "<h2>原典引文检索</h2>" +
         '<p class="tool-sub">在站内已核的原典引文里按关键词检索。' +
         "只收已逐字补入的引文（待补录的条目没有引文可查）；" +
         "命中卡片可直接复制为<b>脚注体例</b>（引文＋出处）或 <b>GB/T 7714</b> 著录格式；" +
@@ -8732,45 +8279,18 @@
         '<div id="kw-out"></div>' +
       "</section>",
 
-      ref: '<section class="tool-card" id="ref">' +
-        "<h2>参考文献汇总</h2>" +
-        '<p class="tool-sub">把「学界争鸣」栏的全部引注拆开、去重、排序，转成 GB/T 7714—2015 著录格式。' +
-        "同一篇文献被多条词条引到的合并为一条，并记下它出现在哪些词条里。" +
-        "缺刊名、年期或网址的引注一律单列出来——宁可缺，也不替它补一个看着整齐的出处。</p>" +
-        '<div class="qs-bar">' +
-          '<input type="search" id="ref-q" class="qs-input" placeholder="按作者、篇名、刊名或关联词条筛……">' +
-          '<select id="ref-by" class="qs-select" aria-label="排序方式">' +
-            '<option value="author">按作者音序</option>' +
-            '<option value="year">按发表年份</option>' +
-            '<option value="kind">按文献类型</option>' +
-            '<option value="terms">按被引次数</option>' +
-          "</select>" +
-          '<select id="ref-kind" class="qs-select" aria-label="按文献类型筛选">' + refKindOpts + "</select>" +
-        "</div>" +
-        '<div class="wa-acts cm-noprint">' +
-          '<button class="tt-btn primary" type="button" data-act="wa-ref-xlsx">导出 xlsx（分类型）</button>' +
-          '<button class="tt-btn" type="button" data-act="wa-ref-word">导出参考文献表 Word</button>' +
-          '<button class="tt-btn" type="button" data-act="wa-ref-md">复制 Markdown</button>' +
-        "</div>" +
-        '<div id="ref-out"></div>' +
-      "</section>",
-
       nb: '<section class="tool-card" id="nb">' +
-        "<h2>笔记板</h2>" +
-        '<p class="tool-sub">把散在各词条下的笔记汇总到一处，按知识板块重排。' +
-        "笔记仍存在本机学习记录里，这里只是换个角度捞出来——写论文某一节卡住时，" +
-        "回看此前零散记下的想法。</p>" +
+        "<h2>笔记板 · 思维导图</h2>" +
+        '<p class="tool-sub">一张可拖拽的画布：双击节点改文字，点选后按「＋」长出子节点，' +
+        "把读到的想法整理成一棵导图。也可以从词条导入——词条页「我的笔记」里写过的内容会一并带上。</p>" +
         '<div class="qs-bar">' +
-          '<select id="nb-group" class="qs-select" aria-label="分组方式">' +
-            '<option value="dom">按知识板块分组</option>' +
-            '<option value="flat">不分，按音序排</option>' +
-          "</select>" +
+          '<input type="search" id="nbm-term" class="qs-input" placeholder="输入词条名，导入为子节点……">' +
+          '<button class="tt-btn primary" type="button" data-act="nbm-import">导入词条</button>' +
+          '<button class="tt-btn" type="button" data-act="nbm-add" data-id="1">新建节点</button>' +
+          '<button class="tt-btn" type="button" data-act="nbm-md">导出 Markdown</button>' +
         "</div>" +
-        '<div class="wa-acts cm-noprint">' +
-          '<button class="tt-btn primary" type="button" data-act="wa-nb-word">导出 Word</button>' +
-          '<button class="tt-btn" type="button" data-act="wa-nb-md">导出 Markdown</button>' +
-        "</div>" +
-        '<div id="nb-out"></div>' +
+        '<p class="nbm-msg" id="nbm-msg" role="status" aria-live="polite"></p>' +
+        '<div id="nbm-wrap"></div>' +
       "</section>",
 
       mt: '<section class="tool-card" id="mt">' +
@@ -8781,6 +8301,7 @@
           '<input type="search" id="mt-q" class="qs-input" placeholder="按中文、英文、德文、别名或拼音检索……">' +
           '<select id="mt-scope" class="qs-select" aria-label="筛选范围">' + mtScopeOpts + "</select>" +
         "</div>" +
+        '<div class="df-words mt-doms" id="mt-doms" role="group" aria-label="按知识板块批量筛选">' + mtDomChips + "</div>" +
         '<div class="wa-acts cm-noprint">' +
           '<button class="tt-btn primary" type="button" data-act="wa-mt-xlsx">导出 xlsx</button>' +
           '<button class="tt-btn" type="button" data-act="wa-mt-csv">导出 CSV</button>' +
@@ -8793,7 +8314,6 @@
       /* 学习与记忆四件各自现算，函数在文件上方「学习与记忆」段里 */
       quiz: quizPanel(),      srs: srsPanel(),
       cards: cardsPanel(),
-      cal: calPanel(),
 
       /* 分析与教学四件：函数在文件上方「分析与教学」段里 */
       path: pathPanel(),
@@ -8809,9 +8329,9 @@
 
     var head = '<h1 class="page-title">工具台</h1>' +
       '<p class="note">这个站除了能查，还应当能干活。现下能用的是<b>' + TOOL_ON + " 件</b>：" +
-      "<b>文本分析</b>一件（六种分析）、<b>引文速查</b>、<b>概念对照表</b>、" +
-      "<b>写作台</b>、<b>检索词与检索式</b>、<b>参考文献汇总</b>、<b>笔记板</b>、<b>多语术语对照表</b>、" +
-      "<b>自测引擎</b>、<b>间隔重复卡</b>、<b>生词卡导出</b>、<b>学习体检</b>、" +
+      "<b>文本分析</b>一件（六种分析）、<b>原典引文检索</b>、<b>概念对照表</b>、" +
+      "<b>写作台</b>、<b>检索词与检索式</b>、<b>笔记板</b>、<b>多语术语对照表</b>、" +
+      "<b>自测引擎</b>、<b>间隔重复卡</b>、<b>生词卡导出</b>、" +
       "<b>概念关系图编辑器</b>、<b>概念计算器</b>、<b>大事年表</b>、<b>讲义与投影模式</b>，" +
       "另有导航栏的<b>三卷目录树</b>、顶栏的<b>全文检索</b>（词条之外，原典引文、争鸣观点与自己的笔记也在检索范围内）。" +
       "全部在本机跑，文件不上传、不联网。" +
@@ -9003,15 +8523,15 @@
   }
 
   /* 使用手册：按「怎么用这个站」组织，分三部分 ——
-     平台的目的与定位、画传与关系图、十六件工具。
+     平台的目的与定位、画传与关系图、十四件工具。
      这一页不写站点怎么做的、用了什么技术，也不列内部参数与存储细节。 */
   function viewManual() {
-    /* 十六件工具：名称 / 目的 / 用法。四组与工具台的四个分组一致。 */
+    /* 十四件工具：名称 / 目的 / 用法。四组与工具台的四个分组一致。 */
     var GROUPS = [
       ["阅读辅助", "把材料读进来，把可引的原典取出来。", [
         ["文本分析", "统计一批材料的术语出现与分布，判断它实际在谈什么。",
-          "把 .docx／.pdf／.txt 拖入页面，或直接粘贴文字，点「分析」。概念识别按长名优先，六种结果分表列出，可分别导出 xlsx；单次文字量有上限，超出时取前段并告知。"],
-        ["引文速查", "在已核页码的原典引文中按关键词、出处或章节名查原句。",
+          "把 .docx／.pdf／.txt 拖入页面，或直接粘贴文字，点「分析」。概念识别按长名优先，六种结果分表列出，可分别导出 xlsx；结论可一键复制为分析摘要，聚类网络图可按簇或按知识板块着色并导出 PNG。单次文字量有上限，超出时取前段并告知。"],
+        ["原典引文检索", "在已核页码的原典引文中按关键词、出处或章节名查原句。",
           "输入词语、出处或章节名，可限定来源。卡片可复制为脚注体例，或复制为 GB/T 7714 著录格式；待补录者无引文可查，出处要素不全者不给著录按钮。"],
         ["概念对照表", "把两至四条易混概念并排比较，辨析异同。",
           "输入词条名、别名、英文名或拼音首字母，选定二至四条，表格按一句话释义、标准释义、原典直引、英文与德文原名逐行对照；复制为 Markdown 表格。"],
@@ -9021,12 +8541,10 @@
           "新建文稿并填标题，左侧逐节添加，右侧放入原典引文、争鸣立场、我的笔记、自撰段落四类卡片；词条页可一键收入引文与立场。导出 Word 时引文转为真脚注，文末文献按出现顺序自动排定。"],
         ["检索词与检索式", "在上数据库检索之前先把检索式定下来，免漏检，也免过窄。",
           "选择知识板块，即得该板块全部词条、别名与官方外译名，并拼成可直接粘贴的检索式；同义与近义表达一并列出，可导出 Word。"],
-        ["参考文献汇总", "把争鸣栏所引文献汇总去重，统一转为著录格式。",
-          "页面自动汇集全部引注，同一文献合并并注明出现于哪些词条；可按作者、年份、类型或引用次数排序与筛选；导出 xlsx（按类型分表）、Word，或复制 Markdown。缺项者单列，不代为补齐。"],
-        ["笔记板", "把散在各词条下的笔记汇总一处，换个角度重读。",
-          "按知识板块或按音序重排全部笔记，可逐条回看；需要留存时导出 Word 或 Markdown。"],
+        ["笔记板", "把读到的想法整理成一棵思维导图。",
+          "新建节点、双击改文字，点选后按「＋」长出子节点，节点可拖动摆位；也可输入词条名导入为子节点（词条页「我的笔记」会一并带上）。图只存在本机浏览器里，可导出 Markdown。"],
         ["多语对照表", "核对同一概念的中、英、德三种写法，供读外文与写摘要之用。",
-          "按中文、英文、德文、别名或拼音检索，范围可限定为全部词条、仅有德文原名者或某一板块；导出 xlsx、CSV、Word，或复制 Markdown。德文原名只覆盖哲学类词条，留空即表示未收。"],
+          "按中文、英文、德文、别名或拼音检索，范围可限定为全部词条、仅有德文原名者，也可勾选若干知识板块批量筛选（与检索词叠加生效）；导出 xlsx、CSV、Word，或复制 Markdown。德文原名只覆盖哲学类词条，留空即表示未收。"],
       ]],
       ["学习与记忆", "读过之后是否记住，要另行检验。", [
         ["自测引擎", "从站内词条现场出题，检验记忆的实际状态。",
@@ -9035,12 +8553,10 @@
           "逐张出示，自评「记得」「模糊」「忘了」：记得则间隔拉长，模糊则缩短，忘了则次数清零、次日重来。需要重排时点「重新排期」。"],
         ["生词卡导出", "把词条制成卡片带走，供离开电脑时背诵。",
           "选定范围后导出 Anki CSV、可打印的对折卡 Word，或 Markdown 表格。Anki 桌面版选「文件—导入」，分隔符选逗号，勾选允许 HTML。"],
-        ["学习体检", "把学习记录折成一张能力画像，指出哪一块薄弱。",
-          "查看掌握度总表（按知识板块分行）、薄弱环节排序与「今日补强」五条，以及近 26 周打卡热力图与已读进度曲线。掌握度由已读率、正确率、笔记覆盖率、复习按时率按四、三、二、一加权。"],
       ]],
       ["分析与教学", "想清楚，再讲出去。", [
         ["概念关系图编辑器", "在平台所给关系之上，自建一张可讲解的图。",
-          "检索术语，其关联连同关系与强度一并铺到画布；拖动摆位，从节点边缘拉线新建关系；节点可改名分色、可锁定，连线可改类型与强度、可反转方向；支持自动布局，可导出图文件或图片。共现只表明相近，讲解时须与前五类分清。"],
+          "检索术语，可把它连同直接关联一并铺到画布，也可只加词条本体的节点；拖动摆位，从节点边缘拉线新建关系；节点可改名分色、可锁定，连线可改类型与强度、可反转方向；支持自动布局，可导出图文件或图片。共现只表明相近，讲解时须与前五类分清。"],
         ["概念计算器", "把代入过程写出来，看清哪一个量进了分母。",
           "择一式：剩余价值率、剩余价值量与年剩余价值率、资本有机构成、利润率、周转次数、资本总公式。按提示填数，即得结果与逐步代入；单位自定，前后一致即可。"],
         ["大事年表", "三条时间线并置，解决此事在哪一年、当时书出到何处。",
@@ -9066,12 +8582,12 @@
          setHashQuiet 会把地址栏改成非路由的片段，刷新就落到兜底页。 */
       '<a href="#/manual" data-act="jump" data-target="man-1"><i>一</i>目的与功能定位</a>' +
       '<a href="#/manual" data-act="jump" data-target="man-2"><i>二</i>画传与关系图</a>' +
-      '<a href="#/manual" data-act="jump" data-target="man-3"><i>三</i>十六件工具</a></nav>';
+      '<a href="#/manual" data-act="jump" data-target="man-3"><i>三</i>十四件工具</a></nav>';
 
     return '<p class="crumb"><a href="#/">首页</a> / 使用手册</p>' +
       '<h1 class="page-title">使用手册</h1>' +
       '<p class="note">本手册分三部分：先说这个站是做什么的，再说画传与关系图两处该怎么看，' +
-      "最后逐件说明十六件工具的用途与用法。</p>" + toc +
+      "最后逐件说明十四件工具的用途与用法。</p>" + toc +
 
       manualSec("man-1", "一", "目的与功能定位",
         "<p>本平台是一部围绕《资本论》及其理论体系的术语学习与研究辅助工具。" +
@@ -9084,9 +8600,9 @@
         "<p>四条功能线共用同一份词条数据，故任一条线上的所得均可为其余各线所用：</p>" +
         '<ul class="man-lines">' +
         "<li><b>读</b>总览、词条页、画传 —— 系统通读，或按知识板块与原著次序铺开全局。</li>" +
-        "<li><b>查</b>全文检索、拼音索引、标签索引、引文速查 —— 只记得大意时定位词条，核对原句出处。</li>" +
-        "<li><b>练</b>自测、间隔重复、生词卡、学习体检 —— 检验记忆，安排复习，看薄弱环节。</li>" +
-        "<li><b>写与讲</b>写作台、检索式、参考文献、讲义 —— 成文、投稿、领读与课堂讲授。</li>" +
+        "<li><b>查</b>全文检索、拼音索引、标签索引、原典引文检索 —— 只记得大意时定位词条，核对原句出处。</li>" +
+        "<li><b>练</b>自测、间隔重复、生词卡 —— 检验记忆，安排复习。</li>" +
+        "<li><b>写与讲</b>写作台、检索式、概念对照表、讲义 —— 成文、投稿、领读与课堂讲授。</li>" +
         "</ul>" +
         "<p><b>使用前提。</b>已读标记、笔记、生词、错题、复习排期、稿件与书签均保存在所用浏览器中，" +
         "换设备、换浏览器或清理浏览器数据即不再保留；需长期保存者，请用各工具的导出功能另存。" +
@@ -9130,7 +8646,7 @@
         '<p class="man-edge"><b>一处边界。</b>图上的路径与联想，反映编者对这些概念先后与从属的排布，' +
         "不是原著逐句写明的推导次序，也无逐句页码依据。理清思路、组织讲授可行，作引文依据则不可。</p>") +
 
-      manualSec("man-3", "三", "十六件工具",
+      manualSec("man-3", "三", "十四件工具",
         '<p class="man-sub">工具台按用途分四组，与下列四组一致。每件均在本机运行，输入的内容不上传。</p>' +
         toolBody);
   }
@@ -11463,6 +10979,7 @@
       else if (act === "hist-back") histBack();
       else if (act === "link") copyText(location.href, el);
       else if (act === "tt-run") { renderTextTool(); renderTa(); }
+      else if (act === "mt-dom-clear") { MT.doms = []; renderMt(); }   /* v57：板块筛选一键清空 */
       else if (act === "ta-xlsx") {
         var sheets = taSheets(el.getAttribute("data-k"));
         if (sheets) taDownload("文本分析-" + el.getAttribute("data-k") + ".xlsx", sheets);
@@ -11471,7 +10988,7 @@
         var pngHost = document.getElementById(el.getAttribute("data-target") || "ta-net");
         if (pngHost) exportGraphPng(pngHost.querySelector("svg"), el.getAttribute("data-file") || "聚类网络图.png");
       }
-      /* —— 写作辅助：检索词与检索式 · 参考文献汇总 · 笔记板 · 多语术语对照表 —— */
+      /* —— 写作辅助：检索词与检索式 · 笔记板 · 多语术语对照表 —— */
       else if (act === "kw-pick") {
         KW.dom = el.getAttribute("data-dom") || "";
         renderKw();
@@ -11484,11 +11001,15 @@
         if (nq) nq.focus();
       }
       else if (act === "wa-kw-word") docxDownload(cmFileName("检索词与检索式", "docx"), kwBlocks());
-      else if (act === "wa-ref-xlsx") taDownload(cmFileName("参考文献汇总", "xlsx"), refSheets());
-      else if (act === "wa-ref-word") docxDownload(cmFileName("参考文献", "docx"), refBlocks());
-      else if (act === "wa-ref-md") copyText(refMarkdown(), el);
-      else if (act === "wa-nb-word") docxDownload(cmFileName("读书笔记", "docx"), nbBlocks());
-      else if (act === "wa-nb-md") dlText(cmFileName("读书笔记", "md"), nbMarkdown(), "text/markdown;charset=utf-8");
+      else if (act === "nbm-add") { nbMapLoad(); nbMapAdd(+el.getAttribute("data-id") || 1, ""); renderNbMap(); }
+      else if (act === "nbm-del") { nbMapDel(+el.getAttribute("data-id")); renderNbMap(); }
+      else if (act === "nbm-md") dlText(cmFileName("笔记导图", "md"), nbMapMarkdown(), "text/markdown;charset=utf-8");
+      else if (act === "nbm-import") {
+        var nbmIn = document.getElementById("nbm-term");
+        var r = nbMapImport(nbmIn ? nbmIn.value : "");
+        if (r && r.node) { nbmIn.value = ""; nbMapSay("已把「" + r.term.term + "」导入为子节点。"); renderNbMap(); }
+        else nbMapSay("没找到这条词条：输完整的词条名或别名再试。");
+      }
       else if (act === "wa-mt-xlsx") taDownload(cmFileName("多语术语对照表", "xlsx"),
         [{ name: "术语对照表", rows: mtRows() }]);
       else if (act === "wa-mt-csv") dlText(cmFileName("多语术语对照表", "csv"), "\ufeff" + mtCsv(), "text/csv;charset=utf-8");
@@ -11555,35 +11076,6 @@
       else if (act === "pj-next") pjGo(1);
       else if (act === "pj-prev") pjGo(-1);
       else if (act === "pj-lg") { PJ.lg = !PJ.lg; pjRender(); }
-      /* —— 学习体检：报告导出 / 补强清单进讲义 / 按薄弱面出题 / 投影 / 格内批量加课 —— */
-      else if (act === "hc-word") docxDownload(cmFileName("学习体检报告", "docx"), hcBlocks());
-      else if (act === "hc-fill") {
-        var hcN = 0;
-        hcPlan(5, hcWeak(hcCells())).forEach(function (x) { if (hdAdd(x.t.id)) hcN++; });
-        renderHd();
-        hcSay(hcN ? "补强清单里有 " + hcN + " 条是新的，已进讲义（去「讲义与投影模式」看）。"
-          : "这五条都已经在讲义里了。");
-      }
-      else if (act === "hc-add") { if (hdAdd(el.getAttribute("data-id"))) renderHd(); hcSay("已加进讲义。"); }
-      else if (act === "hc-cell") {
-        var did = el.getAttribute("data-d");
-        var hcN2 = 0;
-        TERMS.forEach(function (t) {
-          if (t.domain === did && hdAdd(t.id)) hcN2++;
-        });
-        renderHd();
-        hcSay(hcN2 ? "这一个板块新加了 " + hcN2 + " 条进讲义。" : "这个板块的词条都已经在讲义里了。");
-      }
-      else if (act === "hc-quiz") {
-        var sc2 = el.getAttribute("data-scope") || "all";
-        QZ.scope = sc2;
-        quizReset(sc2, 10);
-        qzRepaint();
-        hcSay("已按这一范围备好 10 道题——去「自测引擎」开始。");
-      }
-      else if (act === "hc-pj") {
-        pjOpen(hcPlan(5, hcWeak(hcCells())).map(function (x) { return x.t; }), 0);
-      }
       /* —— 写作台：结构操作重绘面板，正文编辑在 bindWriter 里就地写回 —— */
       else if (act === "wt-add-term") {
         wtEnsure();
@@ -12312,15 +11804,10 @@
       docxBuild: docxBuild,
       kwHit: kwHit,
       kwExpr: kwExpr,
-      refParse: refParse,
-      refGB: refGB,
-      refIndex: refIndex,
-      refSheets: refSheets,
-      refBlocks: refBlocks,
-      refCounts: refCounts,
       mtRows: mtRows,
-      nbBlocks: nbBlocks,
-      nbMarkdown: nbMarkdown,
+      nbMap: function () { nbMapLoad(); return NBM; },
+      nbMapAdd: nbMapAdd,
+      nbMapMarkdown: nbMapMarkdown,
       /* 学习与记忆四件：出题、排期、卡片、日历各挂一个入口，自测脚本逐个验 */
       quizPool: quizPool,
       quizBuild: quizBuild,
@@ -12334,8 +11821,6 @@
       cardCsv: cardCsv,
       cardBlocks: cardBlocks,
       cardMarkdown: cardMarkdown,
-      calStats: calStats,
-      calHeatHTML: calHeatHTML,
       /* 滚动入场与标题强调字（v10）：自测要验 .rv/.rv-in 真的挂上、书名号真的包了楷体 */
       rvScan: rvScan,
       /* 门类卡配图与错峰入场（v30） */
@@ -12350,7 +11835,6 @@
          站内这套 SVG 力导引实现连同它的搜索与聚焦子图一并撤掉，故此处不再出口。 */
       catCover: function () { return CAT_COVER; },
       hlTitle: hlTitle,
-      calCurveSVG: calCurveSVG,
       /* 分析与教学四件：路径、算式、年表、讲义各挂入口 */
       pathModes: function () { return PTH_MODE; },
       pathBuild: pathBuild,
@@ -12394,11 +11878,6 @@
       readerIdx: readerBuildIdx,
       readerLookup: readerLookup,
       readerDropLookup: readerDropLookup,
-      hcScore: hcScore,
-      hcCells: hcCells,
-      hcWeak: hcWeak,
-      hcPlan: hcPlan,
-      hcBlocks: hcBlocks,
       deepSearch: deepSearch,
       deepFlash: deepFlash,
       hlSnippet: hlSnippet,

@@ -6022,3 +6022,89 @@ html[data-theme="dark"] {
   .man-toc, .man-edge { display: none; }
   .man-item { break-inside: avoid; }
 }
+
+/* ══════════════ 笔记板 · 思维导图（v63） ══════════════
+   画布是一块可滚动的大世界（1600×900），节点绝对定位其上，连线是一张
+   垫底的 SVG。全部取语义令牌，[data-theme="dark"] 自动跟随。 */
+.nbm-canvas {
+  position: relative;
+  width: 100%; height: 540px;
+  overflow: auto;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.nbm-svg { position: absolute; left: 0; top: 0; pointer-events: none; }
+.nbm-edge {
+  fill: none;
+  stroke: var(--rule-2);
+  stroke-width: 1.6;
+  opacity: .9;
+}
+.nbm-node {
+  position: absolute;
+  width: 168px; min-height: 26px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--paper);
+  border: 1.5px solid var(--rule-2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+  font-size: .85rem; line-height: 1.5;
+  color: var(--ink-2);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.nbm-node:active { cursor: grabbing; }
+.nbm-root {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+  color: #f7f1e5;
+  font-weight: 600;
+}
+.nbm-sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
+.nbm-txt { display: block; word-break: break-word; }
+.nbm-node textarea {
+  display: block; width: 100%;
+  border: none; outline: none; resize: none;
+  background: transparent;
+  font: inherit; color: inherit;
+}
+.nbm-btns {
+  position: absolute; top: -11px; right: -8px;
+  display: none; gap: 3px;
+}
+.nbm-node:hover .nbm-btns, .nbm-sel .nbm-btns { display: flex; }
+.nbm-btns button {
+  width: 21px; height: 21px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--rule-2);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-size: .8rem; line-height: 1;
+  cursor: pointer;
+}
+.nbm-btns button:hover {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+  color: #f7f1e5;
+}
+.nbm-msg { min-height: 1.4em; margin: .4rem 0 0; font-size: .85rem; color: var(--ink-3); }
+@media (max-width: 860px) {
+  .nbm-canvas { height: 420px; }
+}
+
+/* ============ v57：多语对照表 · 板块批量筛选 + 列宽自适应 ============ */
+/* 板块勾选行：复用 df-words 的 chip 形制，补一个与导出按钮的间距 */
+.mt-doms { margin: .35rem 0 .1rem; }
+.mt-doms .tbtn { margin-left: .3rem; }
+/* 列宽自适应：表格本来就是 auto 布局，问题是「别名」一列 nowrap 会被一长串
+   别名撑出横向滚动——只放开这一列换行（中文/英文/德文仍是 nowrap 保持紧凑），
+   并给上下限，窄了不挤、宽了不失控。 */
+.mt-tbl td:nth-child(4) {
+  white-space: normal;
+  word-break: break-word;
+  min-width: 9rem;
+  max-width: 24rem;
+}

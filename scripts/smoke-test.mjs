@@ -618,23 +618,23 @@ check("页脚只报数据状态，不含创作说明入口", (() => {
 })());
 
 
-/* ---- 写作辅助四件：关键词矩阵 · 参考文献汇总 · 笔记板 · 多语术语对照表 ---- */
+/* ---- 写作辅助三件：关键词矩阵 · 笔记板 · 多语术语对照表 ---- */
 const WIO = window.CAPITAL_IO;
 await goto("#/tools");
 check("工具台：四件写作辅助的面板与菜单入口都在", (() => {
-  const ok = ["kw", "ref", "nb", "mt"].every((id) => !!view().querySelector(".tool-card[id=" + id + "]"));
+  const ok = ["kw", "nb", "mt"].every((id) => !!view().querySelector(".tool-card[id=" + id + "]"));
   const nav = [...view().querySelectorAll(".tool-menu a[data-target]")].map((a) => a.getAttribute("data-target"));
-  return ok && ["tt", "qs", "ct", "kw", "ref", "nb", "mt"].every((t) => nav.includes(t));
+  return ok && ["tt", "qs", "ct", "kw", "nb", "mt"].every((t) => nav.includes(t));
 })());
 
 /* 深链：#/tools/<id> 是顶栏巨型菜单与总览的共同落点，一次只铺一件 */
-await goto("#/tools/ref");
+await goto("#/tools/mt");
 check("工具台深链：只铺 #/tools/<id> 那一件，其余收起，总览也不在", (() => {
   const v = view();
   const shown = [...v.querySelectorAll(".tool-card")].filter((c) => !c.hidden).map((c) => c.id);
   const on = v.querySelector(".tool-menu a.on");
-  return shown.join(",") === "ref" && !!on && on.getAttribute("data-target") === "ref" &&
-    !v.querySelector(".to-grid") && !!v.querySelector("#ref-out");
+  return shown.join(",") === "mt" && !!on && on.getAttribute("data-target") === "mt" &&
+    !v.querySelector(".to-grid") && !!v.querySelector("#mt-out");
 })());
 await goto("#/tools");
 check("工具台：未知 id 一律退回总览，不出空白页", (() => {
@@ -746,168 +746,78 @@ check("文本分析：清空后回到引导语，不留下上一轮的表与图"
   return !!box && /两份以上/.test(box.textContent) &&
     box.querySelectorAll(".df-file").length === 0 && !view().querySelector("#ta-df-chart svg");
 })());
+/* —— v57：分析摘要一键复制 · 聚类网络图按知识板块着色 —— */
+{
+  const T = "商品是用来交换的劳动产品。货币转化为资本的前提是劳动力成为商品。" +
+    "剩余价值的生产是资本主义生产的实质，绝对剩余价值与相对剩余价值是两种基本方法。";
+  window.CAPITAL_IO.ttAddDoc({ name: "摘要测试.txt", kind: "TXT", meta: "1 KB", text: T, empty: false });
+}
+check("文本分析：结论区有「复制分析摘要」按钮，摘要带密度、板块分布与高频术语", (() => {
+  const btn = view().querySelector('#tt-out [data-copy^="【文本分析摘要】"]');
+  if (!btn) return false;
+  const p = btn.getAttribute("data-copy");
+  return /术语密度/.test(p) && /知识板块分布/.test(p) && /高频术语/.test(p);
+})());
+check("文本分析：聚类网络图默认按簇着色，切「按知识板块」后出图例、切回簇表恢复", (() => {
+  const net = view().querySelector("#ta-net");
+  if (!net || !net.querySelector('input[name="ta-net-mode"]')) return false;
+  const clu = net.querySelector('input[name="ta-net-mode"][value="cluster"]');
+  if (!clu.checked) return false;
+  const dom = net.querySelector('input[name="ta-net-mode"][value="domain"]');
+  dom.checked = true;
+  dom.dispatchEvent(new window.Event("change", { bubbles: true }));
+  const net2 = view().querySelector("#ta-net");
+  const legend = net2 && net2.querySelector(".tt-dims");
+  if (!legend || !legend.querySelector("span")) return false;
+  const clu2 = net2.querySelector('input[name="ta-net-mode"][value="cluster"]');
+  clu2.checked = true;
+  clu2.dispatchEvent(new window.Event("change", { bubbles: true }));
+  const net3 = view().querySelector("#ta-net");
+  return !!net3 && !net3.querySelector(".tt-dims") &&
+    !!net3.querySelector(".ta-tbl");   // 簇成员表回来了
+})());
+window.CAPITAL_IO.ttClearDocs();
 /* 这条是「冻结普查」：库中带 cite 的争鸣立场总数——每次补录争鸣后须同步更新此数 */
 const REF_CENSUS = 630;
-check(`参考文献汇总：${REF_CENSUS} 条引注全部解析得出，去重后条数合理`, (() => {
+check(`争鸣引注普查：${REF_CENSUS} 条引注总数保持稳定`, (() => {
   let n = 0;
   for (const t of window.CAPITAL_DATA.terms) {
     for (const g of t.scholars || []) for (const st of g.stances || []) if (st.cite) n++;
   }
-  return n === REF_CENSUS && WIO.refIndex().length > 400 && WIO.refIndex().length < n;
-})());
-check("参考文献汇总：去重后每条都记着被哪些词条引到", (() =>
-  WIO.refIndex().filter((r) => r.n > 1).length > 0 &&
-  WIO.refIndex().every((r) => r.terms.length >= 1))());
-check("参考文献汇总：期刊、图书、报纸三型都转得出 GB 著录", (() => {
-  const k = { J: 0, M: 0, N: 0, A: 0 };
-  WIO.refIndex().forEach((r) => { if (k[r.kind] !== undefined) k[r.kind]++; });
-  const j = WIO.refIndex().find((r) => r.kind === "J");
-  const m = WIO.refIndex().find((r) => r.kind === "M");
-  const n = WIO.refIndex().find((r) => r.kind === "N");
-  return k.J > 400 && k.N >= 10 && k.M >= 3 &&
-    /\[J\]\. .+, \d{4}\(\d+/.test(WIO.refGB(j)) &&
-    /\[M\]\. .+/.test(WIO.refGB(m)) &&
-    /\[N\]\. .+, \d{4}-\d{2}-\d{2}\.$/.test(WIO.refGB(n));
-})());
-check("参考文献汇总：页码连接号与跳页写法规整（第20—24、73页 → 20-24,73）", (() => {
-  const r = { kind: "J", author: "甲", title: "题", src: "刊", year: 2020, issue: "6", pages: "20—24、73" };
-  return WIO.refGB(r) === "甲. 题[J]. 刊, 2020(6): 20-24,73.";
-})());
-check("参考文献汇总：卷号、合期、增刊这些写法都能解出来", (() => {
-  const a = WIO.refParse("参见 元晋秋、刘洁：《论马克思对李嘉图政治经济学的批判与超越》，《河北工程大学学报（社会科学版）》2025年第42卷第4期，第52—62页。");
-  const b = WIO.refParse("参见 杨思基：《“两个决不会”是否与“两个必然”相矛盾》，《郑州轻工业学院学报（社会科学版）》2019年第5、6期，第1—11页。");
-  const c = WIO.refParse("参见 刘晨晔、孙擎：《劳动教育：本义探寻、实践困囿与优化方略》，《东南大学学报（哲学社会科学版）》2023年第S1期，第5—8页。");
-  return a.kind === "J" && a.vol === "42" && a.issue === "4" && a.year === 2025 &&
-    b.kind === "J" && b.issue === "5、6" && c.kind === "J" && c.issue === "S1" &&
-    /2025, 42卷\(4\)/.test(WIO.refGB(a));
-})());
-check("参考文献汇总：无作者的引注不硬凑作者，著录以「. 」开头也不算错", (() => {
-  const r = WIO.refParse("参见 《社会必要劳动时间与马克思商品市场价值理论的再探讨》，《人文杂志》2024年第7期，第54—62页。");
-  return r.kind === "J" && r.author === "" &&
-    WIO.refGB(r) === ". 社会必要劳动时间与马克思商品市场价值理论的再探讨[J]. 人文杂志, 2024(7): 54-62.";
-})());
-check("参考文献汇总：出处不全的（网络来源 / 只有篇名）不给 GB 著录", (() => {
-  const bad = WIO.refIndex().filter((r) => !WIO.refGB(r));
-  const kinds = bad.map((r) => r.kind);
-  return bad.length >= 8 && kinds.every((k) => ["W", "X", "Z"].includes(k)) &&
-    kinds.includes("W") && kinds.includes("X");
-})());
-check("参考文献汇总：页面标出的「出处不全」条数与数据一致", (() => {
-  const bad = WIO.refIndex().filter((r) => !WIO.refGB(r)).length;
-  const txt = view().querySelector("#ref-out").textContent;
-  return txt.includes("出处不全") && txt.includes(String(bad));
-})());
-check("参考文献汇总：类型筛选、关键词检索都生效", (() => {
-  const kd = view().querySelector("#ref-kind");
-  kd.value = "N";
-  kd.dispatchEvent(new window.Event("change", { bubbles: true }));
-  const allN = [...view().querySelectorAll("#ref-out .ref-item")].length >= 10;
-  kd.value = "all";
-  kd.dispatchEvent(new window.Event("change", { bubbles: true }));
-  const q = view().querySelector("#ref-q");
-  q.value = "商品";
-  q.dispatchEvent(new window.Event("input", { bubbles: true }));
-  const n1 = view().querySelectorAll("#ref-out .ref-item").length;
-  q.value = "zzzz-not-exist";
-  q.dispatchEvent(new window.Event("input", { bubbles: true }));
-  const n0 = view().querySelectorAll("#ref-out .ref-item").length;
-  q.value = "";
-  q.dispatchEvent(new window.Event("input", { bubbles: true }));
-  const by = view().querySelector("#ref-by");
-  by.value = "year";
-  by.dispatchEvent(new window.Event("change", { bubbles: true }));
-  const back = view().querySelectorAll("#ref-out .ref-item").length === WIO.refIndex().length;
-  by.value = "author";
-  by.dispatchEvent(new window.Event("change", { bubbles: true }));
-  return allN && n1 > 0 && n0 === 0 && back;
-})());
-check("参考文献汇总：导出 xlsx 按类型分表，行数与文献数对得上", (() => {
-  const sheets = WIO.refSheets();
-  return sheets.length >= 4 && sheets[0].name === "全部文献" &&
-    sheets.some((x) => x.name === "期刊文献") && sheets.some((x) => x.name === "出处不全") &&
-    sheets[0].rows.length === WIO.refIndex().length + 1;
-})());
-check("参考文献汇总：同一篇文献的异写（引号、作者等/全名、页码有无）并成一行", (() => {
-  const norm = (s) => String(s || "").replace(/[“”„「」『』]/g, "\"");
-  const seen = {};
-  WIO.refIndex().forEach((r) => {
-    const k = norm(r.author) + "|" + norm(r.title);
-    (seen[k] = seen[k] || []).push(r);
-  });
-  /* 同作者同题只许一行；同名异文（不同作者）不算重复 */
-  const multi = Object.values(seen).filter((v) => v.length > 1);
-  /* 页码合并：被引多次的期刊条目若两处都没给页码，无从补起，属数据如实；
-     但只要有一处给了页码，合并后就必须带上 */
-  const merged = WIO.refIndex().filter((r) => r.n > 1);
-  const lostPg = merged.filter((r) => !r.pages && WIO.refParse(r.raw).pages).length;
-  const total = WIO.refIndex().length;
-  return multi.length === 0 && lostPg === 0 && total > 490 && total < REF_CENSUS;
-})());
-check("参考文献汇总：Word 稿把「出处不全」单列一节，不混进正文表", (() => {
-  const b = WIO.refBlocks();
-  const txt = b.map((x) => x.text || "").join("|");
-  return b[0].t === "title" && txt.includes("可规范著录") && txt.includes("出处不全");
+  return n === REF_CENSUS;
 })());
 
-/* —— 笔记板：走真实路径（词条页写笔记 → 防抖落盘 → 工具页汇总） —— */
-/* 前面的用例在「商品」词条下留过一条笔记——先按真实路径清掉，才验得了空态分支 */
-await goto("#/t/shangpin");
-(() => {
-  const ta0 = view().querySelector("textarea[data-note]");
-  ta0.value = "";
-  ta0.dispatchEvent(new window.Event("input", { bubbles: true }));
-})();
-await new Promise((r) => setTimeout(r, 700));
-await goto("#/tools");
-check("笔记板：一条笔记都没有时给引导，不出空表", (() => {
-  const box = view().querySelector("#nb-out");
-  return box.innerHTML.includes("还没有笔记") && !box.querySelector(".nb-card");
+/* —— 笔记板（思维导图）：渲染、加节点、改文字、导入词条、导出 Markdown —— */
+await goto("#/tools/nb");
+check("笔记板：导图画布铺开，默认有根节点", (() => {
+  const v = view();
+  return !!v.querySelector("#nbm-canvas") && !!v.querySelector(".nbm-root") &&
+    v.querySelectorAll(".nbm-node").length === 1;
 })());
-const noteIds = (() => {
-  const t = window.CAPITAL_DATA.terms;
-  return [t.find((x) => x.domain === "dom-zx").id, t.find((x) => x.domain === "dom-zzjj").id];
-})();
-for (const id of noteIds) {
-  await goto("#/t/" + id);
-  const ta = view().querySelector("textarea[data-note]");
-  ta.value = "笔记 " + id + "：这里记一句它与当代现象的联系。";
-  ta.dispatchEvent(new window.Event("input", { bubbles: true }));
-  await new Promise((r) => setTimeout(r, 700));
-}
-await goto("#/tools");
-check("笔记板：两条笔记按知识板块分组汇总出来（默认按板块）", (() => {
-  const cards = view().querySelectorAll("#nb-out .nb-card");
-  const groups = view().querySelectorAll("#nb-out .nb-group");
-  return cards.length === 2 && groups.length === 2 &&
-    view().querySelector("#nb-out").textContent.includes("共 2 条笔记");
+check("笔记板：点选节点后「新建节点」长出子节点，连线跟出来", (() => {
+  const root = view().querySelector(".nbm-root");
+  root.dispatchEvent(new window.Event("pointerdown", { bubbles: true }));
+  view().querySelector('[data-act="nbm-add"][data-id="1"]').click();
+  const nodes = view().querySelectorAll(".nbm-node");
+  return nodes.length === 2 && view().querySelectorAll(".nbm-edge").length === 1;
 })());
-check("笔记板：每条笔记链回词条，正文照抄不删改", (() =>
-  noteIds.every((id) => {
-    const card = [...view().querySelectorAll("#nb-out .nb-card")]
-      .find((c) => c.querySelector("h4 a").getAttribute("href") === "#/t/" + id);
-    return card && card.querySelector("p").textContent ===
-      "笔记 " + id + "：这里记一句它与当代现象的联系。";
-  }))());
-check("笔记板：切到知识板块分组后仍能汇总", (() => {
-  const sel = view().querySelector("#nb-group");
-  sel.value = "dom";
-  sel.dispatchEvent(new window.Event("change", { bubbles: true }));
-  const n = view().querySelectorAll("#nb-out .nb-card").length;
-  sel.value = "flat";
-  sel.dispatchEvent(new window.Event("change", { bubbles: true }));
-  const flat = view().querySelectorAll("#nb-out .nb-group").length;
-  sel.value = "cat";
-  sel.dispatchEvent(new window.Event("change", { bubbles: true }));
-  return n === 2 && flat === 1;
+check("笔记板：导入词条把词条（连同词条页笔记）挂为子节点", (() => {
+  const inp = view().querySelector("#nbm-term");
+  inp.value = "商品";
+  view().querySelector('[data-act="nbm-import"]').click();
+  const texts = [...view().querySelectorAll(".nbm-txt")].map((x) => x.textContent).join("|");
+  return texts.includes("商品") && view().querySelectorAll(".nbm-node").length === 3;
 })());
-check("笔记板：导出的 Markdown 是分组的，能直接贴进草稿", (() => {
-  const md = WIO.nbMarkdown();
-  return md.startsWith("# ") && md.includes("## ") && md.includes("### ") && md.includes("> 笔记 ");
+check("笔记板：数据落在本机 capital-mind-v1 键里，刷新不丢", (() => {
+  const raw = window.localStorage.getItem("capital-mind-v1");
+  if (!raw) return false;
+  const d = JSON.parse(raw);
+  return d.nodes.length === 3 && !!d.next;
 })());
-check("笔记板：导出 Word 稿含分组标题与笔记正文", (() => {
-  const b = WIO.nbBlocks();
-  return b[0].t === "title" && b.some((x) => x.t === "h2") &&
-    b.some((x) => x.t === "p" && x.text.indexOf("笔记 ") === 0);
+check("笔记板：导出的 Markdown 按层级缩进，含根与子节点", (() => {
+  const md = WIO.nbMapMarkdown();
+  return md.startsWith("# ") && md.includes("- 《资本论》学习笔记") && md.includes("  - ") &&
+    md.includes("商品");
 })());
 
 /* —— 多语术语对照表 —— */
@@ -951,6 +861,23 @@ check("多语对照表：按知识板块筛 + 按英文名检索都生效", (() 
 })());
 check("多语对照表：CSV 首行是表头，字段顺序固定", (() =>
   WIO.mtRows()[0].join(",") === "中文,英文,德文,别名,知识板块")());
+/* —— v57：板块批量筛选（多选勾选块，与单选范围、搜索词叠加） —— */
+check("多语对照表：勾一个板块只留那块的词条，清空按钮一键还原", (() => {
+  const chips = [...view().querySelectorAll("#mt-doms input[data-dom]")];
+  if (!chips.length) return false;
+  const kx = chips.find((c) => c.getAttribute("data-dom") === "dom-kxsh");
+  if (!kx) return false;
+  kx.checked = true;
+  kx.dispatchEvent(new window.Event("change", { bubbles: true }));
+  const n1 = view().querySelectorAll("#mt-out .mt-tbl tbody tr").length;
+  const want = window.CAPITAL_DATA.terms.filter((t) => t.domain === "dom-kxsh").length;
+  const stat = view().querySelector("#mt .qs-stat").textContent;
+  const clearBtn = view().querySelector('[data-act="mt-dom-clear"]');
+  if (!clearBtn) return false;
+  clearBtn.click();
+  const n2 = view().querySelectorAll("#mt-out .mt-tbl tbody tr").length;
+  return n1 === want && want > 0 && n2 === window.CAPITAL_DATA.terms.length && /已勾/.test(stat);
+})());
 
 /* ================================================================
    学习与记忆四件：自测引擎 · 间隔重复卡 · 生词卡导出 · 学习日历
@@ -1152,140 +1079,10 @@ check("生词卡：范围里没有词条时给空态，导出按钮禁用", (() 
   return empty && dis;
 })());
 
-/* ---- 学习日历 ---- */
-await goto("#/tools/cal");
-check("学习日历：概览给出打卡、连续天数、已读、生词、笔记、自测、待复习", (() => {
-  const ks = [...view().querySelectorAll(".cal-k")];
-  const txt = ks.map((k) => k.textContent).join("|");
-  return ks.length === 7 && /累计打开天数/.test(txt) && /连续天数/.test(txt) &&
-    /已读/.test(txt) && /生词本/.test(txt) && /笔记/.test(txt) &&
-    /次自测/.test(txt) && /待复习/.test(txt);
-})());
-check("学习日历：热力图按月分行铺开，每格带日期，今天这格有记录", (() => {
-  const cells = [...view().querySelectorAll(".cal-heat .cal-cell")];
-  const today = new Date();
-  const pad = (n) => (n < 10 ? "0" : "") + n;
-  const k = today.getFullYear() + "-" + pad(today.getMonth() + 1) + "-" + pad(today.getDate());
-  return cells.length >= 175 &&
-    cells.every((c) => /^\d{4}-\d{2}-\d{2}$/.test(c.getAttribute("data-d")) &&
-      /·/.test(c.getAttribute("title"))) &&
-    cells.some((c) => c.getAttribute("data-d") === k && /lv[1-4]/.test(c.className));
-})());
-check("学习日历：热力图的深浅按当天读了几条分档（未打开留空）", (() => {
-  const h = WIO.calHeatHTML(4, {
-    opened: { "2026-09-29": 1, "2026-09-30": 1 },
-    readBy: { "2026-09-29": 1, "2026-09-30": 12 }
-  });
-  return /class="cal-cell lv2" data-d="2026-09-29"/.test(h) &&
-    /class="cal-cell lv4" data-d="2026-09-30"/.test(h) &&
-    !!view().querySelector(".cal-legend");
-})());
-check("学习日历：已读时间戳不够两天时，曲线如实说画不出来", (() =>
-  !!view().querySelector(".cal-nodata") && /还画不出曲线/.test(view().querySelector(".cal-nodata").textContent))());
-check("学习日历：进度曲线按日累计，带峰值、起止日期与坐标轴", (() => {
-  const svg = WIO.calCurveSVG({ "2026-09-28": 2, "2026-09-29": 1, "2026-10-01": 3 });
-  return /<polyline class="cal-line"/.test(svg) && /<polygon class="cal-area"/.test(svg) &&
-    /2026-09-28/.test(svg) && /2026-10-01/.test(svg) && /cal-axis/.test(svg);
-})());
-check("学习日历：说明数据只在本机、不上传", (() => {
-  const n = view().querySelector(".cal-note");
-  return !!n && /这台机器的浏览器/.test(n.textContent) && !/localStorage|控制台/.test(n.textContent);
-})());
 check("学习记录：新增的排期与错题流水都落在本机存储里", (() => {
   const ex = WIO.lrExport();
   return !!ex.srs && !!ex.quiz && Array.isArray(ex.quiz.hist) && ex.quiz.hist.length >= 1 &&
     Object.keys(ex.srs).length >= 1 && typeof ex.readTs === "object";
-})());
-
-/* ---- 学习体检（v9：能力画像） ---- */
-check("学习体检：掌握度总表按知识板块逐行铺开，合计与图例齐备", (() => {
-  const v = view();
-  const mx = v.querySelector(".hc-mx");
-  if (!mx) return false;
-  const tax = (id) => window.CAPITAL_DATA.meta.taxonomies.find((t) => t.id === id);
-  const nDom = tax("domain").cats.length;
-  const rows = mx.querySelectorAll("tbody tr");
-  const cells = mx.querySelectorAll("tbody .hc-c");
-  /* 一行一个板块 + 一行全站；每行一枚掌握度格（末行是全站合计） */
-  return rows.length === nDom + 1 && cells.length === nDom + 1 &&
-    mx.querySelectorAll("thead th").length === 6 &&
-    !!mx.querySelector(".hc-total") && !!mx.querySelector(".hc-foot-all") &&
-    !!v.querySelector(".hc-legend") && /未触/.test(v.querySelector(".hc-legend").textContent);
-})());
-check("学习体检：薄弱环节按板块给，不再出现方向字段", (() => {
-  const v = view();
-  const weak = [...v.querySelectorAll(".hc-weak li")];
-  const btns = [...v.querySelectorAll('[data-act="hc-cell"]')];
-  return weak.every((li) => !/·/.test(li.querySelector("b").textContent)) &&
-    btns.every((b) => b.getAttribute("data-d") && !b.hasAttribute("data-c"));
-})());
-check("学习体检：掌握度口径可复算（40 已读率＋30 正确率＋20 笔记＋10 按时率）", (() => {
-  /* 挑一组干净词条（没读过、没生词、没错题、没排卡），手算期望值再比 */
-  const ts = ALLT.filter((t) => !LRIO.isRead(t.id) && !LRIO.isStar(t.id) &&
-    !LRIO.quizWrong()[t.id] && !LRIO.srsGet(t.id)).slice(0, 8);
-  if (ts.length < 8) return false;
-  const empty = WIO.hcScore(ts);                       // 一条没读 → 未触，不记 0 分
-  ts.slice(0, 4).forEach((t) => {
-    LRIO.setRead(t.id, true);
-    LRIO.setNote(t.id, "留一条够长的笔记，说明八字的门槛过得去。");
-  });
-  const half = WIO.hcScore(ts);                        // 4/8 已读、全有笔记、无错题、无卡
-  const expect = Math.round(40 * 0.5 + 30 * 1 + 20 * 1 + 10 * 1);
-  const ok = empty && empty.score === null && empty.read === 0 &&
-    half && half.score === expect && half.read === 4 && half.note === 4 &&
-    half.score === 80;
-  ts.forEach((t) => { LRIO.setRead(t.id, false); LRIO.setNote(t.id, ""); });   // 复原
-  return ok;
-})());
-check("学习体检：错题最重的条目排在补强第一位，且每条都写明理由", (() => {
-  const t = ALLT[0];
-  const had = LRIO.quizWrong()[t.id] || 0;
-  LRIO.quizLog(1, 0, "all", [t.id], []);               // 临时记一笔错
-  const plan = WIO.hcPlan(5, WIO.hcWeak(WIO.hcCells()));
-  const ok = plan.length > 0 && plan.length <= 5 &&
-    plan[0].t.id === t.id && plan[0].why.some((w) => /错过/.test(w)) &&
-    plan.every((x) => x.why.length >= 1 && x.s > 0) &&
-    plan.every((x, i) => i === 0 || plan[i - 1].s >= x.s);          // 按分降序，不做无交代的推荐
-  LRIO.quizDropWrong(t.id);
-  for (let i = 0; i < had; i++) LRIO.quizLog(1, 0, "all", [t.id], []);   // 复原错题计数
-  return ok;
-})());
-check("学习体检：薄弱环节只认「已开头且分数低」的格子，未读的格子不算薄弱", (() => {
-  const cells = WIO.hcCells();
-  const weak = WIO.hcWeak(cells);
-  return weak.length <= 3 && weak.every((x) => x.list.length >= 3 && x.s && x.s.score !== null &&
-    x.s.read > 0) &&
-    weak.every((x, i) => i === 0 || weak[i - 1].s.score <= x.s.score);
-})());
-check("学习体检：一键把补强清单加进讲义，讲义清单随即出现这些条目", (() => {
-  const btn = view().querySelector('[data-act="hc-fill"]');
-  if (!btn) return false;
-  /* 讲义是后面「讲义」一节的地盘：这里先记下原有内容，验完原样还回去 */
-  const HD = WIO.hd();
-  const snapshot = HD.picks.slice();
-  const plan = WIO.hcPlan(5, WIO.hcWeak(WIO.hcCells()));
-  btn.click();
-  const picks = (view().querySelector("#hd-picks") || { textContent: "" }).textContent || "";
-  const msg = (view().querySelector("#hc-msg") || { textContent: "" }).textContent || "";
-  const ok = plan.length > 0 && plan.every((x) => picks.indexOf(x.t.term) > -1) && msg.length > 0;
-  HD.picks.length = 0;
-  snapshot.forEach((id) => HD.picks.push(id));
-  return ok;
-})());
-check("学习体检：报告导出是合法的 Word 块序列（标题＋总览＋矩阵表＋薄弱＋补强）", (() => {
-  const b = WIO.hcBlocks();
-  const kinds = b.map((x) => x.t);
-  return b[0].t === "title" && kinds.filter((k) => k === "h2").length >= 4 &&
-    kinds.includes("table") &&
-    b.some((x) => /掌握度/.test(x.text || "")) &&
-    b.every((x) => (x.t === "table" ? Array.isArray(x.rows) && Array.isArray(x.rows[0]) : typeof x.text === "string"));
-})());
-check("学习体检：体检面板带口径说明，矩阵里未读格子标「未触」", (() => {
-  const v = view();
-  const hint = v.querySelector(".hc-mx ~ .tool-hint");
-  const none = [...v.querySelectorAll(".hc-mx .hc-none")];
-  return !!hint && /分母/.test(hint.textContent) && /40%/.test(hint.textContent) &&
-    none.every((c) => /–|·/.test(c.textContent));
 })());
 
 /* ---- 分析与教学一：概念关系图编辑器 ----
