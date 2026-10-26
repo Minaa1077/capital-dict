@@ -1578,6 +1578,54 @@ check("v16：按「/」聚焦搜索框（焦点在输入框里时不抢）", (()
   return hit && kept;
 })());
 
+/* ---- v65：首次进入的引导弹窗（概念关系图 / 阅读器） ---- */
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const gd = () => doc.getElementById("gd-mask");
+/* 前面的关系图路由测试可能已经把它标成「已读」，这里清掉重来 */
+try {
+  window.localStorage.removeItem("capital-guide-graph-v1");
+  window.localStorage.removeItem("capital-guide-reader-v1");
+} catch (e) { /* 存储不可用时本就只有内存标记 */ }
+if (gd()) gd().remove();
+
+await goto("#/graph");
+await wait(360);
+check("v65：首次进入概念关系图自动弹出引导", !!gd() && gd().getAttribute("data-kind") === "graph");
+check("v65：概念关系图引导列全四种操作（左键／中键／滚轮／Ctrl+滚轮）", (() => {
+  if (!gd()) return false;
+  const keys = [...gd().querySelectorAll(".gd-key")].map((x) => x.textContent.trim());
+  return keys.length === 4 &&
+    keys.some((k) => k === "左键") && keys.some((k) => k.includes("中键")) &&
+    keys.some((k) => k === "滚轮") && keys.some((k) => k.includes("Ctrl"));
+})());
+check("v65：引导具 dialog 语义，且有 ×／跳过／知道了 三个关闭入口", (() => {
+  if (!gd()) return false;
+  const card = gd().querySelector('[role="dialog"]');
+  return !!card && card.getAttribute("aria-modal") === "true" &&
+    !!gd().querySelector(".gd-x") && !!gd().querySelector(".gd-skip") && !!gd().querySelector(".gd-ok");
+})());
+check("v65：引导挂在 body 下、#view 之外（不受 .page-in 的 transform 包含块影响）",
+  !!gd() && gd().parentElement === doc.body);
+
+doc.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+check("v65：Esc 关闭引导并写入「已读」", !gd() && !!window.localStorage.getItem("capital-guide-graph-v1"));
+
+await goto("#/");
+await goto("#/graph");
+await wait(360);
+check("v65：同一页第二次进入不再自动弹出", !gd());
+
+await goto("#/reader");
+await wait(360);
+check("v65：首次进入阅读器自动弹出引导，且讲到「选中即查」「书签」「阅读进度」", (() => {
+  if (!gd() || gd().getAttribute("data-kind") !== "reader") return false;
+  const t = gd().textContent;
+  return /选中即查/.test(t) && /书签/.test(t) && /阅读进度/.test(t);
+})());
+gd().querySelector(".gd-skip").click();
+check("v65：点「跳过」关闭并写入「已读」", !gd() && !!window.localStorage.getItem("capital-guide-reader-v1"));
+await goto("#/");
+
 /* ---- 未知路由 ---- */
 await goto("#/nope");
 check("未知路由有兜底", text().includes("页面不存在"));

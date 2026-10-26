@@ -6218,3 +6218,128 @@ body.pj-on .to-top { display: none !important; }
 @media (max-width: 620px) {
   .iv-hint { bottom: 2.95rem; font-size: .72rem; }
 }
+
+/* ════════════════ v65：首次进入的引导弹窗（概念关系图 / 本地阅读器） ════════════════
+   遮罩挂 body、#view 之外（见 app.js 的注解）：#view 的 .page-in 动画把 transform
+   的计算值定成 matrix(1,0,0,1,0,0)，在里面 position:fixed 会跟着内容滚。
+   配色一律走语义令牌（--paper / --ink / --rule / --red-deep / --gold-line），
+   [data-theme="dark"] 重定义令牌后自动跟随，不另写暗色分支。
+   过渡只做 opacity / transform，且不在 transition 里碰 backdrop-filter（老坑）。 */
+.gd-mask {
+  position: fixed; inset: 0;
+  z-index: 1400;                       /* 高于顶栏、学习台与阅读器浮标，低于打印/投影层 */
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.1rem;
+  background:
+    radial-gradient(120% 90% at 50% 38%, rgba(56, 12, 10, .32), rgba(26, 8, 7, .64));
+  -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+  animation: gd-fade .22s var(--ease) both;
+}
+@keyframes gd-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.gd-card {
+  position: relative;
+  width: min(34rem, 100%);
+  max-height: min(84vh, 42rem);
+  overflow: auto;
+  padding: 1.45rem 1.5rem 1.1rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule-2);
+  border-radius: .55rem;
+  box-shadow: 0 26px 60px rgba(40, 8, 6, .34), 0 2px 0 rgba(255, 255, 255, .55) inset;
+  animation: gd-rise .26s var(--ease) both;
+}
+@keyframes gd-rise {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+/* 顶部一道金线，与站内卡片的形制一致（纯装饰，不占布局） */
+.gd-card::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
+}
+
+.gd-x {
+  position: absolute; right: .5rem; top: .42rem;
+  width: 2rem; height: 2rem;
+  display: grid; place-items: center;
+  font: inherit; font-size: 1.18rem; line-height: 1;
+  color: var(--ink-2); background: transparent;
+  border: 1px solid transparent; border-radius: 50%;
+  cursor: pointer;
+}
+.gd-x:hover { background: var(--paper-2); border-color: var(--rule); color: var(--red-deep); }
+
+.gd-kicker {
+  margin: 0 0 .3rem; font-family: var(--sans);
+  font-size: .74rem; letter-spacing: .2em; text-indent: .2em;
+  color: var(--gold-2);
+}
+.gd-title {
+  margin: 0; padding-right: 2rem;
+  font-size: 1.34rem; line-height: 1.35; letter-spacing: .01em;
+  color: var(--red-deep);
+}
+.gd-lede {
+  margin: .45rem 0 .9rem;
+  font-size: .9rem; line-height: 1.75; color: var(--ink-2);
+}
+
+.gd-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.gd-row {
+  display: grid; grid-template-columns: 6.4rem 1fr; gap: .7rem; align-items: start;
+  padding: .5rem .6rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: .35rem;
+}
+.gd-key {
+  justify-self: start;
+  padding: .06rem .42rem .12rem;
+  font-family: var(--sans); font-size: .77rem; font-weight: 700; line-height: 1.6;
+  color: var(--red-deep); background: var(--gold-bg);
+  border: 1px solid var(--gold-line); border-radius: .26rem;
+  white-space: nowrap;
+}
+.gd-row span { font-size: .86rem; line-height: 1.72; color: var(--ink); }
+
+.gd-tip {
+  margin: .8rem 0 0; padding-left: .65rem;
+  border-left: 2px solid var(--gold-line);
+  font-size: .8rem; line-height: 1.72; color: var(--ink-2);
+}
+
+.gd-acts { display: flex; justify-content: flex-end; gap: .55rem; margin-top: 1rem; }
+.gd-acts button {
+  font: inherit; font-size: .88rem; font-weight: 600;
+  padding: .46rem 1.1rem; border-radius: 999px; cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              color var(--t-fast) var(--ease);
+}
+.gd-skip {
+  color: var(--ink-2); background: transparent; border: 1px solid var(--rule-2);
+}
+.gd-skip:hover { color: var(--red-deep); border-color: var(--gold); background: var(--paper-2); }
+.gd-ok {
+  color: var(--paper); background: var(--red-deep); border: 1px solid var(--red-deep);
+  box-shadow: 0 4px 12px rgba(100, 10, 14, .22);
+}
+.gd-ok:hover { background: var(--accent); border-color: var(--accent); }
+.gd-acts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 窄屏：键位列改成上下两行，避免把说明挤成一列窄缝 */
+@media (max-width: 520px) {
+  .gd-card { padding: 1.2rem 1.05rem .95rem; max-height: 88vh; }
+  .gd-title { font-size: 1.18rem; }
+  .gd-row { grid-template-columns: 1fr; gap: .28rem; }
+  .gd-key { font-size: .74rem; }
+  .gd-row span { font-size: .84rem; }
+  .gd-acts button { padding: .44rem .9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gd-mask, .gd-card { animation: none; }
+}
+@media print { .gd-mask { display: none !important; } }

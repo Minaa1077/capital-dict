@@ -10782,6 +10782,169 @@
     }
   }
 
+  /* ================= 首次进入的引导弹窗（v65） =================
+     两处入口各一份：概念关系图（#/graph，以及 工具台 → 概念关系图编辑器 走同一份文案、
+     同一个键）、本地阅读器（#/reader）。
+
+     三条硬约束：
+     ① **只在首次进入自动展开**：关掉（× / 跳过 / 知道了 / Esc / 点遮罩）即写
+        localStorage；隐私模式下 localStorage 会抛，退回 sessionStorage，再退回内存标记。
+     ② **必须挂 body、#view 之外**：#view 常驻 .page-in（animation …both），transform 的
+        计算值是 matrix(1,0,0,1,0,0)（不是 none），在它里面 position: fixed 会以此为
+        包含块、跟着页面滚 —— 站内已经踩过两次（#crumb-back、.to-top）。
+     ③ **内容只讲「这里能做什么」**：每行一条操作，键位用 .gd-key 胶囊标出，末行小字给
+        一条最容易漏的提示；不写实现细节、不写版本号。 */
+  var GUIDE_SEEN = { graph: 0, reader: 0 };   /* 存储全不可用时的会话内兜底 */
+  var guideBackFocus = null;
+  var GUIDE = {
+    graph: {
+      key: "capital-guide-graph-v1",
+      kicker: "概念关系图 · 操作指引",
+      title: "一张可以读、也可以改的关系地图",
+      lede: "节点是术语，连线是关系。先认清下面四种操作，其余边看边会。",
+      rows: [
+        ["左键", "点选节点或连线；按住节点拖动可摆位，从节点边缘拉线新建关系；在空白处拖拽是框选。"],
+        ["中键拖动", "平移画布（右键拖动同样可以）。左键拖动留给框选，所以不会误移画面。"],
+        ["滚轮", "以指针所在位置为中心缩放画布；只改看图比例，不改数据。"],
+        ["Ctrl + 滚轮", "缩放整个页面（浏览器缩放），按钮与文字一起变大，投影讲解时用得上。"]
+      ],
+      tip: "左上角搜索框输入术语，可把它的关联一次铺到画布；右栏「联想」按关系强度推荐下一个该看的词。图上的改动只存在这台机器的浏览器里。"
+    },
+    reader: {
+      key: "capital-guide-reader-v1",
+      kicker: "本地阅读器 · 使用提示",
+      title: "选中一个术语，直接跳到它的解释",
+      lede: "文件只在浏览器本地打开，不上传服务器；读到哪、记到哪，也都留在这台机器上。",
+      rows: [
+        ["选中即查", "在正文里划选任意术语，浮标出现「查词条」，点一下直达解释；没有精确命中时给出相近的几条。"],
+        ["书签", "顶栏「书签+」记下当前位置；抽屉按书分组，当前章节高亮，可改名、删除、跳转。"],
+        ["阅读进度", "自动记住每本书读到第几章、百分之多少与累计时长，下次选同一份文件自动接上。"],
+        ["工具栏", "鼠标靠近上边缘滑出：字号 A-/A+、滚动/翻页、日间/夜间、全屏；翻页模式用 ← → 键。"]
+      ],
+      tip: "PDF 交给浏览器内置阅读器渲染，暂不支持选词跳转；TXT 与 EPUB 可全部使用。"
+    }
+  };
+
+  function guideKindOf(parts) {
+    if (!parts) return "";
+    if (parts[0] === "graph") return "graph";
+    /* 工具台里的「概念关系图编辑器」是同一个编辑器，共用一份引导与一个「已读」标记 */
+    if (parts[0] === "tools" && parts[1] === "path") return "graph";
+    if (parts[0] === "reader") return "reader";
+    return "";
+  }
+
+  function guideSeen(kind) {
+    var g = GUIDE[kind];
+    if (!g) return true;
+    if (GUIDE_SEEN[kind]) return true;
+    try { if (localStorage.getItem(g.key)) return true; } catch (e) { /* 隐私模式等 */ }
+    try { if (sessionStorage.getItem(g.key)) return true; } catch (e) { /* 同上 */ }
+    return false;
+  }
+
+  function guideMark(kind) {
+    var g = GUIDE[kind];
+    if (!g) return;
+    GUIDE_SEEN[kind] = 1;
+    try { localStorage.setItem(g.key, "1"); } catch (e) { /* 存不了就靠内存 */ }
+    try { sessionStorage.setItem(g.key, "1"); } catch (e) { /* 同上 */ }
+  }
+
+  function guideClose(mark) {
+    var m = document.getElementById("gd-mask");
+    if (!m) return;
+    var kind = m.getAttribute("data-kind");
+    if (mark !== false) guideMark(kind);
+    document.removeEventListener("keydown", guideKey, true);
+    m.remove();
+    /* 焦点交回它来时的位置（通常是正文），读屏用户不会「丢焦点」 */
+    var back = guideBackFocus;
+    guideBackFocus = null;
+    if (back && back.focus && document.contains(back)) {
+      try { back.focus({ preventScroll: true }); } catch (e) { /* 老浏览器忽略参数 */ }
+    }
+  }
+
+  /* Esc 关闭 + Tab 在卡片内循环（aria-modal 的对话框不该把焦点漏回背景） */
+  function guideKey(ev) {
+    var m = document.getElementById("gd-mask");
+    if (!m) return;
+    if (ev.key === "Escape") { ev.preventDefault(); guideClose(true); return; }
+    if (ev.key !== "Tab") return;
+    var f = m.querySelectorAll("button, [href], input, [tabindex]:not([tabindex='-1'])");
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }
+
+  function guideOpen(kind) {
+    var g = GUIDE[kind];
+    if (!g || !document.body) return;
+    if (document.getElementById("gd-mask")) return;   /* 已经开着就不再叠一层 */
+    var rows = g.rows.map(function (r) {
+      return '<li class="gd-row"><b class="gd-key">' + esc(r[0]) + "</b><span>" + esc(r[1]) + "</span></li>";
+    }).join("");
+    var mask = document.createElement("div");
+    mask.id = "gd-mask";
+    mask.className = "gd-mask";
+    mask.setAttribute("data-kind", kind);
+    mask.innerHTML =
+      '<div class="gd-card" role="dialog" aria-modal="true" aria-labelledby="gd-title" aria-describedby="gd-lede">' +
+        '<button type="button" class="gd-x" aria-label="关闭引导">×</button>' +
+        '<p class="gd-kicker">' + esc(g.kicker) + "</p>" +
+        '<h2 class="gd-title" id="gd-title">' + esc(g.title) + "</h2>" +
+        '<p class="gd-lede" id="gd-lede">' + esc(g.lede) + "</p>" +
+        '<ul class="gd-rows">' + rows + "</ul>" +
+        '<p class="gd-tip">' + esc(g.tip) + "</p>" +
+        '<div class="gd-acts">' +
+          '<button type="button" class="gd-skip">跳过</button>' +
+          '<button type="button" class="gd-ok">知道了</button>' +
+        "</div>" +
+      "</div>";
+    guideBackFocus = document.activeElement;
+    document.body.appendChild(mask);
+    mask.querySelector(".gd-ok").addEventListener("click", function () { guideClose(true); });
+    mask.querySelector(".gd-skip").addEventListener("click", function () { guideClose(true); });
+    mask.querySelector(".gd-x").addEventListener("click", function () { guideClose(true); });
+    /* 点遮罩关；点卡片内部不关（冒泡到 mask 时 target 才会是 mask 本身） */
+    mask.addEventListener("click", function (ev) { if (ev.target === mask) guideClose(true); });
+    document.addEventListener("keydown", guideKey, true);
+    /* 等入场动画起势再落焦点，避免焦点环在位移过程中被画在错位置 */
+    setTimeout(function () {
+      var b = mask.querySelector(".gd-ok");
+      if (!b) return;
+      try { b.focus({ preventScroll: true }); } catch (e) { b.focus(); }
+    }, 60);
+  }
+
+  /* 路由钩子：进到这两页且没看过才排队弹出；离开页面则收起并记为已读 */
+  function guideOnRoute(parts) {
+    var kind = guideKindOf(parts);
+    var open = document.getElementById("gd-mask");
+    if (open) {
+      if (open.getAttribute("data-kind") === kind) return;  /* 同页重渲染不重弹 */
+      guideClose(true);
+    }
+    if (!kind || guideSeen(kind)) return;
+    /* 等本页渲染、滚动复位与入场动画起势之后再弹，遮罩出现时页面已停稳 */
+    var tries = 0;
+    function arm() {
+      if (document.getElementById("gd-mask")) return;
+      if (guideKindOf(hashParts().parts) !== kind) return;   /* 期间已经换页 */
+      /* 开屏帘 z 2000 盖在引导（z 1400）之上：帘子还在就先别弹，
+         否则用户只看见帘子，引导等于白开。等它撤掉再弹。 */
+      if (document.getElementById("intro-veil")) {
+        if (++tries > 30) return;
+        setTimeout(arm, 500);
+        return;
+      }
+      guideOpen(kind);
+    }
+    setTimeout(arm, 240);
+  }
+
   function route() {
     var hp = hashParts();
     var parts = hp.parts, q = hp.q;
@@ -10914,6 +11077,8 @@
        否则 reveal() 里的 odKick() 找不到已经挂上的滚轮 */
     odScan();
     if (after) after();
+    /* v65：首次进入概念关系图 / 阅读器时弹一次引导（已读判断与收起都在函数内） */
+    guideOnRoute(parts);
 
     /* 换页进场动画：重挂 class 重放 keyframes（减动效偏好下由 CSS 关掉） */
     app.classList.remove("page-in");
