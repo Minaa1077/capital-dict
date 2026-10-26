@@ -2141,7 +2141,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════
-     马克思画传 · 重制版（#/pictorial）
+     马克思画传（#/pictorial）
      画册本身是独立单文件 marx-pictorial.html，与本站产物同目录并列。
      这里给内嵌预览 + 新窗口出口：iframe 走同目录相对路径，file:// 下同源可显示；
      若产物文件被拆开存放，iframe 会失败，届时自动收掉预览框只留出口按钮，
@@ -2152,7 +2152,7 @@
 
   function viewPictorial() {
     return '<div class="pic">' +
-      '<h1 class="pic-h1">马克思画传 · 重制版</h1>' +
+      '<h1 class="pic-h1">马克思画传</h1>' +
       '<p class="pic-kicker">A Pictorial Biography &middot; Layered Parallax Edition</p>' +
       '<div class="pic-acts">' +
         '<a class="pic-btn pic-btn-main" href="marx-pictorial.html" target="_blank" rel="noopener">在新窗口打开画册 ↗</a>' +
@@ -2160,7 +2160,7 @@
         '<span class="pic-state" id="picState" role="status" aria-live="polite">正在载入预览…</span>' +
       '</div>' +
       '<div class="pic-frame" id="picFrameWrap">' +
-        '<iframe id="picFrame" src="marx-pictorial.html" title="马克思画传 · 重制版" ' +
+        '<iframe id="picFrame" src="marx-pictorial.html" title="马克思画传" ' +
           'loading="lazy" referrerpolicy="no-referrer"></iframe>' +
       '</div>' +
       '<p class="pic-fallback" id="picFallback" hidden>预览载入不了，多半是 ' +

@@ -74,13 +74,13 @@ try {
     ((e && e.message) || e).toString().split("\n")[0]);
 }
 
-/* 《马克思画传》重制版同理，而且是**同一类坑**：首页与导航里的「画传」入口
+/* 《马克思画传》同理，而且是**同一类坑**：首页与导航里的「画传」入口
    是一个 iframe，src 写的是同目录的 marx-pictorial.html。包里不带这一份，
    离线演示里那一路就只能看到「与本站产物不在同一目录」的降级提示。 */
 try {
   const buf = await readFile(P("dist/marx-pictorial.html"));
   await copyFile(P("dist/marx-pictorial.html"), resolve(OUT, "marx-pictorial.html"));
-  made.push(["marx-pictorial.html（《马克思画传》重制版，与主文件同目录）", buf]);
+  made.push(["marx-pictorial.html（《马克思画传》，与主文件同目录）", buf]);
 } catch (e) {
   console.log("！marx-pictorial.html 未找到（先跑 node pictorial/scripts/build-pictorial.mjs）：" +
     ((e && e.message) || e).toString().split("\n")[0]);
