@@ -3871,6 +3871,11 @@ html { scrollbar-width: thin; scrollbar-color: rgba(100, 10, 14, .28) transparen
    定位基准：必须挂在 <body> 下、#view 之外（详见 app.js 的 crumbBack）——
    #view 上常驻 .page-in 动画，计算值恒为 matrix(1,0,0,1,0,0)（不是 none），
    照样会给 fixed 后代建立包含块；留在面包屑里它会跟着页面滚（实测 dy=-500）。 */
+/* v63：由「浅底细描边」改为**实心暗红药丸**并放大 —— 它原来 .78rem、内边距
+   .12rem/.62rem，在正文衬线字旁几乎看不出是个按钮，用户反馈「进页面第一眼
+   看不到」。现在：字号 .95rem、高 2.72rem（≥44px 触控下限）、实底 --red-deep
+   配纸色字，对比度约 9:1；金色描边 + 双层投影让它从纸面上浮起来。
+   位置仍贴吸顶栏下沿、与正文栏右缘对齐（理由见下方原注释，勿改成 vw）。 */
 #crumb-back {
   position: fixed;
   /* 与正文栏（--maxw 68rem，居中）的右缘对齐；两侧留白不足 1.1rem 时退成贴边。
@@ -3880,25 +3885,40 @@ html { scrollbar-width: thin; scrollbar-color: rgba(100, 10, 14, .28) transparen
   /* 贴住吸顶栏下沿。--tb-h 是脚本实测写进元素的（顶栏窄屏会换行长高：
      1440 下 57px、768 下 110px、390 下 147px；页顶那条 .topline 还会先滚走，
      所以量的是"下沿"而不是"高度"，写死任何一个数都会错位）。 */
-  top: calc(var(--tb-h, 3.4rem) + .55rem);
+  top: calc(var(--tb-h, 3.4rem) + .7rem);
   z-index: 55;   /* 正文与吸顶栏(40)之上；学习台(60)、各类浮层(200+)之下 */
-  font: inherit; font-size: .78rem; line-height: 1.45;
-  padding: .12rem .62rem;
-  color: var(--red-deep);
-  background: var(--warm-2);
+  display: inline-flex; align-items: center; gap: .4rem;
+  font: inherit; font-size: .95rem; line-height: 1.1;
+  font-weight: 600; letter-spacing: .02em;
+  min-height: 2.72rem;                 /* 触控区下限 44px 的量级 */
+  padding: .5rem 1.05rem .5rem .9rem;
+  color: var(--paper);
+  background: var(--red-deep);
   border: 1px solid var(--gold-a-45);
   border-radius: var(--r-pill);
   cursor: pointer;
-  -webkit-backdrop-filter: saturate(150%) blur(6px);
-  backdrop-filter: saturate(150%) blur(6px);
-  box-shadow: 0 4px 14px var(--red-a-12);
+  /* 内高光让它有"按钮实体感"，外投影把它从纸面上托起来 */
+  box-shadow: 0 6px 18px var(--red-a-12), 0 1px 0 rgba(255, 255, 255, .18) inset;
+  /* 入场只淡入不位移：带 transform 的 animation 会以 fill-mode 压住 :hover 的
+     translateY，按钮就再也不会抬起（踩过的坑）。 */
+  animation: cbIn .3s var(--ease) both;
   transition: top .2s var(--ease),            /* 顶线滚走时跟着吸顶栏收上去 */
               background-color var(--t-fast) var(--ease),
-              color var(--t-fast) var(--ease),
-              border-color var(--t-fast) var(--ease);
+              border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
 }
-#crumb-back:hover { background: var(--red-deep); color: var(--paper); border-color: var(--red-deep); }
-#crumb-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@keyframes cbIn { from { opacity: 0; } to { opacity: 1; } }
+#crumb-back:hover {
+  background: #7d1216;
+  color: #fff;
+  border-color: var(--gold);
+  box-shadow: 0 10px 24px rgba(56, 4, 6, .28), 0 1px 0 rgba(255, 255, 255, .24) inset;
+  transform: translateY(-1px);
+}
+#crumb-back:active { transform: translateY(0) scale(.985); }
+#crumb-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { #crumb-back { animation: none; transition: none; } }
 @media print { #crumb-back { display: none; } }
 
 /* ════════════════════ 开屏动画（v31 · 词标遮罩放大揭幕） ════════════════════
@@ -6108,3 +6128,80 @@ html[data-theme="dark"] {
   min-width: 9rem;
   max-width: 24rem;
 }
+
+/* ════════════════ 回到顶部：滚动后浮现的悬浮键（v63） ════════════════
+   出现条件由 app.js 的 syncToTop() 判定（滚过约六成屏高或 420px，取小者），
+   这里只管两件事：外观与「进有过渡、出瞬时」。
+
+   为什么 bottom/right 要避让：右下角常驻学习台（.dock，right/bottom 1.1rem、
+   桌宠宽 78px）。两者同高对齐、横向错开——回到顶部贴在桌宠左侧，形成一组
+   竖直基线一致的悬浮控件；不这样让位就会正好压在桌宠身上，谁也点不到。
+
+   ⚠ 与 #crumb-back 同一条铁律：必须挂在 <body> 下、#view 之外。#view 上常驻
+   .page-in 动画，transform 的计算值恒为 matrix(1,0,0,1,0,0)（不是 none），
+   照样给 fixed 后代建立包含块 —— 留在 #view 里它会跟着内容滚。 */
+.to-top {
+  position: fixed;
+  right: calc(1.1rem + 5.6rem);       /* 桌宠宽 78px ≈ 4.88rem，再留 .7rem 间距 */
+  bottom: 1.1rem;                     /* 与学习台同一条底边 */
+  z-index: 58;                        /* 正文之上、学习台(60)之下 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  min-width: 3rem;
+  min-height: 3rem;                   /* 48px，桌面鼠标与触屏都够大 */
+  padding: 0 .8rem;
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--red-deep);
+  background: var(--paper);
+  border: 1px solid var(--gold-a-45);
+  border-radius: var(--r-pill);
+  box-shadow: 0 8px 22px rgba(56, 4, 6, .16), 0 1px 0 rgba(255, 255, 255, .8) inset;
+  cursor: pointer;
+  /* 出（隐藏）瞬时：过渡只写在 .is-on 那条规则上，见 v57 的通则 */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(.96);
+}
+.to-top.is-on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: opacity .24s var(--ease), transform .24s var(--ease),
+              background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease);
+}
+.to-top .tt-ar { font-size: 1.02rem; line-height: 1; transform: translateY(-1px); }
+.to-top:hover {
+  background: var(--red-deep);
+  color: var(--paper);
+  border-color: var(--red-deep);
+  box-shadow: 0 10px 26px rgba(56, 4, 6, .26);
+}
+.to-top:active { transform: translateY(1px) scale(.98); }
+.to-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .to-top {
+    right: calc(.7rem + 5.4rem);      /* 窄屏学习台也收到 .7rem 贴边 */
+    bottom: .7rem;
+    min-width: 2.9rem;
+    min-height: 2.9rem;
+    padding: 0 .62rem;
+    font-size: .78rem;
+  }
+}
+/* 投影模式（.pj-on）与打印：不出现任何悬浮控件 */
+body.pj-on .to-top { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .to-top, .to-top.is-on { transition: none; }
+  .to-top { transform: none; }
+}
+@media print { .to-top { display: none !important; } }

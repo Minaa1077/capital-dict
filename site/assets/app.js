@@ -10676,11 +10676,60 @@
   var cbRaf = 0;
   function onCbScroll() {
     if (cbRaf) return;                        /* rAF 合帧：滚动多快都只算一次 */
-    var f = function () { cbRaf = 0; followCrumbBack(); };
+    var f = function () { cbRaf = 0; followCrumbBack(); syncToTop(); };
     cbRaf = window.requestAnimationFrame ? window.requestAnimationFrame(f) : setTimeout(f, 16);
   }
   window.addEventListener("scroll", onCbScroll, { passive: true });
   window.addEventListener("resize", onCbScroll, { passive: true });
+
+  /* ── 回到顶部：滚过一屏后浮现的悬浮键（v63） ────────────────────────────
+     与 #crumb-back 同一处挂载：<body> 下、#view 之外（#view 的 .page-in 动画
+     常驻 transform，fixed 后代会被它建立包含块，按钮就会跟着内容滚）。
+
+     阈值取「六成屏高 / 420px 的较小值」再兜一个 240px 下限：
+     短页即使不滚也不会冒出个用不上的按钮；长词条读两段就该能一键回头。
+     显隐判定走 onCbScroll 的 rAF 合帧，滚动多快都只算一次；
+     状态没变就不碰 DOM（classList.toggle 带 force 也不产生样式失效）。 */
+  var toTopBtn = null, toTopOn = false;
+
+  function ensureToTop() {
+    if (toTopBtn && document.body.contains(toTopBtn)) return toTopBtn;
+    var b = document.createElement("button");
+    b.id = "to-top";
+    b.className = "to-top";
+    b.type = "button";
+    b.setAttribute("aria-label", "回到页面顶部");
+    b.title = "回到页面顶部";
+    b.innerHTML = '<span class="tt-ar" aria-hidden="true">↑</span><span>顶部</span>';
+    b.addEventListener("click", function () {
+      var reduce = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      try { window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); }
+      catch (e) { window.scrollTo(0, 0); }        /* 老浏览器不认 options */
+      /* 点完按钮自己会隐去，焦点不能跟着丢：交回页面主体
+         （路由渲染时 #view 已带 tabindex=-1，这里只是复用）。 */
+      try { app.focus({ preventScroll: true }); } catch (e2) { /* 略 */ }
+      b.classList.remove("is-on");
+      toTopOn = false;
+    });
+    document.body.appendChild(b);
+    toTopBtn = b;
+    return b;
+  }
+
+  function syncToTop() {
+    var b = ensureToTop();
+    var lim = Math.min(420, Math.max(240, window.innerHeight * 0.6));
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var on = y > lim;
+    if (on === toTopOn) return;                   /* 没跨过门槛：不碰 DOM */
+    toTopOn = on;
+    b.classList.toggle("is-on", on);
+  }
+
+  /* 首帧先建出来（隐藏态），免得第一次滚动才插入节点引发一次重排 */
+  ensureToTop();
+  syncToTop();
 
   /* 悬浮固定的「返回上一页」：每次渲染后补一颗（幂等，重渲染不叠加）。
      用 history.back() 而不是写死 #/——从词条页串到关联词条、从搜索点进来，

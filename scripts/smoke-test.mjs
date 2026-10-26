@@ -451,6 +451,24 @@ check("词条页分类标签仍一枚，标注为「板块·方向」合并形�
   view().querySelectorAll(".chips a.chip.cat").length === 1 &&
   view().querySelector(".chips a.chip.cat").textContent.trim() === "政治经济学·基本原理");
 check("词条页面包屑含板块与词条名", view().querySelectorAll(".crumb a").length >= 2);
+/* v63：悬浮的两个导航键 —— 上一页（放大成实心药丸）与回到顶部（滚动后浮现）。
+   尺寸与配色在真机探针里量（jsdom 没有布局），这里只锁结构：按钮在不在、
+   是否挂在 body 下（#view 的 .page-in transform 会给 fixed 建立包含块）、
+   初始是不是隐藏态。 */
+check("悬浮「上一页」按钮在 body 下且指向回退动作",
+  (() => {
+    const b = window.document.getElementById("crumb-back");
+    return !!b && b.parentElement === window.document.body &&
+      b.getAttribute("data-act") === "hist-back" && b.textContent.includes("上一页");
+  })());
+check("悬浮「回到顶部」按钮在 body 下、初始为隐藏态",
+  (() => {
+    const b = window.document.getElementById("to-top");
+    return !!b && b.parentElement === window.document.body &&
+      b.getAttribute("aria-label") === "回到页面顶部" && !b.classList.contains("is-on");
+  })());
+check("产物样式含回到顶部浮现态与上一页实心底",
+  html.includes(".to-top.is-on") && /#crumb-back\s*\{[^}]*background:\s*var\(--red-deep\)/.test(html));
 check("词条页无阅读深度切换", !view().querySelector("#depth"));
 check("词条页全量展示：无 data-lv 隐藏逻辑", view().querySelectorAll(".block[data-lv]").length === 0);
 check("一句话渲染", !!view().querySelector(".oneline"));
