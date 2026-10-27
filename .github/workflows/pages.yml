@@ -47,8 +47,20 @@ jobs:
       - name: Build offline single-file site
         run: node scripts/build.mjs --offline
 
+      # 装配发布目录。
+      # 绑了自定义域名时 base_url 会是 https://<域>/（configure-pages 读仓库 Pages 设置），
+      # 此时同时把主机名传给 --domain：产出一份 CNAME（内容只有裸域），
+      # canonical / og:image 也跟着变成自定义域，不必再改脚本或提交 CNAME 文件。
       - name: Assemble publish directory
-        run: node scripts/make-pages.mjs --base "${{ steps.pages.outputs.base_url }}"
+        run: |
+          set -e
+          BASE="${{ steps.pages.outputs.base_url }}"
+          HOST="$(node -e 'try{console.log(new URL(process.argv[1]).host)}catch(e){console.log("")}' "$BASE")"
+          case "$HOST" in
+            ""|*.github.io) node scripts/make-pages.mjs --base "$BASE" ;;
+            *)              node scripts/make-pages.mjs --base "$BASE" --domain "$HOST" ;;
+          esac
+          echo "site base = $BASE   host = ${HOST:-<github.io>}"
 
       # 上线前的机器校验：产物存在、体积合理、索引与 404 到位
       - name: Verify publish directory

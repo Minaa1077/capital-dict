@@ -115,6 +115,10 @@ git add -A && git commit -m "内容更新：…" && git push
 
 ## 五、自定义域名与 HTTPS
 
+> 完整版（含 Cloudflare 的 NS 切换、SSL 模式、缓存规则、橙云/灰云顺序、故障排查）见
+> **`DOMAIN-CLOUDFLARE.md`**；本节只留最短路径与 GitHub 侧要点。
+> 验收：`node scripts/verify-domain.mjs <域名>`（六组逐项打勾，失败退出码 1）。
+
 ### 1. DNS 记录
 
 | 场景 | 记录类型 | 主机记录 | 值 |
