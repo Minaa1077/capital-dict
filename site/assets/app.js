@@ -242,7 +242,7 @@
   }
   function hasStance(t) { return stanceCount(t) > 0; }
 
-  /* 全站统计：首页、关于页、页脚共用同一组数字，只算一次 */
+  /* 全站统计：首页与页脚共用同一组数字，只算一次 */
   var _stats = null;
   function stats() {
     if (_stats) return _stats;
@@ -758,21 +758,6 @@
       export_: function () { return JSON.parse(JSON.stringify(data)); }
     };
   })();
-
-  /* ---------------- 条形图 ----------------
-     零依赖：纯 div + 百分比宽度。不引图表库，离线单文件版才能继续双击即开。 */
-  function barChart(rows) {
-    var max = 1;
-    rows.forEach(function (r) { if (r.n > max) max = r.n; });
-    return '<div class="bars">' + rows.map(function (r, i) {
-      var pct = (r.n / max * 100).toFixed(2);
-      var tone = r.tone || "c" + (i % 4);
-      return '<div class="bar-row">' +
-        '<span class="bar-k" title="' + esc(r.k) + '">' + esc(r.k) + "</span>" +
-        '<span class="bar-track"><i class="' + tone + '" style="width:' + pct + '%"></i></span>' +
-        '<span class="bar-v">' + r.n + "</span></div>";
-    }).join("") + "</div>";
-  }
 
   /* ---------------- 搜索 ---------------- */
 
@@ -1339,7 +1324,7 @@
      取消纵向连续滚动：三屏在同一个 .hp-track 里纵向排列，靠 transform 平移切换，
      每屏高度 = 视口可用高（JS 写 --hp-h），详见 homePager()。
      「概念关系 / 关于这份数据」两段长文不再铺在首页——它们是数据说明，
-     已在 #/graph 与 #/about 里各有一份，首页只留一行入口，免得第三屏撑破。 */
+     已在 #/graph 里有一份，首页只留一行入口，免得第三屏撑破。 */
   function viewHome() {
     var letters = allLetters();
     var idx = Object.keys(letters).sort();
@@ -1358,17 +1343,15 @@
           '<div class="results" id="heroR" hidden></div>' +
           '<p class="hint">支持三种输入：汉字、全拼、拼音首字母缩写。</p>' +
         '</div>' +
-        /* v52：首页 hero 快捷入口从 6 个精简为 3 个。
-           保留的是三个「独立交付件／全站说明」级入口：
+        /* v52：首页 hero 快捷入口从 6 个精简为 3 个；v66 撤除「关于」页后再减为 2 个。
+           保留的是两个「独立交付件」级入口：
              · 马克思画传 → #/pictorial（画册子站）
              · 概念关系图 → #/graph（关系图编辑器子站）
-             · 关于       → #/statement（v43 起 #/statement 落到 #/about 的创作说明段）
            删掉的「门类总览 / 三卷目录树 / 词条自测 / 概念计算器」都是**站内功能**，
            顶栏导航与工具台里都有入口（# 是首页，顶栏常驻），首页不必再重复一遍。 */
         '<div class="hero-entries">' +
           '<a href="#/pictorial">马克思画传</a>' +
           '<a href="#/graph">概念关系图</a>' +
-          '<a href="#/about">关于</a>' +
         '</div>' +
       '</section>';
 
@@ -1377,8 +1360,9 @@
     var band =
       '<div class="stat-band">' +
         '<a class="sb" href="#/idx"><b>' + total + '</b><span>收录词条</span></a>' +
-        '<a class="sb" href="#/about"><b>' + stats().quoted + '</b><span>原典引文已补录</span></a>' +
-        '<a class="sb" href="#/about"><b>' + stats().scholarStance + '</b><span>争鸣立场（方）</span></a>' +
+        /* 这两项是数据状态，不再有「关于」页可跳，只作静态读数 */
+        '<span class="sb"><b>' + stats().quoted + '</b><span>原典引文已补录</span></span>' +
+        '<span class="sb"><b>' + stats().scholarStance + '</b><span>争鸣立场（方）</span></span>' +
         '<a class="sb" href="#/tools"><b>' + TOOL_ON + '</b><span>已上线工具</span></a>' +
       '</div>';
 
@@ -1432,8 +1416,6 @@
           '<div class="hp-in">' + idxBlock + roam +
             '<p class="hp-nav">' +
               '<a href="#/graph">概念关系图 →</a>' +
-              '<a href="#/about">关于这份数据（' + total + ' 条 · ' +
-                stats().quoted + ' 条已核引文 · ' + stats().pending + ' 条待补）→</a>' +
             "</p>" +
           "</div>" +
         "</section>" +
@@ -2211,57 +2193,6 @@
      33 页中英正文，只额外附加美术描述层），所以合并不丢内容。
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ================= 关于（建站说明） ================= */
-
-  function viewAbout() {
-    var st = stats();
-    return '<p class="crumb"><a href="#/">首页</a> / 关于</p>' +
-      '<h1 class="page-title">关于</h1>' +
-      '<section class="about-sec" id="about-intro">' +
-      '<p class="note"><b>建站初衷。</b>本站是一份为研读《资本论》而建的学习资料库。' +
-      '原著概念密集、译名多样、引文出处分散，初读时常有「每个词都认识、意思却连不起来」的困难，' +
-      '查证一条引文更要来回翻书。为此，本站把 ' + st.total + ' 条核心术语整理成可检索的在线词条，' +
-      '逐条给出释义、原典引文与出处，使概念查得到、读得懂、对得上原文。</p>' +
-      '<p class="note"><b>建站目标。</b>力求做到三个「可」：一是<b>可溯源</b>——引文逐字录入，' +
-      '注明版本与页码，尚未完成的部分如实标注，不冒充已核；二是<b>可对照</b>——围绕有争议的问题' +
-      '并置学界的不同判断，呈现争论本身，而不是只给一家之言；三是<b>可贯通</b>——以概念关系图谱串联术语，' +
-      '配合学习与写作工具，把单个词条连成对整部著作的理解。</p>' +
-      '<p class="note"><b>希望你了解。</b>站内内容仍在持续补充与修订，标有「待核」「待补」的条目' +
-      '即当前正在完善的部分。希望这份可信赖、可追溯的参考，能陪伴每一位愿意翻开《资本论》的读者。</p>' +
-      "</section>" +
-
-      /* —— 网站概览：进度图表（数字由词条库现算，不手写） —— */
-      '<section class="about-sec" id="about-overview">' +
-      '<h2 class="sec-title">网站概览<span class="more">数字由词条库现算，不手写</span></h2>' +
-      '<div class="charts">' +
-        '<div class="chart"><h3>原典引文的溯源方式<span class="ch-n">共 ' + st.total + " 条词条</span></h3>" +
-          barChart([
-            { k: "图书 · 已核到印刷页", n: st.locPage, tone: "c0" },
-            { k: "报纸 · 已核到见报日期", n: st.locPaper, tone: "c1" },
-            { k: "法律条文 · 已核到条款", n: st.locLaw, tone: "c2" },
-            { k: "卷首文献 · 书中不印页码", n: st.locFront, tone: "c3" },
-            { k: "引文待补录", n: st.pending, tone: "c4" }
-          ].filter(function (r) { return r.n > 0; })) +
-          '<p class="ch-note">图书类给出该书<strong>实际印刷的页码</strong>，报纸类给出<strong>见报日期</strong>，' +
-          "照注翻书查报即可对上原句。</p></div>" +
-        '<div class="chart"><h3>学界争鸣栏的完成度<span class="ch-n">共 ' + st.total + " 条词条</span></h3>" +
-          barChart([
-            { k: "已写入立场 · 文献已核", n: TERMS.filter(function (t) { return stanceCount(t, true) > 0; }).length, tone: "c0" },
-            { k: "已写入立场 · 文献待核", n: TERMS.filter(function (t) { return stanceCount(t) > stanceCount(t, true); }).length, tone: "c1" },
-            { k: "仅列出争鸣点 · 文献待查", n: st.scholarLead, tone: "c2" },
-            { k: "尚未补录", n: Math.max(0, st.total - st.scholarTopic - st.scholarLead), tone: "c4" }
-          ].filter(function (r) { return r.n > 0; })) +
-          '<p class="ch-note">累计 ' + st.scholarStance + " 方立场，其中 " + st.scholarCited +
-          " 方的作者、篇名、刊名、年、期、页码已逐项核到公开权威来源。</p></div>" +
-      "</div>" +
-      '<div class="charts" style="margin-top:1rem"><div class="chart">' +
-        "<h3>知识板块 · 词条分布<span class=\"ch-n\">共 " + st.total + " 条词条</span></h3>" +
-        barChart(TAXES.map(function (tx) {
-          return { k: tx.name, n: (tx.cats || []).reduce(function (a, c) { return a + termsIn(c.id).length; }, 0) };
-        })) + "</div></div>" +
-      "</section>";
-  }
-
   /* ================= 创作说明 · AI 使用透明记录 =================
 
      投稿要求创作说明含六项：作品主题 / 原典依据 / 创作思路 / 所用人工智能工具 /
@@ -2326,9 +2257,6 @@
     try { t.focus({ preventScroll: true }); } catch (e) { /* 老环境不支持也罢了 */ }
     return true;
   }
-
-  /* 关于页换页后的收尾。这一页不需要额外绑定，留一个空钩子给路由统一调用。 */
-  function aboutAfter() {}
 
   /* ---------------- 标签浏览 ----------------
      标签云的字号按收录条数分档（.tw-1 ~ .tw-5），不写死 px，
@@ -8493,7 +8421,7 @@
      配图全部**复用已有资源** —— 引用 site/assets 里现成的那些（门类配图 3 张、
      三卷书封 3 张、开屏书斋底图 1 张），靠 build.mjs 的 ASSETS 表在构建时内联成
      data URI，离线单文件照样看得到图，不新增任何图片文件。
-     锚点跳转用 data-act="jump"（站里已有的那一套：见 viewAbout 的两段式跳转）。
+     锚点跳转用 data-act="jump"（站里已有的那一套，与工具台页内跳转共用）。
      ══════════════════════════════════════════════════════════════ */
 
   /* 手册里引用的既有图片。写法与 VOL_COVER / dom-zx 那两处一致：
@@ -11010,8 +10938,11 @@
       var stO = ovState({ v: "tree" });
       html = viewOverview(stO); after = vt3Init; canonical = ovUrl(stO);
     }
-    /* 旧地址 #/statement 保留为别名：落到「关于」页，地址栏静默归一到 #/about */
-    else if (parts[0] === "statement") { html = viewAbout(); after = aboutAfter; canonical = "#/about"; }
+    /* 「关于」页已撤除（v66）。旧地址 #/statement 与 #/about 仍然进得来，
+       只是渲染首页、地址栏静默归一到 #/ —— 站外旧链接与读者收藏不会撞见 404。 */
+    else if (parts[0] === "statement" || parts[0] === "about") {
+      html = viewHome(); after = function () { homePager(); homeDuoInit(); }; canonical = "#/";
+    }
 
     else if (parts[0] === "tg") {
       var tn = parts.slice(1).join("/");
@@ -11023,7 +10954,6 @@
        地址栏随后静默归一到 #/pictorial（replaceState 不触发 hashchange，只改地址不重画）。
        保留别名而不是直接 404，是为了站内外的旧链接与读者收藏过的地址都还进得来。 */
     else if (parts[0] === "book") { html = viewPictorial(); after = picBind; canonical = "#/pictorial"; }
-    else if (parts[0] === "about") { html = viewAbout(); after = aboutAfter; canonical = "#/about"; }
     else if (parts[0] === "tools") {
       /* #/tools 是总览；#/tools/<id> 直接落到那件工具，便于顶栏巨型菜单深链 */
       html = viewTools(parts[1] || "");
@@ -11055,7 +10985,6 @@
       "graph": "graph",
       "reader": "reader",
       "manual": "manual",
-      "about": "about", "statement": "about",
       "pictorial": "", "book": ""    };
     var cur = NAV_PARENT.hasOwnProperty(parts[0] || "") ? NAV_PARENT[parts[0] || ""] : "";
     document.querySelectorAll(".navlinks a").forEach(function (a) {
@@ -11174,20 +11103,13 @@
       if (cp != null) { copyText(cp, el); return; }
       var act = el.getAttribute("data-act");
       if (act === "print") window.print();
-      /* 页内跳转（关于页那两段之间的按钮）。href 只是给「新窗打开/复制链接」用的，
+      /* 页内跳转（使用手册目录的章节按钮）。href 只是给「新窗打开/复制链接」用的，
          这里必须拦掉默认导航，否则改 hash 会被当成换页、把刚滚到的位置又顶回顶部。 */
       else if (act === "jump") {
         ev.preventDefault();
         var jt = el.getAttribute("data-target");
         var jh = el.getAttribute("href");
         if (jh) setHashQuiet(jh);
-        var jtabs = document.querySelectorAll(".about-jump .ttab");
-        jtabs.forEach(function (a) {
-          var on = a === el;
-          a.classList.toggle("on", on);
-          if (on) a.setAttribute("aria-current", "true");
-          else a.removeAttribute("aria-current");
-        });
         jumpTo(jt);
       }
       else if (act === "hist-back") histBack();

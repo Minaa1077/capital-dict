@@ -3,7 +3,7 @@
  *
  *   NODE_PATH=<node workspace>/node_modules node scripts/smoke-test.mjs
  *
- * 检查项：首页 / 拼音索引 / 分类 / 词条页（三层深度）/ 关系图 / 关于页，
+ * 检查项：首页 / 拼音索引 / 分类 / 词条页（三层深度）/ 关系图 / 使用手册，
  * 以及搜索函数对三种输入（汉字、全拼、首字母）的命中情况。
  */
 
@@ -617,14 +617,15 @@ check("· #/tree 时顶栏高亮「总览」", (() => {
 })());
 await goto("#/statement");
 
-check("旧地址 #/statement 落到「关于」页，地址栏归一到 #/about",
-  window.location.hash === "#/about" && !!doc.querySelector('.navlinks a[data-route="about"]'));
+check("v66：旧地址 #/statement、#/about 都归一到首页，不落 404",
+  window.location.hash === "#/" &&
+  !!view().querySelector(".hero") &&
+  !/页面不存在/.test(text()));
 
-check("关于页只讲建站说明，不再有数据台账与创作说明段",
-  !!view().querySelector("#about-intro") &&
-  !view().querySelector("#about-credit") &&
-  !view().querySelector(".about-jump") &&
-  !/创作说明|AIGC|投稿/.test(text()));
+check("v66：「关于」页已彻底撤除（无导航项、无页面骨架、无残留正文）",
+  !doc.querySelector('.navlinks a[data-route="about"]') &&
+  !view().querySelector("#about-intro, .about-sec, .about-jump") &&
+  !/建站初衷|建站目标/.test(text()));
 
 await goto("#/t/shangpin");
 check("词条页不再展示撰写人、AI 用法一类制作信息",
@@ -1382,7 +1383,7 @@ check("投影模式：打开时挂上全屏浮层，条数是讲义的条数", (
   return !!el && el.querySelector(".pj-cnt").textContent === "1 / " + WIO.hd().picks.length &&
     doc.body.classList.contains("pj-on");
 })());
-await goto("#/about");
+await goto("#/manual");
 check("投影模式：换页自动收掉浮层，不会盖在新页面上", (() =>
   !doc.getElementById("pj") && !doc.body.classList.contains("pj-on"))());
 
@@ -1541,8 +1542,8 @@ check("v16：换页后向播报区写入了页名", (() => {
   const t = doc.getElementById("route-live").textContent;
   return /已载入/.test(t) && t.length > 3;
 })(), doc.getElementById("route-live").textContent);
-await goto("#/statement");
-check("v16：一页只允许一个 h1（关于页只剩数据说明，不嵌文稿标题）",
+await goto("#/manual");
+check("v16：一页只允许一个 h1（使用手册页只有页标题）",
   doc.querySelectorAll("#view h1").length === 1 && !doc.querySelector("#cm-doc"));
 check("v16：样式表里有触达下限 --tap-min 与粗指针放大规则", (() => {
   const css = doc.querySelector("style").textContent;

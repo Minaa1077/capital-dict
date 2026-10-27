@@ -855,35 +855,6 @@ details.credit dd { margin: 0; color: var(--ink-2); }
 .tp-when { font-size: .78rem; color: var(--ink-3); margin: 0; line-height: 1.7; }
 .tp-when b { color: var(--accent); font-weight: 600; margin-right: .3rem; }
 
-/* ============ 进度条形图 ============ */
-
-.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 1rem; margin: 1rem 0; }
-.chart {
-  border: 1px solid var(--rule); border-radius: 10px; background: #fff; padding: .9rem 1.1rem 1rem;
-}
-.chart h3 {
-  font-family: var(--serif); font-size: .96rem; font-weight: 700;
-  margin: 0 0 .8rem; padding-bottom: .45rem; border-bottom: 1px solid var(--rule);
-}
-.chart .ch-n { float: right; font-family: var(--sans); font-size: .74rem; font-weight: 400; color: var(--ink-3); }
-.chart .ch-note { font-size: .78rem; color: var(--ink-3); line-height: 1.7; margin: .8rem 0 0; }
-
-.bars { display: flex; flex-direction: column; gap: .42rem; }
-.bar-row { display: flex; align-items: center; gap: .5rem; font-size: .82rem; }
-.bar-k { flex: none; width: 8.6rem; color: var(--ink-2); line-height: 1.35; }
-.bar-track { flex: 1; min-width: 2rem; height: 9px; border-radius: 5px; background: var(--paper-3); overflow: hidden; }
-.bar-track i { display: block; height: 100%; border-radius: 5px; background: var(--accent); }
-.bar-track i.c0 { background: var(--accent); }
-.bar-track i.c1 { background: var(--accent-2); }
-.bar-track i.c2 { background: #7a8fa6; }
-.bar-track i.c3 { background: #a8a196; }
-.bar-track i.c4 { background: var(--warn); }
-.bar-v {
-  flex: none; width: 2.4rem; text-align: right;
-  font-family: var(--mono); font-size: .76rem; color: var(--ink-2);
-}
-
-
 /* ============ 通用 ============ */
 
 .note {
@@ -1958,7 +1929,7 @@ body.pj-on .dock, body.pj-on .topbar { display: none !important; }
 .hero-entries { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0 0; }
 .hero-entries a {
   /* v53：文字水平垂直居中。
-     原来是 display:inline-block + 文字自然流，文字**靠左**（实测「关于」左右留白
+     原来是 display:inline-block + 文字自然流，文字**靠左**（实测左右留白
      17px / 59px，差 42px），在 min-width 撑出的空档里明显偏左；窄屏 min-width 失效、
      按钮被内容压窄时更会挤成竖条（用户截图就是这个现象）。
      inline-flex + justify/align:center 让文字在「按钮盒」里真正居中：
@@ -1983,9 +1954,9 @@ body.pj-on .dock, body.pj-on .topbar { display: none !important; }
   border: 1px solid #c1a877; background: #fffdf7; color: var(--red-deep);
   font-size: .86rem; font-weight: 600; letter-spacing: .02em;
   box-shadow: 0 1px 0 rgba(178, 142, 80, .18);
-  /* v52：六个按钮精简为三个（画传／关系图／关于）之后，文案长度从 2~5 字不等，
-     原来靠内容自适应的宽度就明显失衡了：「关于」只有 62px，另两个 104px。
-     给一条 min-width 让短的自动补齐，三个按钮视觉重量一致、基线也对得齐。
+  /* v52：六个按钮精简为三个（画传／关系图／关于）、v66 再减为两个之后，
+     文案长度不等，原来靠内容自适应的宽度就明显失衡。
+     给一条 min-width 让短的自动补齐，两个按钮视觉重量一致、基线也对得齐。
      104px = 五字文案的实测宽度（104 - 16×2 内边距 = 72px 文字宽，13.76px 字号下 5 个汉字）。
      用 rem 跟着根字号走，换主题或改字号时不会失配。 */
   min-width: 6.5rem;
@@ -3505,24 +3476,6 @@ body.rd-on .main { max-width: min(96vw, 1440px); }
 }
 
 
-/* ---- ⑤ 关于页：马克思《资本论》手稿页（约 1860 年）图卡 ---- */
-.ms-figure {
-  float: right; width: min(300px, 36%); margin: .2rem 0 1rem 1.4rem;
-  padding: .55rem .55rem .5rem; border: 1px solid #e0cb9a;
-  border-radius: var(--r-md); background: #fbf5e6;
-  box-shadow: 0 10px 24px rgba(100, 10, 14, .12);
-}
-.ms-figure-img {
-  aspect-ratio: 420 / 522; border-radius: calc(var(--r-md) - 4px);
-  background-image: var(--about-ms); background-size: cover; background-position: center;
-}
-.ms-figure figcaption {
-  font-size: .74rem; line-height: 1.6; color: var(--ink-2);
-  padding: .5rem .15rem 0;
-}
-@media (max-width: 800px) { .ms-figure { float: none; width: 100%; margin: .4rem 0 1.1rem; } }
-@media print { .ms-figure { display: none !important; } }
-
 /* ============================================================
    词条漫游 v13（2026-10-03）· 首页双专栏合并为单栏随机抽取
    ============================================================ */
@@ -3583,7 +3536,7 @@ html {
   text-wrap: balance;
 }
 .note, .c-note, .card .c-meta, .tool-hint, .tool-sub, .tt-sum, .tt-input label,
-.hol-row, .srs-empty, .ms-figure figcaption, p.empty, .crumb, .tag, .ttab, .ch-tab {
+.hol-row, .srs-empty, p.empty, .crumb, .tag, .ttab, .ch-tab {
   text-wrap: pretty;
 }
 /* 长文与代码保持自然流：不套 balance／pretty */
@@ -3739,19 +3692,11 @@ html { scrollbar-width: thin; scrollbar-color: rgba(100, 10, 14, .28) transparen
 .stat-band .sb b { transition: transform .18s var(--ease); }
 .stat-band .sb:hover b { transform: translateY(-1px); }
 
-/* ---- ⑯ 手稿图卡：悬停时纸面提亮一档（不是可点元素，不做位移） ---- */
-.ms-figure { transition: box-shadow .22s var(--ease); }
-.ms-figure:hover { box-shadow: 0 14px 30px rgba(100, 10, 14, .17); }
-.ms-figure-img { transition: filter .22s ease; }
-.ms-figure:hover .ms-figure-img { filter: contrast(1.03) brightness(1.02); }
-
 /* ---- ⑰ 减动效 / 打印：⑫—⑯ 回退 ---- */
 @media (prefers-reduced-motion: reduce) {
-  .term-list a::after, .stat-band .sb, .stat-band .sb b,
-  .ms-figure, .ms-figure-img { transition: none !important; }
+  .term-list a::after, .stat-band .sb, .stat-band .sb b { transition: none !important; }
   .term-list a:hover::after { transform: translateY(calc(-50% - 1px)); }
   .stat-band .sb:hover b { transform: none !important; }
-  .ms-figure:hover .ms-figure-img { filter: none; }
 }
 @media print {
   .topbar::after { display: none !important; }
@@ -5362,18 +5307,13 @@ body.iv-cap .house-cap {
    正确做法是「轻微降亮 + 一点暖罩」，让照片与深底融合而不是被烙上去。
    brightness .92 只压掉刺眼的高光，不改色相；sepia .1 把冷白拉回暖调，
    与全站红金体系一致。 —— */
-[data-theme="dark"] :is(.vt3-vol-cover, .ms-figure-img, .man-fig img, .cb-cover img) {
+[data-theme="dark"] :is(.vt3-vol-cover, .man-fig img, .cb-cover img) {
   filter: brightness(.92) sepia(.1) contrast(1.02);
   /* ⚠ 这里**必须**用 background-color，不能用 background 简写 ——
-     简写会把 background-image 一并重置为 none。
-     .ms-figure-img 的图正是靠 background-image: var(--about-ms) 来的，
-     被重置后暗色下就是「你截图里关于页那个空白黑框」。
-     （浅色模式没这条规则，所以图能正常显示 —— 现象只在暗色出现，极难联想。）
-     同理 ② 的 .ms-figure-img:not(:hover) 与打印块那两处也一并改掉。 */
-  background-color: var(--paper-3);   /* 图未加载时的占位也不能是白板 */
+     简写会把 background-image 一并重置为 none（书封走的是 <img>，
+     这里只作未加载时的占位，也不能是白板）。 */
+  background-color: var(--paper-3);
 }
-/* 悬停时恢复一点亮度（原本浅色下是 brightness 1.02 的提亮） */
-[data-theme="dark"] .ms-figure:hover .ms-figure-img { filter: brightness(1) sepia(.06) contrast(1.02); }
 
 /* 内联 SVG 图标：只给描边/填充的图标提亮，不整体反相。
    首字母定位条、词标这类用 currentColor 的会自动跟着 --ink 变。 —— */
@@ -5440,7 +5380,6 @@ body.iv-cap .house-cap {
     background: #fffaf0; border-color: #dcc99b; color: #221f1a;
   }
   [data-theme="dark"] .vt3-vol-cover,
-  [data-theme="dark"] .ms-figure-img,
   [data-theme="dark"] .man-fig img { filter: none; background-color: #fdfaf5; }  /* 同上：不能用 background 简写，会抹掉图 */
   [data-theme="dark"] .iv-mask { opacity: 1; }
   /* ③ 切换按钮本身不该出现在纸上 */
@@ -5665,8 +5604,7 @@ body.iv-cap .house-cap {
    ② 木纹框改黑胡桃
    ③ 导航栏填充/边框统一
    ④「按门类浏览」毛玻璃改低对比度灰
-   ⑤ 关于页手稿图修复
-   （⑥ 生词本删除是 JS 侧改动，见 app.js）
+   （⑤ 生词本删除是 JS 侧改动，见 app.js）
 
    背景图挂在 <html> 上而不是 <body>：
    body 是滚动容器，背景挂在 body 上会随内容高度拉伸、并被 #view 等
@@ -5814,81 +5752,6 @@ html[data-theme="dark"] {
   [data-theme="dark"] .hp .tax .card.card-cv { --cb-blur: 11px; --cb-scale: 1.11; --cb-veil: .45; background: #fdfaf5; }
   [data-theme="dark"] .hp .tax .card.card-cv .c-fig::before { background: rgba(253, 250, 245, 1); }
 }
-
-/* —— ⑤ 关于页手稿图 ——
-   根因不是暗色样式，是**资源没内联**：
-   .ms-figure-img 的背景取 var(--about-ms)，那个变量在 site.css 里写成
-   `url("data:image/jpeg;base64,…")`（一大坨 base64 直接躺在 CSS 源文件里），
-   构建脚本的 ASSETS 表里**没有**它 ⇒ 内联流程不碰它，
-   而单文件产物里 CSS 又被整体替换过一遍，实测 backgroundImage 读到 "none"。
-   修法：把 base64 从 CSS 里取出来，作为独立资源文件进 ASSETS 表，
-   由构建统一内联；CSS 只留一个 --about-ms 变量声明。
-   （变量在 :root 上，浅色与暗色共用同一张图 —— 图本身就是米白纸手稿，
-     暗色下只需加一点降亮让它不至于刺眼，不必反色。） */
-
-/* v55：--about-ms 的声明。此前它以 base64 直接躺在 :root 里（76000+ 字符），
-   抽成独立文件时把整条规则替换掉了，连带把外层的 :root 选择器也丢了 ——
-   变量落在块外属**无效声明**，于是 var(--about-ms) 回退成 none
-   （真机实测 backgroundImage:"none"，就是你截图里那个空白黑框）。 */
-
-/* v55：--about-ms 的声明。
-   ⚠ 踩过两个坑，都记下来：
-   ① 它此前以 base64 直接躺在 :root 里（76000+ 字符）。抽成独立文件时
-      我把整条规则替换掉了，连带把外层的 :root 选择器也丢了 ——
-      变量落在块外属**无效声明**，var(--about-ms) 就回退成 none
-      （真机实测 backgroundImage:"none"，就是你截图里那个空白黑框）。
-   ② 补声明时用了 Edit 往上匹配，结果插到了 @media print 块**里面** ——
-      打印时变量不定义，一样是 none，而屏幕模式下变量又在 :root 正常声明，
-      看起来"应该没问题"。所以这条必须在所有 @media 块之外。 */
-
-[data-theme="dark"] .ms-figure {
-  background: var(--paper-2);
-  border-color: var(--rule-2);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .48);
-}
-/* ⚠ 必须带 :not(:hover) 提权到 (0,3,0)：v54 的通用图片规则
-   [data-theme="dark"] :is(.vt3-vol-cover, .ms-figure-img, .man-fig img, .cb-cover img)
-   权重同为 (0,2,0) 却位置更靠前，所以同权重的 v55 规则赢不了它
-   （真机实测 filter 读到 "brightness(0.92) sepia(0.1) contrast(1.02)"）。
-   而 sepia 不能要 —— 手稿本身就是泛黄的纸，sepia 会把墨迹染成红的。 */
-[data-theme="dark"] .ms-figure-img:not(:hover) {
-  /* 纸面手稿在深色页面上很亮 —— 降到 .84 融进页面而不刺眼 */
-  filter: brightness(.84) contrast(1.03);
-  /* 只改 background-color：若用 background 简写会把上面的图（background-image）抹掉 */
-  background-color: var(--paper-3);
-}
-[data-theme="dark"] .ms-figure-img:hover { filter: brightness(.92) contrast(1.05); }
-[data-theme="dark"] .ms-figure figcaption { color: var(--ink-2); }
-
-@media print {
-  /* v55：--about-ms 的声明。此前它以 base64 直接躺在 :root 里（76000+ 字符），
-   抽成独立文件时把整条规则替换掉了，连带把外层的 :root 选择器也丢了 ——
-   变量落在块外属**无效声明**，于是 var(--about-ms) 回退成 none
-   （真机实测 backgroundImage:"none"，就是你截图里那个空白黑框）。 */
-
-[data-theme="dark"] .ms-figure {
-  background: var(--paper-2);
-  border-color: var(--rule-2);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .48);
-}
-[data-theme="dark"] .ms-figure-img { filter: none; background-color: #fdfaf5; }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   v55 · --about-ms 的声明（必须放在所有 @media 块**之外**）
-   ----------------------------------------------------------------
-   ⚠ 这个变量被挪了两次才挪对，两个坑都记在这里：
-   ① 它此前以 base64 直接躺在 :root 里（76000+ 字符）。v55 把它抽成独立
-      文件由构建统一内联，替换时连外层的 :root 选择器一起丢了 ——
-      变量落在块外属**无效声明**，var(--about-ms) 回退成 none，
-      真机实测 .ms-figure-img 的 backgroundImage 是 "none"，
-      就是截图里关于页那个空白黑框。
-   ② 补声明时用 Edit 往上匹配，插到了 @media print 块**里面** ——
-      打印时变量不定义，一样是 none；而屏幕模式下 :root 又有另一份，
-      看起来"应该没问题"，极难发现。
-   所以：**追加在文件末尾**，永远在所有 @media 之后。
-   ══════════════════════════════════════════════════════════════ */
-:root { --about-ms: url("about-ms.jpg"); }
 
 /* ══════════════════════════════════════════════════════════════
    关系图：找不到文件时的说明卡（v56）

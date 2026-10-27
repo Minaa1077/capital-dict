@@ -275,10 +275,6 @@ async function main() {
       /* v55 深夜模式页面底图（用户提供）。挂在 html 上由 CSS 的 --dark-bg 取，
          只在 [data-theme="dark"] 下生效；浅色模式根本不引用这个变量。 */
       { file: "dark-bg.jpg", mime: "image/jpeg", label: "深夜模式页面底图", in: "css" },
-      /* v55：关于页手稿图。此前它以 base64 直接躺在 site.css 里，ASSETS 表漏登记，
-         内联流程不碰它，而单文件产物里 CSS 又整体替换过一遍 ⇒ 实测 backgroundImage:none
-         （截图里那个空白黑框）。抽出成独立文件后由构建统一内联。 */
-      { file: "about-ms.jpg", mime: "image/jpeg", label: "关于页手稿图", in: "css" },
       { file: "intro-wordmark.svg", mime: "image/svg+xml", label: "开屏镂空词标", in: "css" },
       { file: "intro-wordmark-line.svg", mime: "image/svg+xml", label: "开屏词标金线", in: "css" },
       { file: "vol-1.jpg", mime: "image/jpeg", label: "《资本论》第一卷书封", in: "js" },
