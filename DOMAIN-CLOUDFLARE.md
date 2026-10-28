@@ -1,6 +1,9 @@
 # 自定义域名 + Cloudflare 接入手册
 
-> 目标：把 `https://minaa1077.github.io/capital-dict/` 换成一个自己的域名（如 `ctrans.cn`），
+> 目标：把 `https://minaa1077.github.io/capital-dict/` 换成自有域名 `minaa.cloud`，
+> 由 Cloudflare 管 DNS、TLS 与缓存，源站仍是 GitHub Pages，发版流程不变。
+> **进度（2026-10-29 00:15）**：域名已在阿里云购得并实名 ✓；CF 站点已建、9 条 DNS 记录（全灰云）✓；
+> 阿里云 NS 已改为 kami/viddy.ns.cloudflare.com ✓；**正在等 CF Active**（待办 S5 起）。
 > 由 Cloudflare 管 DNS、TLS 与缓存，源站仍是 GitHub Pages，发版流程不变。
 > 预计耗时：域名注册 10 分钟 ＋ DNS 生效 5 分钟–2 小时 ＋ 证书签发 5 分钟–24 小时；除域名年费外无其他费用。
 
@@ -25,7 +28,7 @@
 
 | # | 需要确认 | 为什么 | 你填 |
 |---|---|---|---|
-| 1 | **域名与后缀**（如 `ctrans.cn` / `capital-read.top`） | 所有记录与证书都绑这一个名字 | |
+| 1 | **域名与后缀**（如 `minaa.cloud` / `capital-read.top`） | 所有记录与证书都绑这一个名字 | |
 | 2 | **注册商**（阿里云 / 腾讯云 / Namesilo / Cloudflare Registrar…） | 决定改 NS 的入口在哪 | |
 | 3 | 是否已**实名认证**；后缀是否 `.cn` | `.cn` 不实名会停止解析；境外托管**不触发 ICP 备案**（备案只针对境内服务器） | |
 | 4 | 主域用**裸域**还是 `www` | 建议裸域为主、`www` 301 过来（下面按此写） | |
@@ -58,7 +61,7 @@
 - 无需备案（服务器在境外）；**不要**买「已备案域名」，用不上。
 
 ### S2 把域名加进 Cloudflare
-1. Cloudflare Dashboard → **Add a site** → 输入**裸域**（`ctrans.cn`，不带 `www`、不带协议）。
+1. Cloudflare Dashboard → **Add a site** → 输入**裸域**（`minaa.cloud`，不带 `www`、不带协议）。
 2. 选 **Free** 计划 → Continue。
 3. 记下面板给的两条 NS，形如：
    ```
@@ -96,14 +99,14 @@
 - 忘记关橙云（小云朵点成灰色，否则 GitHub 验证 DNS 时解析不到它自己的 IP）。
 
 ### S5 在 GitHub 声明域名
-1. 仓库 → **Settings → Pages → Custom domain** → 填 `ctrans.cn` → **Save**。
+1. 仓库 → **Settings → Pages → Custom domain** → 填 `minaa.cloud` → **Save**。
 2. 等出现 **DNS check successful**（几分钟；报错见第 6 节）。
-3. 我在 CI 里已改成：`configure-pages` 读到自定义域后，`base_url` 自动变 `https://ctrans.cn/`，
+3. 我在 CI 里已改成：`configure-pages` 读到自定义域后，`base_url` 自动变 `https://minaa.cloud/`，
    装配时自动带 `--domain`，于是 **CNAME 文件、canonical、og:image、sitemap 全部跟着换**，不用手工改代码。
    本地预览同等效果：
    ```bash
    node scripts/build.mjs --offline
-   node scripts/make-pages.mjs --domain ctrans.cn --out tmp/_site-domaintest
+   node scripts/make-pages.mjs --domain minaa.cloud --out tmp/_site-domaintest
    ```
 
 ### S6 等证书，勾强制 HTTPS
@@ -137,8 +140,8 @@ Cloudflare 默认**不缓存 HTML**。本站是「一个 3.3 MB 的 HTML ＋ 两
 
 | 规则 | 匹配表达式 | 设置 |
 |---|---|---|
-| ① 主页面 | `(http.host eq "ctrans.cn" and (http.request.uri.path eq "/" or http.request.uri.path eq "/index.html"))` | Cache eligibility: **Eligible**；Edge TTL: **2 小时（Ignore origin）**；Browser TTL: **5 分钟** |
-| ② 子页 | `(http.host eq "ctrans.cn" and (http.request.uri.path eq "/marx-pictorial.html" or http.request.uri.path eq "/pathflow.html"))` | Eligible；Edge TTL **1 天**；Browser TTL **1 小时** |
+| ① 主页面 | `(http.host eq "minaa.cloud" and (http.request.uri.path eq "/" or http.request.uri.path eq "/index.html"))` | Cache eligibility: **Eligible**；Edge TTL: **2 小时（Ignore origin）**；Browser TTL: **5 分钟** |
+| ② 子页 | `(http.host eq "minaa.cloud" and (http.request.uri.path eq "/marx-pictorial.html" or http.request.uri.path eq "/pathflow.html"))` | Eligible；Edge TTL **1 天**；Browser TTL **1 小时** |
 
 **每次发版后要清缓存**：Caching → Configuration → **Purge Everything**（或按 URL 清 `/`）。
 不清的话，最长 2 小时内读者看到的还是上一版——投稿前发版务必清。
@@ -176,7 +179,7 @@ SSL 模式    Full (strict)
 ### 5.1 一条命令（本仓库新增，零依赖）
 
 ```bash
-node scripts/verify-domain.mjs ctrans.cn
+node scripts/verify-domain.mjs minaa.cloud
 ```
 
 它按六组逐项打勾：DNS（A/AAAA/CNAME 与「灰云还是橙云」）、HTTP（http→https、200、server、缓存头）、
@@ -187,17 +190,17 @@ TLS（签发者、到期、SAN、ALPN=h2）、页面（title/canonical/og:url/ro
 
 ```
 [① DNS 解析]
-  · 裸域 ctrans.cn：A=104.21.x.x, 172.67.x.x …        → Cloudflare 代理（橙云）
-  ✓ 裸域 ctrans.cn 有解析
+  · 裸域 minaa.cloud：A=104.21.x.x, 172.67.x.x …        → Cloudflare 代理（橙云）
+  ✓ 裸域 minaa.cloud 有解析
 [② HTTP 与跳转]
-  ✓ http → https 跳转（301 → https://ctrans.cn/）
+  ✓ http → https 跳转（301 → https://minaa.cloud/）
   · 200  3288 KB  首字节 180ms                        → 经 Cloudflare 边缘（橙云已生效）
   · server: cloudflare   cf-cache-status: HIT
 [③ TLS 证书与 ALPN]
-  · 主体 ctrans.cn  签发者 Google Trust Services  到期 2027-01-25（剩 90 天）
-  ✓ SAN 覆盖 ctrans.cn      ✓ ALPN 协商到 HTTP/2（h2）
+  · 主体 minaa.cloud  签发者 Google Trust Services  到期 2027-01-25（剩 90 天）
+  ✓ SAN 覆盖 minaa.cloud      ✓ ALPN 协商到 HTTP/2（h2）
 [④ 页面元信息]
-  ✓ canonical 指向本站（https://ctrans.cn/）
+  ✓ canonical 指向本站（https://minaa.cloud/）
 [⑤ 子页]  ✓ marx-pictorial.html 200   ✓ pathflow.html 200
 [⑥ 404 兜底] ✓ 返回 404 且是站内 404 页
 结果：通过 N / 失败 0
@@ -210,18 +213,18 @@ TLS（签发者、到期、SAN、ALPN=h2）、页面（title/canonical/og:url/ro
 ### 5.2 手工命令（对照用）
 
 ```bash
-nslookup ctrans.cn                 # 期望 104.x / 172.67.x（CF）或 185.199.1xx（灰云）
-nslookup -type=CNAME www.ctrans.cn # 期望 minaa1077.github.io
-curl -I  https://ctrans.cn/        # 期望 200、server: cloudflare、content-type: text/html
-curl -I  http://ctrans.cn/         # 期望 301 到 https
-curl -sI https://ctrans.cn/ | grep -i cf-cache-status   # 第二次访问应为 HIT
+nslookup minaa.cloud                 # 期望 104.x / 172.67.x（CF）或 185.199.1xx（灰云）
+nslookup -type=CNAME www.minaa.cloud # 期望 minaa1077.github.io
+curl -I  https://minaa.cloud/        # 期望 200、server: cloudflare、content-type: text/html
+curl -I  http://minaa.cloud/         # 期望 301 到 https
+curl -sI https://minaa.cloud/ | grep -i cf-cache-status   # 第二次访问应为 HIT
 ```
 
 ### 5.3 面板/真机核对
 
 | 检查 | 期望 |
 |---|---|
-| GitHub → Settings → Pages | 顶部显示 `Your site is live at https://ctrans.cn/`，DNS check successful，Enforce HTTPS 已勾 |
+| GitHub → Settings → Pages | 顶部显示 `Your site is live at https://minaa.cloud/`，DNS check successful，Enforce HTTPS 已勾 |
 | Cloudflare → SSL/TLS | Overview 显示 Full (strict)，Edge Certificates 里 Universal SSL 状态 Active |
 | 手机 4G（关 Wi-Fi）打开 | 10 秒内出首屏；再刷一次明显更快（边缘缓存命中） |
 | 微信内置浏览器 | 能正常打开（评审常用），无「非官方网页」拦截 |
