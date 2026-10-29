@@ -48,6 +48,15 @@ const doc = window.document;
 const view = () => doc.getElementById("view");
 const text = () => view().textContent.replace(/\s+/g, " ").trim();
 
+/* v69：模拟「用户已看过开屏」——摘掉开屏帘，让首页功能导览的 arm()
+   不必空等 15 秒。真实浏览器里帘子由用户滚动/点击退场，效果相同。 */
+try { window.sessionStorage.setItem("capital-intro-v1", "1"); } catch (e) { /* 无存储就算了 */ }
+if (doc.getElementById("intro-veil")) {
+  doc.getElementById("intro-veil").remove();
+  doc.documentElement.classList.remove("iv-lock");
+  doc.body.classList.remove("iv-lock");
+}
+
 let failed = 0;
 function check(label, cond, detail) {
   const ok = !!cond;
@@ -1629,6 +1638,76 @@ check("v65：首次进入阅读器自动弹出引导，且讲到「选中即查�
 })());
 gd().querySelector(".gd-skip").click();
 check("v65：点「跳过」关闭并写入「已读」", !gd() && !!window.localStorage.getItem("capital-guide-reader-v1"));
+await goto("#/");
+
+/* ---- v69：首页功能导览（分步 / 单页，第一次进入自动弹出） ---- */
+try {
+  window.localStorage.removeItem("capital-guide-home-v1");
+  window.sessionStorage.removeItem("capital-guide-home-v1");
+} catch (e) { /* 同上 */ }
+if (gd()) gd().remove();
+
+await goto("#/");
+await wait(520);
+check("v69：首次进首页自动弹出功能导览（分步形态）",
+  !!gd() && gd().getAttribute("data-kind") === "home" && !!gd().querySelector(".gd-steps"));
+check("v69：四枚圆点导航，首步讲「词条检索」且带落地链接", (() => {
+  if (!gd()) return false;
+  return gd().querySelectorAll(".gd-dot").length === 4 &&
+    gd().querySelector(".gd-fn")?.textContent === "词条检索" &&
+    gd().querySelector(".gd-go")?.getAttribute("href") === "#/idx";
+})());
+check("v69：首步「上一步」隐藏，主按钮文案是「下一步」", (() => {
+  if (!gd()) return false;
+  return gd().querySelector(".gd-prev").hidden === true &&
+    gd().querySelector(".gd-ok").textContent === "下一步";
+})());
+gd().querySelector(".gd-ok").click();   /* → 第 2 步 */
+gd().querySelector(".gd-ok").click();   /* → 第 3 步 */
+check("v69：下一步 ×2 落到第 3 步「概念关系图」，上一步可用", (() => {
+  if (!gd()) return false;
+  return gd().querySelector(".gd-fn")?.textContent === "概念关系图" &&
+    gd().querySelector(".gd-go")?.getAttribute("href") === "#/graph" &&
+    gd().querySelector(".gd-prev").hidden === false;
+})());
+gd().querySelector(".gd-prev").click();
+check("v69：上一步退回第 2 步「马克思画传」", (() => {
+  if (!gd()) return false;
+  return gd().querySelector(".gd-fn")?.textContent === "马克思画传" &&
+    gd().querySelector(".gd-go")?.getAttribute("href") === "#/pictorial";
+})());
+gd().querySelectorAll(".gd-dot")[3].click();
+check("v69：圆点直跳第 4 步「文本分析」，主按钮变为「开始使用」", (() => {
+  if (!gd()) return false;
+  return gd().querySelector(".gd-fn")?.textContent === "文本分析" &&
+    gd().querySelector(".gd-go")?.getAttribute("href") === "#/tools/tt" &&
+    gd().querySelector(".gd-ok").textContent === "开始使用";
+})());
+gd().querySelector(".gd-flat").click();
+check("v69：「一页看完」切成四行单页，收起圆点与翻页件", (() => {
+  if (!gd()) return false;
+  const okBtn = gd().querySelector(".gd-ok");
+  return gd().querySelector(".gd-steps").classList.contains("is-flat") &&
+    gd().querySelectorAll(".gd-rows .gd-row").length === 4 &&
+    ["词条检索", "马克思画传", "概念关系图", "文本分析"].every((w) => gd().textContent.includes(w)) &&
+    window.getComputedStyle(okBtn).display === "none" &&
+    window.getComputedStyle(gd().querySelector(".gd-dots")).display === "none" &&
+    gd().querySelector(".gd-flat").textContent === "分步看";
+})());
+gd().querySelector(".gd-flat").click();
+check("v69：「分步看」切回分步形态，仍停在第 4 步", (() => {
+  if (!gd()) return false;
+  return !gd().querySelector(".gd-steps").classList.contains("is-flat") &&
+    gd().querySelector(".gd-fn")?.textContent === "文本分析" &&
+    gd().querySelectorAll(".gd-dot")[3].classList.contains("on");
+})());
+gd().querySelector(".gd-skip").click();
+check("v69：「跳过」关闭并写入「已读」",
+  !gd() && !!window.localStorage.getItem("capital-guide-home-v1"));
+
+await goto("#/");
+await wait(300);
+check("v69：已读后再次进首页不弹", !gd());
 await goto("#/");
 
 /* ---- 未知路由 ---- */

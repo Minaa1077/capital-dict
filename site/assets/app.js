@@ -10718,7 +10718,7 @@
         包含块、跟着页面滚 —— 站内已经踩过两次（#crumb-back、.to-top）。
      ③ **内容只讲「这里能做什么」**：每行一条操作，键位用 .gd-key 胶囊标出，末行小字给
         一条最容易漏的提示；不写实现细节、不写版本号。 */
-  var GUIDE_SEEN = { graph: 0, reader: 0 };   /* 存储全不可用时的会话内兜底 */
+  var GUIDE_SEEN = { graph: 0, reader: 0, home: 0 };   /* 存储全不可用时的会话内兜底 */
   var guideBackFocus = null;
   var GUIDE = {
     graph: {
@@ -10746,11 +10746,35 @@
         ["工具栏", "鼠标靠近上边缘滑出：字号 A-/A+、滚动/翻页、日间/夜间、全屏；翻页模式用 ← → 键。"]
       ],
       tip: "PDF 交给浏览器内置阅读器渲染，暂不支持选词跳转；TXT 与 EPUB 可全部使用。"
+    },
+    /* v69：首页功能导览——第一次打开平台时介绍四个核心功能。
+       与 graph/reader 的「rows 单页」不同，home 用 steps 分步：每步一个功能
+       （名 + 一句话 + 落地链接），圆点可直接跳步，也可「一页看完」切成
+       既有 gd-rows 单页形态。关闭语义与另外两处一致：任何关闭路径都写
+       「已读」，之后不再自动弹出。 */
+    home: {
+      key: "capital-guide-home-v1",
+      kicker: "平台导览 · 第一次来",
+      title: "四个核心功能，三十秒上手",
+      lede: "认全这四件，这个站就会用了；其余内容慢慢逛。",
+      steps: [
+        { name: "词条检索", href: "#/idx",
+          text: "390 条《资本论》术语，支持汉字、全拼与拼音首字母缩写（如 syjz = 剩余价值）。顶栏搜索框全站可用，能直达词条、原典引文与争鸣观点。" },
+        { name: "马克思画传", href: "#/pictorial",
+          text: "卷轴式画册：马克思的生平按年代铺开，图像、手迹与说明卡逐段展开，像翻一本可以滚动的传记。" },
+        { name: "概念关系图", href: "#/graph",
+          text: "术语是节点、关系是连线：拖动摆位、滚轮缩放、点开节点看释义，还能自己画图——把它当作这门课的地图。" },
+        { name: "文本分析", href: "#/tools/tt",
+          text: "把读过的文献粘贴进来：自动识别《资本论》概念、算词频与覆盖度、做多文本比对——检验自己有没有把术语读进去。" }
+      ],
+      tip: "这四件的入口顶栏常驻；画传与关系图在首页也有快捷按钮。本弹窗只出现这一次，之后随时可从导航重新找到它们。"
     }
   };
 
   function guideKindOf(parts) {
     if (!parts) return "";
+    /* v69：首页（无 hash 或 #/）——第一次打开平台就会落在这里 */
+    if (!parts.length) return "home";
     if (parts[0] === "graph") return "graph";
     /* 工具台里的「概念关系图编辑器」是同一个编辑器，共用一份引导与一个「已读」标记 */
     if (parts[0] === "tools" && parts[1] === "path") return "graph";
@@ -10807,6 +10831,9 @@
     var g = GUIDE[kind];
     if (!g || !document.body) return;
     if (document.getElementById("gd-mask")) return;   /* 已经开着就不再叠一层 */
+    guideBackFocus = document.activeElement;
+    /* v69：首页导览是分步形态，交给专门的渲染器 */
+    if (g.steps) { guideOpenSteps(kind, g); return; }
     var rows = g.rows.map(function (r) {
       return '<li class="gd-row"><b class="gd-key">' + esc(r[0]) + "</b><span>" + esc(r[1]) + "</span></li>";
     }).join("");
@@ -10827,7 +10854,6 @@
           '<button type="button" class="gd-ok">知道了</button>' +
         "</div>" +
       "</div>";
-    guideBackFocus = document.activeElement;
     document.body.appendChild(mask);
     mask.querySelector(".gd-ok").addEventListener("click", function () { guideClose(true); });
     mask.querySelector(".gd-skip").addEventListener("click", function () { guideClose(true); });
@@ -10841,6 +10867,90 @@
       if (!b) return;
       try { b.focus({ preventScroll: true }); } catch (e) { b.focus(); }
     }, 60);
+  }
+
+  /* v69：首页导览的分步渲染器。每步一格（功能名 + 一句话 + 去看看），
+     底部圆点直接跳步；「一页看完」切成既有 gd-rows 单页形态，再点「分步看」切回。
+     关闭路径（× / 跳过 / Esc / 点遮罩 / 末步「开始使用」）统一走 guideClose(true)——
+     与 graph/reader 相同：只要关过一次，就写「已读」不再自动弹。 */
+  function guideOpenSteps(kind, g) {
+    var step = 0, flat = false;
+    var mask = document.createElement("div");
+    mask.id = "gd-mask";
+    mask.className = "gd-mask";
+    mask.setAttribute("data-kind", kind);   /* guideClose 靠它回写「已读」 */
+    mask.innerHTML =
+      '<div class="gd-card gd-steps" role="dialog" aria-modal="true" aria-labelledby="gd-title" aria-describedby="gd-lede">' +
+        '<button type="button" class="gd-x" aria-label="关闭引导">×</button>' +
+        '<p class="gd-kicker">' + esc(g.kicker) + "</p>" +
+        '<h2 class="gd-title" id="gd-title">' + esc(g.title) + "</h2>" +
+        '<p class="gd-lede" id="gd-lede">' + esc(g.lede) + "</p>" +
+        '<div class="gd-stage"></div>' +
+        '<div class="gd-dots">' + g.steps.map(function (s, i) {
+          return '<button type="button" class="gd-dot" data-i="' + i +
+            '" aria-label="第 ' + (i + 1) + " 步：" + esc(s.name) + '"></button>';
+        }).join("") + "</div>" +
+        '<p class="gd-tip">' + esc(g.tip) + "</p>" +
+        '<div class="gd-acts">' +
+          '<button type="button" class="gd-flat">一页看完</button>' +
+          '<button type="button" class="gd-skip">跳过</button>' +
+          '<button type="button" class="gd-prev">上一步</button>' +
+          '<button type="button" class="gd-ok">下一步</button>' +
+        "</div>" +
+      "</div>";
+    document.body.appendChild(mask);
+
+    var stage = mask.querySelector(".gd-stage"),
+        dots = mask.querySelectorAll(".gd-dot"),
+        prev = mask.querySelector(".gd-prev"),
+        next = mask.querySelector(".gd-ok"),
+        flatBtn = mask.querySelector(".gd-flat");
+
+    function paint() {
+      mask.querySelector(".gd-steps").classList.toggle("is-flat", flat);
+      if (flat) {
+        stage.innerHTML = '<ul class="gd-rows">' + g.steps.map(function (s) {
+          return '<li class="gd-row"><b class="gd-key">' + esc(s.name) + "</b><span>" +
+            esc(s.text) + "</span></li>";
+        }).join("") + "</ul>";
+        flatBtn.textContent = "分步看";
+        return;
+      }
+      var s = g.steps[step];
+      stage.innerHTML = '<div class="gd-step"><b class="gd-fn">' + esc(s.name) + "</b>" +
+          '<p class="gd-step-text">' + esc(s.text) + "</p>" +
+          (s.href ? '<a class="gd-go" href="' + esc(s.href) + '">去看看 →</a>' : "") +
+        "</div>";
+      prev.hidden = step === 0;
+      next.textContent = step === g.steps.length - 1 ? "开始使用" : "下一步";
+      flatBtn.textContent = "一页看完";
+      for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle("on", i === step);
+      }
+    }
+
+    next.addEventListener("click", function () {
+      if (flat) { guideClose(true); return; }
+      if (step < g.steps.length - 1) { step++; paint(); }
+      else guideClose(true);
+    });
+    prev.addEventListener("click", function () { if (step > 0) { step--; paint(); } });
+    flatBtn.addEventListener("click", function () { flat = !flat; paint(); });
+    mask.querySelector(".gd-skip").addEventListener("click", function () { guideClose(true); });
+    mask.querySelector(".gd-x").addEventListener("click", function () { guideClose(true); });
+    for (var di = 0; di < dots.length; di++) {
+      (function (d) {
+        d.addEventListener("click", function () {
+          flat = false; step = +d.getAttribute("data-i"); paint();
+        });
+      })(dots[di]);
+    }
+    mask.addEventListener("click", function (ev) { if (ev.target === mask) guideClose(true); });
+    document.addEventListener("keydown", guideKey, true);
+    setTimeout(function () {
+      try { next.focus({ preventScroll: true }); } catch (e) { next.focus(); }
+    }, 60);
+    paint();
   }
 
   /* 路由钩子：进到这两页且没看过才排队弹出；离开页面则收起并记为已读 */
@@ -10858,9 +10968,11 @@
       if (document.getElementById("gd-mask")) return;
       if (guideKindOf(hashParts().parts) !== kind) return;   /* 期间已经换页 */
       /* 开屏帘 z 2000 盖在引导（z 1400）之上：帘子还在就先别弹，
-         否则用户只看见帘子，引导等于白开。等它撤掉再弹。 */
+         否则用户只看见帘子，引导等于白开。等它撤掉再弹。
+         首次访客必然先撞见帘子（要滚动/点击才退场），首页导览多等一会——
+         120 次 × 500ms = 1 分钟，超出才放弃；graph/reader 走到时帘子通常已撤。 */
       if (document.getElementById("intro-veil")) {
-        if (++tries > 30) return;
+        if (++tries > (kind === "home" ? 120 : 30)) return;
         setTimeout(arm, 500);
         return;
       }

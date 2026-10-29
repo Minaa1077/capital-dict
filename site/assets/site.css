@@ -6206,3 +6206,85 @@ body.pj-on .to-top { display: none !important; }
   .gd-mask, .gd-card { animation: none; }
 }
 @media print { .gd-mask { display: none !important; } }
+
+/* ══════════════════════════════════════════════════════════════
+   v69 首页功能导览：分步模式（.gd-steps）
+   复用 v65 的 .gd-mask/.gd-card 骨架；这里只补分步特有的部件：
+   步卡（.gd-step）、功能名徽章（.gd-fn）、去看看链接（.gd-go）、
+   圆点导航（.gd-dots/.gd-dot）与「一页看完/分步看」切换（.gd-flat）。
+   本块追加在文件末尾，窄屏覆盖也在块内末尾——不与既有 gd 规则争权重。
+   ══════════════════════════════════════════════════════════════ */
+.gd-stage {
+  margin: 0 0 .1rem;
+  /* 桌面端给个下限，四步文案长短不一时卡片高度不跳 */
+  min-height: 9.6rem;
+}
+.gd-step {
+  padding: .9rem .95rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: .35rem;
+}
+.gd-fn {
+  display: inline-block;
+  padding: .18rem .78rem;
+  font-family: var(--sans); font-size: .95rem; font-weight: 700;
+  line-height: 1.6; letter-spacing: .06em;
+  color: var(--paper); background: var(--red-deep);
+  border-radius: 999px;
+}
+.gd-step-text {
+  margin: .6rem 0 0;
+  font-size: .9rem; line-height: 1.78; color: var(--ink);
+}
+.gd-go {
+  display: inline-block; margin-top: .6rem;
+  font-family: var(--sans); font-size: .84rem; font-weight: 600;
+  color: var(--red-deep); text-decoration: none;
+  border-bottom: 1px solid var(--gold-line);
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.gd-go:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.gd-go:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.gd-dots {
+  display: flex; justify-content: center; gap: .45rem;
+  margin: .7rem 0 0;
+}
+.gd-dot {
+  width: .6rem; height: .6rem; padding: 0; cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid var(--gold-line); background: transparent;
+  transition: background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+.gd-dot:hover { border-color: var(--red-deep); }
+.gd-dot.on { background: var(--red-deep); border-color: var(--red-deep); }
+.gd-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 「一页看完」是安静的文字钮，压到操作行左端，与右侧的跳过/上一步/下一步分开 */
+.gd-acts .gd-flat {
+  margin-right: auto;
+  padding: .46rem .1rem;
+  font-size: .8rem; font-weight: 600;
+  color: var(--ink-2); background: transparent; border: none;
+  text-decoration: underline; text-underline-offset: 3px;
+  border-radius: 0;
+}
+.gd-acts .gd-flat:hover { color: var(--red-deep); background: transparent; }
+
+/* 单页模式：收起圆点与翻页钮，只留 跳过／知道了 式的出口 */
+.gd-steps.is-flat .gd-dots { display: none; }
+.gd-steps.is-flat .gd-prev,
+.gd-steps.is-flat .gd-ok { display: none; }
+
+/* 窄屏（≤520px）：与既有 gd 窄屏块同参数；步卡更紧、操作行允许换行，
+   「一页看完」独占一行避免四个按钮挤爆 */
+@media (max-width: 520px) {
+  .gd-stage { min-height: 0; }
+  .gd-step { padding: .72rem .78rem; }
+  .gd-fn { font-size: .88rem; }
+  .gd-step-text { font-size: .85rem; line-height: 1.7; }
+  .gd-acts { flex-wrap: wrap; row-gap: .45rem; }
+  .gd-acts .gd-flat { flex-basis: 100%; padding: .1rem 0 .2rem; }
+}
