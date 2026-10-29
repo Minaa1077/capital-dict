@@ -2090,7 +2090,7 @@
       "</div>" +
 
       '<div class="block">' +
-        '<p class="b-label">当代场景</p>' +
+        '<p class="b-label">AI 的当代场景</p>' +
         '<p class="contemp">' + esc(t.contemporary) + "</p>" +
       "</div>" +
 
