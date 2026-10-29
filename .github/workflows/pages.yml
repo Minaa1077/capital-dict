@@ -89,7 +89,32 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    # 放在 job 级，才能被下面步骤的 if 引用（step 级 env 对自己的 if 不可见）
+    env:
+      CF_PURGE_TOKEN: ${{ secrets.CF_PURGE_TOKEN }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # 发版后清 Cloudflare 边缘缓存。
+      # 没配 secret 时整步跳过（不会让构建失败），配了就自动清，省掉手动 Purge Everything。
+      # 需要的 secret：CF_PURGE_TOKEN —— 权限 Zone:Read + Cache Purge:Purge，资源限定 minaa.cloud。
+      - name: Purge Cloudflare cache
+        if: ${{ env.CF_PURGE_TOKEN != '' }}
+        run: |
+          set -e
+          ZONE_ID=$(curl -s -H "Authorization: Bearer $CF_PURGE_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=minaa.cloud" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);const z=(j.result||[])[0];console.log(z?z.id:"")}catch(e){console.log("")}})')
+          if [ -z "$ZONE_ID" ]; then
+            echo "::warning::未能读取 minaa.cloud 的 Zone ID（Token 是否含 Zone:Read？），跳过清缓存"
+            exit 0
+          fi
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $CF_PURGE_TOKEN" -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' \
+            "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache")
+          echo "purge http=$CODE zone=$ZONE_ID"
+          [ "$CODE" = "200" ] || { echo "::warning::清缓存返回 $CODE，请手动 Purge Everything"; exit 0; }
+          echo "Cloudflare 缓存已清"

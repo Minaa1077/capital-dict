@@ -146,7 +146,10 @@ Cloudflare 默认**不缓存 HTML**。本站是「一个 3.3 MB 的 HTML ＋ 两
 **每次发版后要清缓存**：Caching → Configuration → **Purge Everything**（或按 URL 清 `/`）。
 不清的话，最长 2 小时内读者看到的还是上一版——投稿前发版务必清。
 
-> 更省心的替代：把 Edge TTL 设成 30 分钟，并在 CI 末尾加一步调用 CF Purge API（需要 `Zone.Cache Purge` Token）。要做我可以加。
+> **已自动化（v67）**：CI 部署完成后会自动调用 Cloudflare Purge API 清边缘缓存，
+> 不再需要手动 Purge Everything。启用方式：仓库 Settings → Secrets and variables → Actions
+> 新建 `CF_PURGE_TOKEN`（权限 **Zone:Read** + **Cache Purge:Purge**，资源限 `minaa.cloud`）。
+> 未配 secret 时该步骤自动跳过（不会让构建失败）；配了但读不到 Zone 会打 `::warning::` 并继续。
 
 ### S9 Worker 的处置
 - 自定义域已经给 Pages 用了，**Worker 不能再绑同一个域名**。
