@@ -1137,22 +1137,18 @@
      每个筛选项按「知识板块·学科方向」合并标注（如「哲学·基本原理」），
      点开即进入该组合的词条清单（#/c/<板块>?sub=<方向>）。 */
   function viewTaxes() {
-    return '<p class="note">全站词条按<b>知识板块</b>归类：哲学（辩证唯物主义与历史唯物主义）、' +
-      '政治经济学（以《资本论》为主体）、科学社会主义。每条词条归入其理论身份最核心的一支。' +
-      esc(META.taxonomy_basis || "") + "</p>" +
-      TAXES.map(function (tx) {
+    /* v67：三段导语黄框（「全站词条按知识板块归类…」「按马克思主义的三大组成部分归类…」
+       「同一批词条的第二轮筛选项…」）已按需求撤除——页面直接从板块卡开始，
+       taxonomy_basis 与 taxonomies[].desc 两个数据字段随之失去唯一消费点，一并删除。 */
+    return TAXES.map(function (tx) {
         var n = (tx.cats || []).reduce(function (a, c) { return a + termsIn(c.id).length; }, 0);
         return '<h2 class="sec-title">' + esc(tx.name) +
             (tx.basis ? "（" + esc(tx.basis) + "）" : "") +
             '<span class="more">' + n + " / " +
             (tx.cats || []).reduce(function (a, c) { return a + (c.planned || 0); }, 0) + " 条</span></h2>" +
-          (tx.desc ? '<p class="note">' + esc(tx.desc) + "</p>" : "") +
           '<div class="card-grid">' + (tx.cats || []).map(function (c) { return catCard(c); }).join("") + "</div>";
       }).join("") +
       '<h2 class="sec-title">按学科方向细分</h2>' +
-      '<p class="note">同一批词条的第二轮筛选项：在知识板块之下，再按<b>学科方向</b>' +
-      "（依据：" + esc((SUB_TX && SUB_TX.basis) || "") + "）归一次。" +
-      "筛选项按「知识板块·学科方向」合并标注，点开即列出该组合下的全部词条。</p>" +
       '<div class="sibs ov-subs">' +
         ((TAXES[0] && TAXES[0].cats) || []).reduce(function (acc, d) {
           return acc + ((SUB_TX && SUB_TX.cats) || []).map(function (s) {
@@ -8343,9 +8339,7 @@
     OV_ST = st;
     return '<p class="crumb"><a href="#/">首页</a> / 总览</p>' +
       '<h1 class="page-title">总览</h1>' +
-      '<p class="note">同一批词条的两种排法：<b>按知识板块</b>看它归在哪一门，' +
-      "<b>按原著次序</b>看它在《资本论》三卷里落在哪一篇哪一章。" +
-      "两种视图由上面这排按钮切换，链接会带上视图（例如 <code>#/tax?v=tree</code>）。</p>" +
+      /* v67：页头导语黄框（「同一批词条的两种排法…」）按需求撤除，保留切换按钮本体 */
       '<div class="ttabs idx-seg" role="tablist" aria-label="总览的两种排法">' +
         ovSegInner(st) + "</div>" +
       '<p class="sr-only" id="ov-live" role="status" aria-live="polite"></p>' +

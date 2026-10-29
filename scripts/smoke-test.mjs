@@ -420,10 +420,13 @@ await goto("#/c/nope-x");
 check("未知名门类有兜底", text().includes("没有这个门类"));
 
 await goto("#/tax");
-check("总览页：知识板块一维照旧（卡片网格 1 个、列宁引注已撤除）",
+check("总览页：知识板块一维照旧（卡片网格 1 个、导语黄框已全部撤除）",
   view().querySelector("h1").textContent.trim() === "总览" &&
   !text().includes("列宁《马克思主义的三个来源和三个组成部分》") &&
-  text().includes("分类只有「知识板块」一个维度") &&
+  !text().includes("同一批词条的两种排法") &&
+  !text().includes("全站词条按知识板块归类") &&
+  !text().includes("三大组成部分归类") &&
+  !text().includes("第二轮筛选项") &&
   view().querySelectorAll(".card-grid").length === 1);
 check("总览页：新增「按学科方向细分」第二轮筛选项，按「板块·方向」标注",
   text().includes("按学科方向细分") &&
