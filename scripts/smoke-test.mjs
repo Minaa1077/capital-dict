@@ -1773,6 +1773,16 @@ check("v70：使用手册改为十五件口径并收录图表生成",
   text().includes("十五件工具") && text().includes("图表生成") && text().includes("导出 PNG 或 SVG"));
 await goto("#/");
 
+/* ---- v73：横轴标签「详细 / 粗略」双模式开关 ---- */
+/* 面板配置区要导入数据后才渲染（jsdom 解压不了 xlsx），这里守内联源里的
+   开关本体与两档文案；真实切换渲染由真机探针（tmp/probe-v73.mjs）覆盖。 */
+check("v73：横轴标签模式开关已内联（详细/粗略两档，切档即重渲染）",
+  html.includes('id="ch-xlab"') && html.includes("详细 · 全部显示") &&
+  html.includes("粗略 · 抽稀显示") && html.includes("CH.cfg.xlab = xl.value"));
+check("v73：详细模式全显不截断，粗略模式走抽稀；换表保留用户所选模式",
+  html.includes('a.cfg.xlab !== "skip"') && html.includes("full ? 1 :") &&
+  html.includes("cfg.xlab = CH.cfg.xlab"));
+
 /* ---- v72：词条关系图谱（词条页内嵌力导向图） ---- */
 await goto("#/t/shengyujiazhi");
 await wait(900);

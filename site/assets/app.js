@@ -8409,6 +8409,8 @@
     for (var i = 0; i < CH_TYPES.length; i++) if (CH_TYPES[i].id === id) return CH_TYPES[i];
     return null;
   }
+  /* v73：横轴是类别轴的图型才显示「横轴标签」模式开关（条形图横轴是数值、饼/散点等无类别横轴） */
+  var CH_XLAB_TYPES = ["bar", "barStack", "line", "area", "areaStack", "waterfall", "box"];
 
   function chRecommend(P) {
     var cands = [];
@@ -8646,31 +8648,60 @@
     var t = chNiceTicks(lo < 0 ? lo : 0, hi, 5);
     return t;
   }
-  /* 类别 x 轴：返回中心 x(i) 与带宽；标签过密时旋转或抽稀 */
+  /* 类别 x 轴：返回中心 x(i) 与带宽。v73 双模式（cfg.xlab）：
+     full  详细——每个标签完整显示，不抽稀不截断；横排放不下整体旋转，
+           旋转后最左标签横向延伸出画布就折行（每行 maxCh 字）；
+     skip  粗略——每 58px 至多一个标签抽稀，横排截到槽宽、旋转截到 8 字，全称进 <title> */
   function chAxisXCat(a, labels, rot) {
     var m = a.m, pw = a.W - m.l - m.r, y0 = a.H - m.b, n = labels.length;
     var bw = pw / Math.max(1, n);
-    var every = Math.ceil(n / Math.floor(pw / 58));       // 抽稀：每 58px 至多一个标签
+    var full = a.cfg.xlab !== "skip";
+    var every = full ? 1 : Math.ceil(n / Math.floor(pw / 58));       // 抽稀：每 58px 至多一个标签
     /* 旋转与否：抽稀后每个标签槽横向放得下最长词，就保持水平（更易读） */
     var slot = bw * every, maxW = 0;
     labels.forEach(function (s, i) {
       if (i % every === 0) maxW = Math.max(maxW, chTextW(s, 11.5));
     });
-    if (rot && slot >= maxW + 16) rot = false;
+    if (full) {
+      rot = slot < maxW + 8;                // 详细：槽内放得下就横排，放不下才转
+    } else if (rot && slot >= maxW + 16) rot = false;
+    /* 详细且密集时的两种让位姿势：短词（≤4 字）竖排（-90°，词身下垂，相邻互不挤）；
+       长词斜排 -42°＋超宽折行。粗略模式维持 v70b 的抽稀＋截断。 */
+    var vert = full && rot && maxW <= 48;
     var maxDrop = 0;
     labels.forEach(function (s, i) {
       if (i % every !== 0) return;
       var x = m.l + bw * (i + 0.5);
-      if (rot) {
-        /* 旋转：截到 8 字防左下溢出，全称放 <title> 悬停可见；
-           记录最长标签的竖向落差，交给外层二次渲染加高底边距 */
-        var t = chCut(s, 8), L = chTextW(t, 11.5);
-        maxDrop = Math.max(maxDrop, L * 0.67);            // sin42°≈0.67
+      if (vert) {
+        /* 详细＋竖排：全称垂直下垂（-90°），相邻标签横向只占一个字高，密而不叠 */
+        maxDrop = Math.max(maxDrop, chTextW(s, 11.5) + 4);
         parts_push(a, '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#6d6459" ' +
-          'transform="rotate(-42 ' + x + " " + (y0 + 16) + ')" text-anchor="end">' +
-          chSvgEsc(t) + (s.length > 8 ? "<title>" + chSvgEsc(s) + "</title>" : "") + "</text>");
+          'transform="rotate(-90 ' + x + " " + (y0 + 16) + ')" text-anchor="end">' + chSvgEsc(s) + "</text>");
+      } else if (rot) {
+        if (full) {
+          /* 详细＋旋转：全称入画。最左标签自锚点向左上延伸 L·cos42°，
+             超出画布左缘就按行宽折成多行（行间沿垂直于文字方向下移 ≈(8,9)） */
+          var reach = Math.max(30, m.l + bw * 0.5 - 6);
+          var maxCh = Math.max(2, Math.floor(reach / (11.5 * 0.74)));
+          var lines = [];
+          for (var k = 0; k < s.length; k += maxCh) lines.push(s.slice(k, k + maxCh));
+          maxDrop = Math.max(maxDrop, chTextW(lines[0], 11.5) * 0.67 + (lines.length - 1) * 10);
+          lines.forEach(function (t3, j) {
+            var ax = x + 8 * j, ay = y0 + 16 + 9 * j;
+            parts_push(a, '<text data-xl="' + i + '" x="' + ax + '" y="' + ay + '" font-size="11.5" fill="#6d6459" ' +
+              'transform="rotate(-42 ' + ax + " " + ay + ')" text-anchor="end">' + chSvgEsc(t3) + "</text>");
+          });
+        } else {
+          /* 粗略＋旋转：截到 8 字防左下溢出，全称放 <title> 悬停可见；
+             记录最长标签的竖向落差，交给外层二次渲染加高底边距 */
+          var t = chCut(s, 8), L = chTextW(t, 11.5);
+          maxDrop = Math.max(maxDrop, L * 0.67);            // sin42°≈0.67
+          parts_push(a, '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#6d6459" ' +
+            'transform="rotate(-42 ' + x + " " + (y0 + 16) + ')" text-anchor="end">' +
+            chSvgEsc(t) + (s.length > 8 ? "<title>" + chSvgEsc(s) + "</title>" : "") + "</text>");
+        }
       } else {
-        var t2 = chCut(s, Math.max(2, Math.min(12, Math.floor((slot - 10) / 11.5))));
+        var t2 = full ? s : chCut(s, Math.max(2, Math.min(12, Math.floor((slot - 10) / 11.5))));
         parts_push(a, '<text x="' + x + '" y="' + (y0 + 17) + '" font-size="11.5" fill="#6d6459" text-anchor="middle">' +
           chSvgEsc(t2) + (t2 !== s ? "<title>" + chSvgEsc(s) + "</title>" : "") + "</text>");
       }
@@ -9268,12 +9299,14 @@
     var cfg = {
       title: chAutoTitle(tb), sub: "自动生成 · " + P.nRows + " 行 × " + Math.max(0, P.cols.length - 1) + " 组数值",
       legend: "top", theme: "zhusha", stacked: false, donut: false,
+      xlab: "full",   // v73 横轴标签模式：full 详细（全显）｜skip 粗略（抽稀）
       timeCol: times.length ? times[0].i : null,
       catCol: cats.length ? cats[0].i : (P.cols.length > 1 ? 0 : null),
       cat2Col: cats.length > 1 ? cats[1].i : null,
       valCols: nums.slice(0, 6).map(function (c) { return c.i; })
     };
     if (!cfg.valCols.length && P.cols.length > 1) cfg.valCols = [1];
+    if (CH.cfg && CH.cfg.xlab) cfg.xlab = CH.cfg.xlab;   // v73 换表保留用户选的横轴标签模式
     CH.cfg = cfg;
     var rec = chRecommend(P);
     CH.type = rec[0].type;
@@ -9353,6 +9386,10 @@
           Object.keys(CH_THEMES).map(function (k) {
             return '<option value="' + k + '"' + (cfg.theme === k ? " selected" : "") + ">" + esc(CH_THEMES[k].n) + "</option>";
           }).join("") + "</select></label>" +
+        '<label class="wa-lab' + (CH_XLAB_TYPES.indexOf(CH.type) > -1 ? "" : " hide") + '" id="ch-lab-xlab">横轴标签<select id="ch-xlab">' +
+          '<option value="full"' + (cfg.xlab !== "skip" ? " selected" : "") + ">详细 · 全部显示</option>" +
+          '<option value="skip"' + (cfg.xlab === "skip" ? " selected" : "") + ">粗略 · 抽稀显示</option>" +
+        "</select></label>" +
         '<label class="ch-chk' + (CH.type === "bar" ? "" : " hide") + '" id="ch-chk-stacked"><input type="checkbox" id="ch-stacked"' +
           (cfg.stacked ? " checked" : "") + ">改成堆积</label>" +
         '<label class="ch-chk' + (CH.type === "pie" ? "" : " hide") + '" id="ch-chk-donut"><input type="checkbox" id="ch-donut"' +
@@ -9413,6 +9450,8 @@
     if (st) st.addEventListener("change", function () { CH.cfg.stacked = st.checked; chSvgRender(); });
     var dn = g("ch-donut");
     if (dn) dn.addEventListener("change", function () { CH.cfg.donut = dn.checked; chSvgRender(); });
+    var xl = g("ch-xlab");
+    if (xl) xl.addEventListener("change", function () { CH.cfg.xlab = xl.value; chSvgRender(); });
     ["ch-title", "ch-sub"].forEach(function (id) {
       var el = g(id);
       if (el) el.addEventListener("input", function () {

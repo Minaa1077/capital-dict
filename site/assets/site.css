@@ -6380,6 +6380,8 @@ body.pj-on .to-top { display: none !important; }
   font-size: .84rem; color: var(--ink-2);
 }
 .ch-typewhy b { color: var(--red-deep); }
+/* v73：横轴标签模式开关——非类别横轴图型（条形/饼/散点等）整只藏起 */
+.wa-lab.hide { display: none; }
 
 .ch-svgwrap {
   margin-top: .9rem;
