@@ -7932,6 +7932,1276 @@
     wtToast._t = setTimeout(function () { el.classList.remove("on"); }, 2600);
   }
 
+  /* ================= 图表生成（v70） =================
+     导入 xlsx / csv，自动画像数据结构、推荐图表类型并出图；
+     十六种图型全部自绘 SVG——零依赖约束不变：xlsx 读取复用阅读器的
+     ZIP Central Directory 解析＋原生 DecompressionStream 解压，
+     sheet XML 用正则流式抽值，不联网、不引库，file:// 双击可用。
+     渲染产出的 SVG 元素全带呈现属性（不依赖外部样式表），
+     因此 PNG / SVG 导出走 exportGraphPng 同一套克隆思路。 */
+
+  var CH = {
+    docs: [],        // {name, sheets:[{name, rows}], ok, msg}
+    doc: 0, sheet: 0,
+    type: "",        // 当前图型 spec id
+    cfg: null        // {title, sub, legend, theme, stacked, donut, trend, catCol, valCols[]}
+  };
+
+  /* —— 配色主题：每套 8 个系列色＋一个强调色。默认「朱砂」从站内
+     红金令牌取色（--accent/--gold），其余主题压低饱和，保证米白底上成图不艳俗。 —— */
+  var CH_THEMES = {
+    zhusha: { n: "朱砂 · 站点同款", ink: "#640a0e", axis: "#8b8071",
+      series: ["#9c1512", "#c98a2b", "#4d6b54", "#37506d", "#8a5a00", "#6d4b6e", "#4f7d7b", "#a8442e"] },
+    daix: { n: "黛蓝", ink: "#2f4d6e", axis: "#7a8699",
+      series: ["#2f4d6e", "#5d7fa3", "#8aa8c0", "#c1a877", "#4d6b54", "#8a5a00", "#6e4b6e", "#55636b"] },
+    qingzhu: { n: "青竹", ink: "#33553f", axis: "#7a8678",
+      series: ["#33553f", "#5d8466", "#8aa886", "#c9b071", "#7a5230", "#5a6d7a", "#8a6a52", "#4d6b70"] },
+    xuanmo: { n: "玄墨", ink: "#33302a", axis: "#8b8071",
+      series: ["#33302a", "#6d6459", "#a89f8f", "#9c1512", "#c98a2b", "#55636b", "#6d4b6e", "#7c6335"] }
+  };
+
+  /* —— CSV：逗号/分号/制表符嗅探＋引号段。utf-8 先解，出现替换符再回退 GBK
+     （浏览器 TextDecoder 原生支持，中文 Excel 另存的 ANSI 表救得回来）。 —— */
+  function chParseCsv(text) {
+    var deli = (text.split("\n")[0] || "").match(/;/) ? ";" :
+      ((text.split("\n")[0] || "").indexOf("\t") > -1 ? "\t" : ",");
+    var rows = [], row = [], cur = "", q = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (q) {
+        if (c === '"') { if (text.charAt(i + 1) === '"') { cur += '"'; i++; } else q = false; }
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === deli) { row.push(cur); cur = ""; }
+      else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+      else if (c !== "\r") cur += c;
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (v) { return String(v).trim() !== ""; }); });
+  }
+
+  function chDecodeCsv(u8) {
+    var t = new TextDecoder("utf-8").decode(u8);
+    if ((t.match(/\uFFFD/g) || []).length > 2) {
+      try { return new TextDecoder("gbk").decode(u8); } catch (e) { /* 无 GBK 就带替换符用 */ }
+    }
+    return t.replace(/^\uFEFF/, "");
+  }
+
+  /* —— xlsx：复用阅读器的 readerListZip / readerExtractZip（deflate-raw + store 都认）。 —— */
+  function chCellCol(ref) {   // "BC12" → 列序号（0 基）
+    var n = 0, m = /^[A-Z]+/.exec(ref || "");
+    if (!m) return -1;
+    for (var i = 0; i < m[0].length; i++) n = n * 26 + (m[0].charCodeAt(i) - 64);
+    return n - 1;
+  }
+  function chXmlText(xml, tag) {   // 取首个 <tag …>…</tag> 的内文（含属性任意排布）
+    var m = new RegExp("<" + tag + "(?:\\s[^>]*)?>([\\s\\S]*?)</" + tag + ">").exec(xml);
+    return m ? m[1] : "";
+  }
+  function chXmlUnesc(s) {
+    return String(s).replace(/&(?:amp|lt|gt|quot|apos|#x?[0-9a-fA-F]+);/g, function (e) {
+      if (e === "&amp;") return "&";
+      if (e === "&lt;") return "<";
+      if (e === "&gt;") return ">";
+      if (e === "&quot;") return '"';
+      if (e === "&apos;") return "'";
+      var hex = /^&#x/i.test(e), code = parseInt(e.replace(/^&#x?|;$/gi, ""), hex ? 16 : 10);
+      return isFinite(code) && code > 0 ? String.fromCodePoint(code) : e;
+    });
+  }
+  function chPickXml(xml, re, cb) {  // 逐个非贪婪匹配并回调
+    var m; re.lastIndex = 0;
+    while ((m = re.exec(xml))) { cb(m); if (m.index === re.lastIndex) re.lastIndex++; }
+  }
+
+  async function chartParseXlsx(ab) {
+    var files = readerListZip(ab);
+    var get = async function (name) {
+      if (!files[name]) return null;
+      return new TextDecoder("utf-8").decode(await readerExtractZip(ab, files[name]));
+    };
+    var wb = await get("xl/workbook.xml");
+    if (!wb) throw new Error("不是有效的 xlsx（缺 workbook.xml）——旧版 .xls 请先另存为 xlsx");
+    /* r:id → 目标路径：target 可能写 worksheets/…（相对 xl/）或 /xl/…（包根） */
+    var relsXml = await get("xl/_rels/workbook.xml.rels") || "";
+    var rels = {};
+    chPickXml(relsXml, /<Relationship\b[^>]*>/g, function (m) {
+      var id = /Id="([^"]+)"/.exec(m[0]), tg = /Target="([^"]+)"/.exec(m[0]);
+      if (id && tg) {
+        var t = tg[1].replace(/^\//, "");
+        rels[id[1]] = /^xl\//.test(t) ? t : "xl/" + t;
+      }
+    });
+    /* 共享字符串：<si> 里可能拆多个 <r><t>，按序拼接 */
+    var shared = [];
+    var ssXml = await get("xl/sharedStrings.xml");
+    if (ssXml) chPickXml(ssXml, /<si(?:\s[^>]*)?>([\s\S]*?)<\/si>/g, function (m) {
+      var ts = [], t2;
+      chPickXml(m[1], /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g, function (x) { ts.push(x[1]); });
+      shared.push(chXmlUnesc(ts.join("")));
+    });
+    var sheets = [];
+    chPickXml(wb, /<sheet\b[^>]*\/?>/g, function (m) {
+      var nm = /name="([^"]*)"/.exec(m[0]), rid = /r:id="([^"]+)"/.exec(m[0]) || /id="([^"]+)"/.exec(m[0]);
+      if (rid) sheets.push({ name: nm ? chXmlUnesc(nm[1]) : "Sheet", target: rels[rid[1]] });
+    });
+    var out = [];
+    for (var i = 0; i < sheets.length; i++) {
+      var sx = sheets[i].target ? await get(sheets[i].target) : null;
+      var rows = [];
+      if (sx) {
+        chPickXml(sx, /<row\b[^>]*>([\s\S]*?)<\/row>/g, function (m) {
+          var cells = [];
+          chPickXml(m[1], /<c\b([^>]*)>([\s\S]*?)<\/c>|<c\b([^>]*)\/>/g, function (c) {
+            var attrs = c[1] != null ? c[1] : c[3] || "";
+            var body = c[2] != null ? c[2] : "";
+            var ref = /\br="([A-Z]+\d+)"/.exec(attrs), t = /\bt="(\w+)"/.exec(attrs);
+            var col = chCellCol(ref ? ref[1] : ""), v = "";
+            var vm = /<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/.exec(body);
+            if (t && t[1] === "inlineStr") {
+              var ts2 = [];
+              chPickXml(body, /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g, function (x) { ts2.push(x[1]); });
+              v = chXmlUnesc(ts2.join(""));
+            } else if (vm) {
+              if (t && t[1] === "s") v = shared[+vm[1]] != null ? shared[+vm[1]] : "";
+              else if (t && t[1] === "b") v = vm[1] === "1" ? "TRUE" : "FALSE";
+              else if (t && t[1] === "e") v = "";
+              else { v = chXmlUnesc(vm[1]); if (!isNaN(+v) && v.trim() !== "") v = +v; }
+            }
+            while (cells.length < col) cells.push("");   // 稀疏单元格按列号补齐
+            cells.push(v);
+          });
+          rows.push(cells);
+        });
+      }
+      if (rows.length) out.push({ name: sheets[i].name, rows: rows });
+    }
+    if (!out.length) throw new Error("工作簿里没有非空的工作表");
+    return out;
+  }
+
+  /* —— 数据画像：给每一列分类（num/cat/time/id），供推荐器判断能画什么。 —— */
+  var CH_TIME_RE = /^(\d{4}([年./\-]|$)|\d{4}-\d{1,2}(\D|$)|\d{1,2}月|[Qq][1-4]($|\s)|第?[一二三四]季度|(19|20)\d{2}\s*年?)/;
+  var CH_MONTHS = "一月二月三月四月五月六月七月八月九月十月十一月十二月JanFebMarAprMayJunJulAugSepOctNovDec";
+
+  function chProfile(tb) {
+    var rows = tb.rows, head = rows[0] || [], body = rows.slice(1).filter(function (r) {
+      return r.some(function (v) { return String(v).trim() !== ""; });
+    });
+    var nR = body.length, cols = [];
+    for (var c = 0; c < head.length; c++) {
+      var nNum = 0, nFill = 0, vals = [], uniq = {}, nTime = 0;
+      for (var r = 0; r < body.length; r++) {
+        var v = body[r][c], s = String(v == null ? "" : v).trim();
+        if (s === "") continue;
+        nFill++;
+        if (typeof v === "number" && isFinite(v)) nNum++;
+        else if (s !== "" && isFinite(+s.replace(/,/g, ""))) nNum++;
+        var sv = typeof v === "number" ? String(v) : s;
+        if (CH_TIME_RE.test(sv) || (sv.length <= 5 && CH_MONTHS.indexOf(sv) > -1)) nTime++;
+        if (uniq[sv] !== 1) { uniq[sv] = 1; vals.push(sv); }
+      }
+      var nd = vals.length;
+      var kind = "cat";
+      if (nFill && nNum / nFill > 0.8 && nd > 2) kind = "num";
+      else if (nFill && nTime / nFill > 0.7) kind = "time";
+      else if (nR > 8 && nFill && nd / nFill > 0.92) kind = "id";  // 几乎行行不同：像主键，不当类别用
+      cols.push({ i: c, name: String(head[c] == null ? "" : head[c]).trim() || ("列" + (c + 1)),
+        kind: kind, fill: nFill, ndist: nd, nNum: nNum });
+    }
+    return { head: head, body: body, nRows: nR, cols: cols,
+      colByKind: function (k) { return cols.filter(function (x) { return x.kind === k; }); } };
+  }
+
+  /* —— 推荐器：按形态打分。返回 [{type, why}]，首个为默认推荐。
+     四类图谱（比较 / 趋势 / 结构占比 / 关联分布）都从列组合推出来。 —— */
+  var CH_TYPES = [
+    { id: "bar", n: "分组柱状图", g: "比较", use: "类别之间比大小，多列并排" },
+    { id: "barStack", n: "堆积柱状图", g: "比较", use: "看每类总量与其内部构成" },
+    { id: "barH", n: "条形图", g: "比较", use: "类别名长或类别多时，横向排更好读" },
+    { id: "radar", n: "雷达图", g: "比较", use: "一个对象的多维综合评估" },
+    { id: "line", n: "折线图", g: "趋势", use: "时间序列的走势" },
+    { id: "area", n: "面积图", g: "趋势", use: "趋势之外还强调量的规模" },
+    { id: "areaStack", n: "堆积面积图", g: "趋势", use: "各部分累加后的总量变化" },
+    { id: "waterfall", n: "瀑布图", g: "趋势", use: "分步累积：收入、支出到净额的构成" },
+    { id: "pie", n: "饼图", g: "结构占比", use: "3–6 类的占比，一眼看谁最大" },
+    { id: "donut", n: "环形图", g: "结构占比", use: "占比之外中间还能放合计" },
+    { id: "treemap", n: "树状图", g: "结构占比", use: "层级关系的面积占比" },
+    { id: "scatter", n: "散点图", g: "关联分布", use: "两个数值变量是否相关" },
+    { id: "bubble", n: "气泡图", g: "关联分布", use: "相关之外再带一个规模维度" },
+    { id: "heatmap", n: "热力图", g: "关联分布", use: "行×列矩阵的密度与频率" },
+    { id: "hist", n: "直方图", g: "关联分布", use: "一列数值落在各区间的频次" },
+    { id: "box", n: "箱线图", g: "关联分布", use: "多列数据的中位数与离散程度" }
+  ];
+  function chTypeById(id) {
+    for (var i = 0; i < CH_TYPES.length; i++) if (CH_TYPES[i].id === id) return CH_TYPES[i];
+    return null;
+  }
+
+  function chRecommend(P) {
+    var cands = [];
+    var nums = P.colByKind("num"), cats = P.colByKind("cat").filter(function (c) { return c.kind === "cat" && c.ndist > 0; }),
+      times = P.colByKind("time");
+    var cat = cats[0], time = times[0] || null;
+    var nR = P.nRows;
+    var posOnly = true, hasNeg = false;
+    if (nums.length === 1 && cat && time == null) {
+      for (var r = 0; r < P.body.length; r++) {
+        var v = +String(P.body[r][cat.i]).replace(/,/g, "");
+        if (!isNaN(v)) { if (v < 0) { hasNeg = true; } }
+      }
+      posOnly = !hasNeg;
+    }
+    /* 趋势：时间列 + 数值列 */
+    if (time && nums.length) {
+      if (nums.length >= 3) cands.push({ type: "areaStack", why: "第一列是时间（" + time.name + "），后面 " + nums.length + " 列数值，适合看各部分累加的总量怎么走。" });
+      cands.push({ type: "line", why: "「" + time.name + "」像时间轴，配 " + nums.length + " 列数值，折线最先看清走势。" });
+      if (nums.length === 1) cands.push({ type: "area", why: "单列数值随时间变化，填成面积能同时看清走势与规模。" });
+      cands.push({ type: "bar", why: "时间点不多时，分组柱状图也方便逐年对比。" });
+    }
+    /* 类别 + 数值：比较与占比 */
+    if (cat && nums.length && time == null) {
+      if (nums.length === 1) {
+        if (cat.ndist > 6) cands.push({ type: "barH", why: "「" + cat.name + "」有 " + cat.ndist + " 个类别，超过 6 类，横向条形比饼图读得清。" });
+        else {
+          if (posOnly && cat.ndist >= 3) cands.push({ type: "pie", why: "「" + cat.name + "」" + cat.ndist + " 类、数值全为正，适合看占比；超过 6 类会自动建议改条形。" });
+          cands.push({ type: "bar", why: "类别不多，柱状图并排比大小最直接。" });
+        }
+        if (hasNeg) cands.push({ type: "waterfall", why: "数值有正有负，瀑布图能看清每一步增减后的累积结果。" });
+      } else {
+        cands.push({ type: "bar", why: "「" + cat.name + "」×" + nums.length + " 列数值，分组并排最直观。" });
+        cands.push({ type: "barStack", why: "若各列本是一件事的构成，改成堆积看总量更清楚。" });
+        if (nR >= 3 && nR <= 10) cands.push({ type: "radar", why: "行数 " + nR + " 在 3–10 之间，每行是一个对象的多维评估，适合雷达。" });
+      }
+      cands.push({ type: "treemap", why: "类别列加数值列也能画成树状图，面积即大小，适合看层级。" });
+      if (nums.length === 1) cands.push({ type: "donut", why: "同一份数据也可改环形，中间留白可放合计。" });
+    }
+    /* 两个类别列 + 数值：层级 */
+    if (cats.length >= 2 && nums.length) {
+      cands.unshift({ type: "treemap", why: "「" + cats[0].name + "」与「" + cats[1].name + "」是两层类别，树状图按面积同时呈现层级与占比。" });
+    }
+    /* 矩阵：行标签 + 多数值列（且没有明确时间） */
+    if (!time && nums.length >= 3 && (cat || true) && nR >= 3) {
+      cands.push({ type: "heatmap", why: nums.length + " 列数值排成矩阵，热力图用深浅直接给出高低分布。" });
+      if (nR >= 5) cands.push({ type: "box", why: "各列数值可各画一只箱线，看中位数与离散。" });
+    }
+    /* 双数值：关联 */
+    if (nums.length === 2 && time == null) cands.unshift({ type: "scatter", why: "两列数值，散点最先看出是否相关。" });
+    if (nums.length === 3 && time == null) cands.unshift({ type: "bubble", why: "三列数值，第三列作气泡大小，一图看三个变量。" });
+    /* 单数值列：分布 */
+    if (nums.length === 1 && !cat && !time) {
+      cands.push({ type: "hist", why: "只有一列数值，直方图看它落在哪些区间的频次。" });
+      cands.push({ type: "box", why: "同一列也可画成一只箱线，看中位数与四分位。" });
+    }
+    if (nums.length >= 2) cands.push({ type: "box", why: "多列数值各画一只箱线，离群值一眼可见。" });
+    /* 时间 + 类别 + 数值（长表）：折线多序列 */
+    if (time && cat && nums.length) {
+      cands.unshift({ type: "line", why: "时间 × 类别 × 数值的长表，按「" + cat.name + "」拆成多条折线。" });
+    }
+    var seen = {}, out = [];
+    cands.forEach(function (c) {
+      if (seen[c.type]) return;
+      var t = chTypeById(c.type);
+      if (!t) return;
+      seen[c.type] = 1; c.n = t.n; c.g = t.g; out.push(c);
+    });
+    if (!out.length) out.push({ type: "hist", n: "直方图", g: "关联分布", why: "没有识别出明确的类别或时间列，先按一列数值的分布来画。" });
+    return out;
+  }
+
+  /* —— 绘图公用：数字格式 · nice 刻度 · 文本测宽/截断 · 颜色插值 —— */
+  function chTrim(x) { var s = (+x).toFixed(2); return s.replace(/\.?0+$/, ""); }
+  function chFmt(v) {
+    if (!isFinite(v)) return "—";
+    var a = Math.abs(v);
+    if (a >= 1e8) return chTrim(v / 1e8) + "亿";
+    if (a >= 1e5) return chTrim(v / 1e4) + "万";
+    if (a >= 1000) return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return chTrim(v);
+  }
+  function chNiceTicks(lo, hi, n) {
+    if (!(hi > lo)) { if (hi === lo) { hi = lo + 1; } else { var t = lo; lo = hi; hi = t; } }
+    var span = hi - lo, raw = span / Math.max(2, n),
+      mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)),
+      norm = raw / mag,
+      step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag,
+      lo0 = Math.floor(lo / step) * step, hi0 = Math.ceil(hi / step) * step,
+      ticks = [];
+    for (var v = lo0; v <= hi0 + step * 1e-9; v += step) ticks.push(Math.round(v * 1e9) / 1e9);
+    return { lo: lo0, hi: hi0, step: step, ticks: ticks };
+  }
+  function chTextW(s, fs) {
+    s = String(s);
+    var w = 0;
+    for (var i = 0; i < s.length; i++) w += s.charCodeAt(i) > 255 ? fs : fs * 0.56;
+    return w;
+  }
+  function chCut(s, n) { s = String(s); return s.length > n ? s.slice(0, Math.max(1, n - 1)) + "…" : s; }
+  function chHexLerp(a, b, t) {
+    var pa = [1, 3, 5].map(function (i) { return parseInt(a.substr(i, 2), 16); }),
+      pb = [1, 3, 5].map(function (i) { return parseInt(b.substr(i, 2), 16); });
+    return "#" + pa.map(function (x, i) {
+      var v = Math.round(x + (pb[i] - x) * t).toString(16);
+      return v.length < 2 ? "0" + v : v;
+    }).join("");
+  }
+  function chSvgEsc(s) { return esc(s).replace(/"/g, "&quot;"); }
+
+  /* 图表面板数据准备：按 cfg 取出「标签列 + 数值列」的工作矩阵。
+     所有渲染器都从这里拿干净的 {labels, cols:[{name, vals}]}，列值统一转数。 */
+  function chMatrix(P, cfg) {
+    var cols = [];
+    (cfg.valCols || []).forEach(function (ci) {
+      var c = P.cols[ci];
+      if (!c || c.kind !== "num") return;
+      var vals = P.body.map(function (r) {
+        var v = r[ci];
+        if (typeof v === "number") return v;
+        var s = String(v == null ? "" : v).trim().replace(/,/g, "");
+        return s !== "" && isFinite(+s) ? +s : NaN;
+      });
+      cols.push({ name: c.name, vals: vals });
+    });
+    var labCi = (cfg.timeCol != null ? cfg.timeCol : cfg.catCol);
+    var labels = P.body.map(function (r, i) {
+      var v = labCi != null ? r[labCi] : "";
+      var s = String(v == null ? "" : v).trim();
+      return s !== "" ? s : "第" + (i + 1) + "行";
+    });
+    return { labels: labels, cols: cols };
+  }
+
+  /* —— SVG 框架：底 · 标题 · 副题 · 绘图区，再交具体渲染器往里画 —— */
+  function chChartSvg(type, P, cfg) {
+    var th = CH_THEMES[cfg.theme] || CH_THEMES.zhusha;
+    var W = 960, H = 620;
+    var m = { t: 30, r: 26, b: 46, l: 64 };
+    var lg = cfg.legend || "top";
+    var items = [];        // 渲染器填：{label, color, kind:"rect|line|dot"}
+    var a = { W: W, H: H, th: th, cfg: cfg, m: m, items: items, notes: [], parts: [] };
+    if (lg === "top") m.t += 30;
+    if (cfg.sub) m.t += 20;
+    var draw = CH_DRAW[type] || CH_DRAW.bar;
+    draw(a, P);
+    /* 图例：渲染器填完 items 再统一画（顶部一行放不下折两行；右侧竖排压缩绘图区） */
+    if (items.length && lg !== "none") {
+      if (lg === "right") {
+        var rx = W - m.r + 6, ry = m.t + 8;
+        var maxW = 0;
+        items.forEach(function (it) {
+          parts_push(a, chLegendItem(rx, ry, it, th));
+          ry += 22; maxW = Math.max(maxW, 18 + chTextW(it.label, 12));
+        });
+        m.r += maxW + 14;
+        a.needWiden = true;    // 右图例会占掉绘图区，重画一次收窄后的
+      } else {
+        var x = m.l, y = m.t - 22, line = 0;
+        items.forEach(function (it) {
+          var w = 18 + chTextW(it.label, 12) + 26;
+          if (x + w > W - m.r && line < 2) { x = m.l; y += 20; line++; }
+          parts_push(a, chLegendItem(x, y, it, th));
+          x += w;
+        });
+      }
+    }
+    if (a.needWiden) {   // 右图例：把先画的主体裁剪问题交给二次渲染——重算一次
+      a.parts = [];
+      items.length = 0; a.notes.length = 0;
+      a.m = m = { t: 30 + (lg === "top" ? 30 : 0) + (cfg.sub ? 20 : 0), r: 26, b: 46, l: 64 };
+      if (lg === "right") m.r = 200;
+      draw(a, P);
+      if (items.length && lg === "right") {
+        var ry2 = m.t + 8;
+        items.forEach(function (it) {
+          parts_push(a, chLegendItem(W - m.r + 8, ry2, it, th));
+          ry2 += 22;
+        });
+      }
+    }
+    /* 骨架最后画背景与标题，让渲染器不用管它们（SVG 后画的在上层，这里先画骨架再垫底） */
+    var head = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" ' +
+      'font-family="\'Noto Serif SC\',\'Source Han Serif SC\',Songti,SimSun,serif" ' +
+      'role="img" aria-label="' + chSvgEsc(cfg.title || "图表") + '">';
+    var bg = '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#fdfcfa"/>';
+    var tt = '<text x="' + m.l + '" y="34" font-size="19" font-weight="700" fill="' + th.ink + '">' +
+      chSvgEsc(cfg.title || "图表") + "</text>";
+    var st = cfg.sub ? '<text x="' + m.l + '" y="54" font-size="12.5" fill="#8b8071">' +
+      chSvgEsc(chCut(cfg.sub, 64)) + "</text>" : "";
+    var foot = a.notes.length ? '<text x="' + m.l + '" y="' + (H - 10) +
+      '" font-size="11.5" fill="#a89f8f">' + chSvgEsc(chCut(a.notes.join("；"), 72)) + "</text>" : "";
+    return head + bg + tt + st + a.parts.join("") + foot + "</svg>";
+  }
+  function parts_push(a) {
+    for (var i = 1; i < arguments.length; i++) a.parts.push(arguments[i]);
+  }
+  function chLegendItem(x, y, it, th) {
+    var g = "";
+    if (it.kind === "line") g += '<line x1="' + x + '" y1="' + (y + 8) + '" x2="' + (x + 16) + '" y2="' + (y + 8) +
+      '" stroke="' + it.color + '" stroke-width="2.5"/>';
+    else if (it.kind === "dot") g += '<circle cx="' + (x + 8) + '" cy="' + (y + 8) + '" r="4.5" fill="' + it.color + '"/>';
+    else g += '<rect x="' + x + '" y="' + y + '" width="15" height="15" rx="2" fill="' + it.color + '"/>';
+    return g + '<text x="' + (x + 21) + '" y="' + (y + 12.5) + '" font-size="12" fill="#4d463a">' +
+      chSvgEsc(chCut(it.label, 18)) + "</text>";
+  }
+  /* y 数值轴：网格线＋刻度，返回 y(v) 映射 */
+  function chAxisY(a, lo, hi, fmt) {
+    var t = chNiceTicks(lo, hi, 5), m = a.m, pw = a.W - m.l - m.r, ph = a.H - m.t - m.b;
+    var y0 = a.H - m.b, th = a.th;
+    t.ticks.forEach(function (v) {
+      var y = y0 - (v - t.lo) / (t.hi - t.lo) * ph;
+      parts_push(a, '<line x1="' + m.l + '" y1="' + y + '" x2="' + (m.l + pw) + '" y2="' + y +
+        '" stroke="#e8ddc3" stroke-width="1"/>',
+        '<text x="' + (m.l - 8) + '" y="' + (y + 4) + '" font-size="11.5" fill="#8b8071" text-anchor="end">' +
+        chSvgEsc((fmt || chFmt)(v)) + "</text>");
+    });
+    parts_push(a, '<line x1="' + m.l + '" y1="' + (y0 - ph) + '" x2="' + m.l + '" y2="' + y0 +
+      '" stroke="' + th.axis + '" stroke-width="1.2"/>');
+    return function (v) { return y0 - (v - t.lo) / (t.hi - t.lo) * ph; };
+  }
+  /* 数值域：分组取每列 min/max；堆积取逐行正/负累计 */
+  function chDomain(cols, stacked) {
+    var lo = 0, hi = 0;
+    if (stacked) {
+      for (var r = 0; r < cols[0].vals.length; r++) {
+        var p = 0, n2 = 0;
+        cols.forEach(function (c) { var v = c.vals[r]; if (isFinite(v)) { if (v >= 0) p += v; else n2 += v; } });
+        if (p > hi) hi = p; if (n2 < lo) lo = n2;
+      }
+    } else {
+      cols.forEach(function (c) { c.vals.forEach(function (v) { if (isFinite(v)) { if (v > hi) hi = v; if (v < lo) lo = v; } }); });
+    }
+    var t = chNiceTicks(lo < 0 ? lo : 0, hi, 5);
+    return t;
+  }
+  /* 类别 x 轴：返回中心 x(i) 与带宽；标签过密时旋转或抽稀 */
+  function chAxisXCat(a, labels, rot) {
+    var m = a.m, pw = a.W - m.l - m.r, y0 = a.H - m.b, n = labels.length;
+    var bw = pw / Math.max(1, n);
+    var every = Math.ceil(n / Math.floor(pw / 58));       // 抽稀：每 58px 至多一个标签
+    labels.forEach(function (s, i) {
+      if (i % every !== 0) return;
+      var x = m.l + bw * (i + 0.5), t = chCut(s, rot ? 12 : 9);
+      parts_push(a, '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#6d6459" ' +
+        (rot ? 'transform="rotate(-42 ' + x + " " + (y0 + 16) + ')" text-anchor="end"' : 'text-anchor="middle"') +
+        ">" + chSvgEsc(t) + "</text>");
+    });
+    parts_push(a, '<line x1="' + m.l + '" y1="' + y0 + '" x2="' + (m.l + pw) + '" y2="' + y0 +
+      '" stroke="' + a.th.axis + '" stroke-width="1.2"/>');
+    return { bw: bw, cx: function (i) { return m.l + bw * (i + 0.5); } };
+  }
+
+  var CH_DRAW = {};
+
+  /* 分组 / 堆积柱状图 */
+  CH_DRAW.bar = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), stacked = !!a.cfg.stacked;
+    var cols = M.cols, labels = M.labels, n = labels.length, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var cap = 36;
+    if (n > cap) { labels = labels.slice(0, cap); cols = cols.map(function (c) { return { name: c.name, vals: c.vals.slice(0, cap) }; }); a.notes.push("数据 " + n + " 组，图内仅画前 " + cap + " 组"); n = cap; }
+    var t = chDomain(cols, stacked), y = chAxisY(a, t.lo, t.hi, chFmt), X = chAxisXCat(a, labels, n > 14);
+    var y0 = a.H - m.b, pw = a.W - m.l - m.r;
+    if (stacked) {
+      /* 堆积：逐行正负各记一条累计线，块贴着线画，画完推进线 */
+      var runPos = labels.map(function () { return 0; }), runNeg = labels.map(function () { return 0; });
+      cols.forEach(function (c, ci) {
+        var col = a.th.series[ci % a.th.series.length];
+        c.vals.forEach(function (v, i) {
+          if (!isFinite(v) || v === 0) return;
+          var bw2 = X.bw * 0.62, x = X.cx(i) - bw2 / 2, yv1, yv2;
+          if (v >= 0) { yv1 = y(runPos[i]); runPos[i] += v; yv2 = y(runPos[i]); }
+          else { yv2 = y(runNeg[i]); runNeg[i] += v; yv1 = y(runNeg[i]); }
+          parts_push(a, '<rect x="' + x.toFixed(1) + '" y="' + Math.min(yv1, yv2).toFixed(1) +
+            '" width="' + bw2.toFixed(1) + '" height="' + Math.max(1, Math.abs(yv2 - yv1)).toFixed(1) +
+            '" fill="' + col + '" rx="1.5"><title>' + chSvgEsc(labels[i] + " · " + c.name + "：" + chFmt(v)) + "</title></rect>");
+        });
+      });
+    } else {
+      cols.forEach(function (c, ci) {
+        var col = a.th.series[ci % a.th.series.length];
+        c.vals.forEach(function (v, i) {
+          if (!isFinite(v)) return;
+          var bw2 = X.bw * 0.72 / cols.length;
+          var x = X.cx(i) - X.bw * 0.36 + ci * bw2;
+          var yv = y(v), yt = y(Math.max(v, 0));
+          parts_push(a, '<rect x="' + x.toFixed(1) + '" y="' + Math.min(yt, yv).toFixed(1) +
+            '" width="' + bw2.toFixed(1) + '" height="' + Math.max(1, Math.abs(y0 - yv)).toFixed(1) +
+            '" fill="' + col + '" rx="1.5"><title>' + chSvgEsc(labels[i] + " · " + c.name + "：" + chFmt(v)) + "</title></rect>");
+        });
+      });
+    }
+    cols.forEach(function (c, ci) { a.items.push({ label: c.name, color: a.th.series[ci % a.th.series.length] }); });
+  };
+
+  /* 条形图（横向） */
+  CH_DRAW.barH = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var c = cols[0], n = labels.length, m = a.m;
+    if (cols.length > 1) a.notes.push("条形图一次画一列，取「" + c.name + "」；要多列并排请用分组柱状图");
+    var idx = labels.map(function (_, i) { return i; });
+    idx.sort(function (x, y2) { return (c.vals[y2] || 0) - (c.vals[x] || 0); });
+    var cap = 28;
+    if (n > cap) { idx = idx.slice(0, cap); a.notes.push("数据 " + n + " 行，仅画数值最大的 " + cap + " 行"); }
+    var col = a.th.series[0];
+    var max = 0; idx.forEach(function (i) { if (isFinite(c.vals[i]) && c.vals[i] > max) max = c.vals[i]; });
+    var t = chNiceTicks(0, max, 4), x = chAxisXNumTop(a, t), rows = idx.length;
+    var ph = a.H - m.t - m.b, rh = ph / rows;
+    idx.forEach(function (i, k) {
+      var v = c.vals[i]; if (!isFinite(v)) return;
+      var yv = a.H - m.b - (k + 0.78) * rh, w = (v - t.lo) / (t.hi - t.lo) * (a.W - m.l - m.r);
+      parts_push(a, '<rect x="' + m.l + '" y="' + yv.toFixed(1) + '" width="' + Math.max(1, w).toFixed(1) +
+        '" height="' + (rh * 0.62).toFixed(1) + '" fill="' + col + '" rx="2"><title>' +
+        chSvgEsc(labels[i] + "：" + chFmt(v)) + "</title></rect>",
+        '<text x="' + (m.l + Math.max(1, w) + 6) + '" y="' + (yv + rh * 0.44).toFixed(1) +
+        '" font-size="11.5" fill="#4d463a">' + chSvgEsc(chFmt(v)) + "</text>",
+        '<text x="' + (m.l - 8) + '" y="' + (yv + rh * 0.44).toFixed(1) + '" font-size="11.5" fill="#6d6459" text-anchor="end">' +
+        chSvgEsc(chCut(labels[i], 12)) + "</text>");
+    });
+    a.items.push({ label: c.name, color: col });
+  };
+  /* 条形图共用一条顶置数值轴 */
+  function chAxisXNumTop(a, t) {
+    var m = a.m, pw = a.W - m.l - m.r, y0 = a.H - m.b;
+    t.ticks.forEach(function (v) {
+      var x = m.l + (v - t.lo) / (t.hi - t.lo) * pw;
+      parts_push(a, '<line x1="' + x + '" y1="' + (a.H - m.b - (a.H - m.t - m.b)) + '" x2="' + x + '" y2="' + y0 +
+        '" stroke="#e8ddc3" stroke-width="1"/>',
+        '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#8b8071" text-anchor="middle">' + chSvgEsc(chFmt(v)) + "</text>");
+    });
+    return t;
+  }
+
+  /* 雷达图：行=维度，数值列=序列；统一量程（全局 max） */
+  CH_DRAW.radar = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (cols.length < 1 || labels.length < 3) { parts_push(a, chNoData(a, "雷达图至少要 3 行数据")); return; }
+    var n = Math.min(labels.length, 12);
+    if (labels.length > 12) a.notes.push("维度过多，取前 12 行");
+    var cx = m.l + (a.W - m.l - m.r) / 2, cy = m.t + (a.H - m.t - m.b) / 2,
+      R = Math.min(a.W - m.l - m.r, a.H - m.t - m.b) / 2 - 34;
+    var gmax = 0;
+    cols.forEach(function (c) { for (var i = 0; i < n; i++) { var v = c.vals[i]; if (isFinite(v) && v > gmax) gmax = v; } });
+    if (gmax <= 0) gmax = 1;
+    var pt = function (i, r) {
+      var ang = -Math.PI / 2 + i * 2 * Math.PI / n;
+      return [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r];
+    };
+    for (var ring = 1; ring <= 4; ring++) {
+      var ps = [];
+      for (var i = 0; i < n; i++) { var p = pt(i, R * ring / 4); ps.push(p[0].toFixed(1) + "," + p[1].toFixed(1)); }
+      parts_push(a, '<polygon points="' + ps.join(" ") + '" fill="none" stroke="#e8ddc3" stroke-width="1"/>');
+    }
+    for (var i = 0; i < n; i++) {
+      var p2 = pt(i, R);
+      parts_push(a, '<line x1="' + cx + '" y1="' + cy + '" x2="' + p2[0].toFixed(1) + '" y2="' + p2[1].toFixed(1) + '" stroke="#e8ddc3" stroke-width="1"/>');
+      var pl = pt(i, R + 18), anchor = Math.abs(pl[0] - cx) < 10 ? "middle" : (pl[0] > cx ? "start" : "end");
+      parts_push(a, '<text x="' + pl[0].toFixed(1) + '" y="' + (pl[1] + 4).toFixed(1) + '" font-size="12" fill="#4d463a" text-anchor="' + anchor + '">' +
+        chSvgEsc(chCut(labels[i], 8)) + "</text>");
+    }
+    parts_push(a, '<text x="' + (cx + 6) + '" y="' + (cy - R - 6) + '" font-size="11" fill="#8b8071">' + chSvgEsc(chFmt(gmax)) + "</text>");
+    cols.forEach(function (c, ci) {
+      var col = a.th.series[ci % a.th.series.length], ps2 = [];
+      for (var j = 0; j < n; j++) {
+        var v = c.vals[j], r = isFinite(v) ? Math.max(0, v) / gmax * R : 0;
+        var p3 = pt(j, r); ps2.push(p3[0].toFixed(1) + "," + p3[1].toFixed(1));
+        parts_push(a, '<circle cx="' + p3[0].toFixed(1) + '" cy="' + p3[1].toFixed(1) + '" r="3" fill="' + col + '"><title>' +
+          chSvgEsc(labels[j] + "：" + chFmt(v)) + "</title></circle>");
+      }
+      parts_push(a, '<polygon points="' + ps2.join(" ") + '" fill="' + col + '" fill-opacity="0.14" stroke="' + col + '" stroke-width="2"/>');
+      a.items.push({ label: c.name, color: col, kind: "line" });
+    });
+  };
+
+  function chNoData(a, msg) {
+    return '<text x="' + (a.W / 2) + '" y="' + (a.H / 2) + '" font-size="15" fill="#8b8071" text-anchor="middle">' +
+      chSvgEsc(msg || "按当前列映射画不出这张图——请回上方调整「类别列 / 数值列」") + "</text>";
+  }
+
+  /* 折线 / 面积 / 堆积面积共用骨架 */
+  function chLineBase(a, P, mode) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var n = labels.length;
+    var src = cols;
+    if (mode === "stack") {
+      var acc = labels.map(function () { return 0; }), run = labels.map(function () { return 0; });
+      src = cols.map(function (c) {
+        return { name: c.name, vals: c.vals.map(function (v, i) { run[i] += isFinite(v) ? v : 0; return run[i]; }) };
+      });
+    }
+    var t = chDomain(src, false), y = chAxisY(a, t.lo, t.hi, chFmt), X = chAxisXCat(a, labels, n > 12);
+    var y0 = a.H - m.b;
+    src.forEach(function (c, ci) {
+      var col = a.th.series[ci % a.th.series.length], pts = [];
+      c.vals.forEach(function (v, i) { if (isFinite(v)) pts.push([X.cx(i), y(v), v, i]); });
+      if (!pts.length) return;
+      var d = pts.map(function (p, k) { return (k ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+      if (mode) {
+        var area = d + " L" + pts[pts.length - 1][0].toFixed(1) + " " + y0 + " L" + pts[0][0].toFixed(1) + " " + y0 + " Z";
+        parts_push(a, '<path d="' + area + '" fill="' + col + '" fill-opacity="0.18"/>');
+      }
+      parts_push(a, '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.4" stroke-linejoin="round"/>');
+      if (n <= 80) pts.forEach(function (p) {
+        parts_push(a, '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.2" fill="' + col + '"><title>' +
+          chSvgEsc(labels[p[3]] + " · " + c.name + "：" + chFmt(p[2])) + "</title></circle>");
+      });
+      a.items.push({ label: c.name, color: col, kind: "line" });
+    });
+    if (mode === "stack") a.notes.push("堆积面积自下而上逐列累加，读某条线的高度即该列的累计值");
+  }
+  CH_DRAW.line = function (a, P) { chLineBase(a, P, false); };
+  CH_DRAW.area = function (a, P) { chLineBase(a, P, "area"); };
+  CH_DRAW.areaStack = function (a, P) { chLineBase(a, P, "stack"); };
+
+  /* 瀑布图：分类 + 单数值列；行名含 合计/总计/期末/利润 等则画成总柱 */
+  CH_DRAW.waterfall = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var c = cols[0], n = labels.length;
+    if (cols.length > 1) a.notes.push("瀑布图一次画一列，取「" + c.name + "」");
+    var TOTAL_RE = /合计|总计|期末|净额|净利润|利润|毛利|结余|总/;
+    var run = 0, t0 = 0, bars = [];
+    labels.forEach(function (s, i) {
+      var v = c.vals[i]; if (!isFinite(v)) return;
+      if (TOTAL_RE.test(s)) { bars.push({ s: s, from: Math.min(0, run), to: run, total: true }); }
+      else { bars.push({ s: s, from: run, to: run + v }); run += v; }
+    });
+    labels.forEach(function (_, i) { if (isFinite(c.vals[i]) && !TOTAL_RE.test(labels[i])) { if (c.vals[i] < t0) t0 = c.vals[i]; } });
+    var lo = Math.min(0, run, t0), hi = Math.max(run, 0);
+    bars.forEach(function (b) { if (!b.total && b.to > hi) hi = b.to; });
+    var t = chNiceTicks(Math.min(0, lo), hi, 5), y = chAxisY(a, t.lo, t.hi, chFmt), X = chAxisXCat(a, bars.map(function (b) { return b.s; }), n > 10);
+    var y0 = a.H - m.b;
+    bars.forEach(function (b, i) {
+      var col = b.total ? "#c98a2b" : (b.to >= b.from ? a.th.series[0] : "#5a7a6e");
+      var y1 = y(b.from), y2 = y(b.to);
+      parts_push(a, '<rect x="' + (X.cx(i) - X.bw * 0.3).toFixed(1) + '" y="' + Math.min(y1, y2).toFixed(1) +
+        '" width="' + (X.bw * 0.6).toFixed(1) + '" height="' + Math.max(1.5, Math.abs(y1 - y2)).toFixed(1) +
+        '" fill="' + col + '" rx="1.5"><title>' + chSvgEsc(b.s + "：" + chFmt(b.to - b.from) + (b.total ? "（合计）" : "")) + "</title></rect>");
+      if (i < bars.length - 1) {
+        var ly = y(b.to);
+        parts_push(a, '<line x1="' + (X.cx(i) + X.bw * 0.3).toFixed(1) + '" y1="' + ly.toFixed(1) +
+          '" x2="' + (X.cx(i + 1) - X.bw * 0.3).toFixed(1) + '" y2="' + ly.toFixed(1) + '" stroke="#a89f8f" stroke-width="1" stroke-dasharray="3 3"/>');
+      }
+    });
+    a.items.push({ label: "增项", color: a.th.series[0] }, { label: "减项", color: "#5a7a6e" }, { label: "合计", color: "#c98a2b" });
+  };
+
+  /* 饼 / 环形：分类 + 单数值列；超过 12 类合并「其他」 */
+  CH_DRAW.pie = function (a, P) {
+    var donut = a.cfg.donut;
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var c = cols[0];
+    if (cols.length > 1) a.notes.push("饼图一次画一列，取「" + c.name + "」");
+    var rows = labels.map(function (s, i) { return { s: s, v: isFinite(c.vals[i]) ? c.vals[i] : 0 }; })
+      .filter(function (r) { return r.v > 0; }).sort(function (x, y2) { return y2.v - x.v; });
+    if (rows.length > 12) {
+      var rest = rows.slice(11).reduce(function (s2, r) { return s2 + r.v; }, 0);
+      rows = rows.slice(0, 11);
+      rows.push({ s: "其他（" + (labels.length - 11) + " 项）", v: rest });
+      a.notes.push("类别超过 12 个，已把其余合并为「其他」；要逐项细看建议改条形图");
+    }
+    var sum = rows.reduce(function (s2, r) { return s2 + r.v; }, 0) || 1;
+    var cx = m.l + (a.W - m.l - m.r) / 2 - (a.cfg.legend === "right" ? -40 : 0), cy = m.t + (a.H - m.t - m.b) / 2 + 8,
+      R = Math.min(a.W - m.l - m.r, a.H - m.t - m.b) / 2 - 40, r0 = donut ? R * 0.58 : 0;
+    var ang = -Math.PI / 2;
+    rows.forEach(function (r, i) {
+      var col = a.th.series[i % a.th.series.length], a2 = ang + r.v / sum * 2 * Math.PI;
+      var large = a2 - ang > Math.PI ? 1 : 0,
+        p1x = cx + Math.cos(ang) * R, p1y = cy + Math.sin(ang) * R,
+        p2x = cx + Math.cos(a2) * R, p2y = cy + Math.sin(a2) * R,
+        i1x = cx + Math.cos(a2) * r0, i1y = cy + Math.sin(a2) * r0,
+        i2x = cx + Math.cos(ang) * r0, i2y = cy + Math.sin(ang) * r0;
+      var d = r0 ?
+        "M" + p1x.toFixed(1) + " " + p1y.toFixed(1) + " A" + R + " " + R + " 0 " + large + " 1 " + p2x.toFixed(1) + " " + p2y.toFixed(1) +
+        " L" + i1x.toFixed(1) + " " + i1y.toFixed(1) + " A" + r0 + " " + r0 + " 0 " + large + " 0 " + i2x.toFixed(1) + " " + i2y.toFixed(1) + " Z" :
+        "M" + cx + " " + cy + " L" + p1x.toFixed(1) + " " + p1y.toFixed(1) + " A" + R + " " + R + " 0 " + large + " 1 " + p2x.toFixed(1) + " " + p2y.toFixed(1) + " Z";
+      parts_push(a, '<path d="' + d + '" fill="' + col + '" stroke="#fdfcfa" stroke-width="1.5"><title>' +
+        chSvgEsc(r.s + "：" + chFmt(r.v) + "（" + (r.v / sum * 100).toFixed(1) + "%）") + "</title></path>");
+      if (r.v / sum > 0.04) {
+        var mid = (ang + a2) / 2, lr = R * (r0 ? (R + r0) / 2 / R : 0.66),
+          lx = cx + Math.cos(mid) * lr, ly = cy + Math.sin(mid) * lr;
+        parts_push(a, '<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" font-size="12" fill="#fdfcfa" font-weight="700" text-anchor="middle">' +
+          chSvgEsc((r.v / sum * 100).toFixed(1) + "%") + "</text>");
+      }
+      a.items.push({ label: r.s + " " + (r.v / sum * 100).toFixed(1) + "%", color: col });
+      ang = a2;
+    });
+    if (donut) {
+      parts_push(a, '<text x="' + cx + '" y="' + (cy - 2) + '" font-size="12" fill="#8b8071" text-anchor="middle">合计</text>',
+        '<text x="' + cx + '" y="' + (cy + 18) + '" font-size="17" font-weight="700" fill="' + a.th.ink + '" text-anchor="middle">' + chSvgEsc(chFmt(sum)) + "</text>");
+    }
+  };
+  CH_DRAW.donut = function (a, P) { CH_DRAW.pie(a, P); };
+
+  /* 树状图（squarify）：单层 = 类别+数值；两层 = 两个类别列+数值 */
+  function chSquarify(items, x, y, w, h, out) {
+    if (!items.length) return;
+    if (items.length === 1) { out.push({ it: items[0], x: x, y: y, w: w, h: h }); return; }
+    var total = 0; items.forEach(function (r) { total += r.v; });
+    if (total <= 0) { out.push({ it: items[0], x: x, y: y, w: w, h: h }); return; }
+    var sum = 0, worst = Infinity, cut = 1;
+    for (var i = 0; i < items.length; i++) {
+      sum += items[i].v;
+      /* 试算把 items[0..i] 排成一行/列后的最大长宽比；一旦变差就截在这一行的前一段 */
+      var thick = w > h ? (sum / total) * w : (sum / total) * h;
+      var mx = 0;
+      for (var j = 0; j <= i; j++) {
+        var area = items[j].v / total * (w * h), l2 = area / Math.max(thick, 1e-9);
+        var ratio = Math.max(l2 / Math.max(thick, 1e-9), thick / Math.max(l2, 1e-9));
+        if (ratio > mx) mx = ratio;
+      }
+      if (mx > worst && i > 0) { cut = i; break; }
+      worst = mx; cut = i + 1;
+    }
+    var row = items.slice(0, cut), rsum = 0; row.forEach(function (r) { rsum += r.v; });
+    var frac = rsum / total;
+    if (w > h) {
+      var rw = w * frac, yy = y;
+      row.forEach(function (r) { var hh = h * (r.v / rsum); out.push({ it: r, x: x, y: yy, w: rw, h: hh }); yy += hh; });
+      chSquarify(items.slice(cut), x + rw, y, w - rw, h, out);
+    } else {
+      var rh2 = h * frac, xx = x;
+      row.forEach(function (r) { var ww = w * (r.v / rsum); out.push({ it: r, x: xx, y: y, w: ww, h: rh2 }); xx += ww; });
+      chSquarify(items.slice(cut), x, y + rh2, w, h - rh2, out);
+    }
+  }
+  CH_DRAW.treemap = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a)); return; }
+    var c = cols[0];
+    var X = a.W - m.l - m.r, Y = a.H - m.t - m.b;
+    var cat2 = (a.cfg.cat2Col != null && a.cfg.cat2Col !== a.cfg.catCol) ? a.cfg.cat2Col : null;
+    var groups = {};
+    if (cat2 != null) {
+      labels.forEach(function (_, i) {
+        var g = String(P.body[i][cat2] == null ? "—" : P.body[i][cat2]).trim() || "—";
+        (groups[g] = groups[g] || []).push({ s: labels[i], v: isFinite(c.vals[i]) ? Math.max(0, c.vals[i]) : 0, i: i });
+      });
+      var gItems = Object.keys(groups).map(function (g) {
+        return { s: g, v: groups[g].reduce(function (s2, r) { return s2 + r.v; }, 0), kids: groups[g] };
+      }).sort(function (x, y2) { return y2.v - x.v; });
+      var rects = []; chSquarify(gItems, m.l, m.t, X, Y, rects);
+      rects.forEach(function (rc, gi) {
+        var col = a.th.series[gi % a.th.series.length];
+        parts_push(a, '<rect x="' + rc.x.toFixed(1) + '" y="' + rc.y.toFixed(1) + '" width="' + rc.w.toFixed(1) + '" height="' + rc.h.toFixed(1) +
+          '" fill="' + col + '" fill-opacity="0.16" stroke="' + col + '" stroke-width="2"/>');
+        if (rc.w > 46 && rc.h > 22) parts_push(a, '<text x="' + (rc.x + 8) + '" y="' + (rc.y + 18) + '" font-size="13" font-weight="700" fill="' + col + '">' +
+          chSvgEsc(chCut(rc.it.s, Math.max(2, Math.floor(rc.w / 14)))) + "</text>");
+        /* 内层 */
+        var inner = []; chSquarify(rc.it.kids, rc.x + 2, rc.y + (rc.w > 46 && rc.h > 22 ? 22 : 2), rc.w - 4, rc.h - (rc.w > 46 && rc.h > 22 ? 24 : 4), inner);
+        inner.forEach(function (ic) {
+          if (ic.w < 8 || ic.h < 8 || ic.it.v <= 0) return;
+          var depth = 0.55 + 0.45 * Math.min(1, ic.it.v / Math.max(1, rc.it.v));
+          parts_push(a, '<rect x="' + ic.x.toFixed(1) + '" y="' + ic.y.toFixed(1) + '" width="' + ic.w.toFixed(1) + '" height="' + ic.h.toFixed(1) +
+            '" fill="' + chHexLerp("#fdfcfa", col, depth) + '" stroke="#fdfcfa" stroke-width="1"><title>' +
+            chSvgEsc(rc.it.s + " / " + ic.it.s + "：" + chFmt(ic.it.v)) + "</title></rect>");
+          if (ic.w > 40 && ic.h > 16) parts_push(a, '<text x="' + (ic.x + 4) + '" y="' + (ic.y + 13) + '" font-size="10.5" fill="#221f1a">' +
+            chSvgEsc(chCut(ic.it.s, Math.floor(ic.w / 11))) + "</text>");
+        });
+        a.items.push({ label: rc.it.s, color: col });
+      });
+      a.notes.push("外层按「" + (P.cols[cat2] ? P.cols[cat2].name : "") + "」分组，内层是各明细行");
+    } else {
+      var items = labels.map(function (s, i) { return { s: s, v: Math.max(0, isFinite(c.vals[i]) ? c.vals[i] : 0), i: i }; })
+        .sort(function (x, y2) { return y2.v - x.v; });
+      var rects2 = []; chSquarify(items, m.l, m.t, X, Y, rects2);
+      rects2.forEach(function (rc, i) {
+        var col = a.th.series[i % a.th.series.length];
+        if (rc.w < 4 || rc.h < 4) return;
+        parts_push(a, '<rect x="' + rc.x.toFixed(1) + '" y="' + rc.y.toFixed(1) + '" width="' + rc.w.toFixed(1) + '" height="' + rc.h.toFixed(1) +
+          '" fill="' + col + '" fill-opacity="0.88" stroke="#fdfcfa" stroke-width="1.5"><title>' +
+          chSvgEsc(rc.it.s + "：" + chFmt(rc.it.v)) + "</title></rect>");
+        if (rc.w > 44 && rc.h > 30) {
+          parts_push(a, '<text x="' + (rc.x + 6) + '" y="' + (rc.y + 17) + '" font-size="12" fill="#fdfcfa" font-weight="700">' +
+            chSvgEsc(chCut(rc.it.s, Math.floor(rc.w / 12.5))) + "</text>");
+          if (rc.h > 46) parts_push(a, '<text x="' + (rc.x + 6) + '" y="' + (rc.y + 33) + '" font-size="11" fill="#fdfcfa" fill-opacity="0.85">' +
+            chSvgEsc(chFmt(rc.it.v)) + "</text>");
+        }
+      });
+    }
+  };
+
+  /* 散点 / 气泡：两列数值 xy（+第三列大小）；线性趋势线 */
+  CH_DRAW.scatter = function (a, P) {
+    var bubble = !!a.bubble;
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, m = a.m;
+    if (cols.length < 2) { parts_push(a, chNoData(a, "散点图需要两列数值：一列作 x，一列作 y")); return; }
+    var pts = [];
+    var nRaw = cols[0].vals.length;
+    for (var i = 0; i < nRaw; i++) {
+      var vx = cols[0].vals[i], vy = cols[1].vals[i], vs = cols[2] ? cols[2].vals[i] : NaN;
+      if (isFinite(vx) && isFinite(vy)) pts.push({ x: vx, y: vy, s: isFinite(vs) ? vs : NaN, i: i });
+    }
+    var sampled = false;
+    if (pts.length > 1500) { pts = pts.filter(function (_, k) { return k % Math.ceil(pts.length / 1500) === 0; }); sampled = true; }
+    var xs = chNiceTicks(Math.min.apply(null, pts.map(function (p) { return p.x; })),
+      Math.max.apply(null, pts.map(function (p) { return p.x; })), 6);
+    var ys = chNiceTicks(Math.min.apply(null, pts.map(function (p) { return p.y; })),
+      Math.max.apply(null, pts.map(function (p) { return p.y; })), 5);
+    var pw = a.W - m.l - m.r, ph = a.H - m.t - m.b, y0 = a.H - m.b;
+    xs.ticks.forEach(function (v) {
+      var x = m.l + (v - xs.lo) / (xs.hi - xs.lo) * pw;
+      parts_push(a, '<line x1="' + x + '" y1="' + (y0 - ph) + '" x2="' + x + '" y2="' + y0 + '" stroke="#e8ddc3" stroke-width="1"/>',
+        '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#8b8071" text-anchor="middle">' + chSvgEsc(chFmt(v)) + "</text>");
+    });
+    ys.ticks.forEach(function (v) {
+      var y = y0 - (v - ys.lo) / (ys.hi - ys.lo) * ph;
+      parts_push(a, '<line x1="' + m.l + '" y1="' + y + '" x2="' + (m.l + pw) + '" y2="' + y + '" stroke="#e8ddc3" stroke-width="1"/>',
+        '<text x="' + m.l - 8 + '" y="' + (y + 4) + '" font-size="11.5" fill="#8b8071" text-anchor="end">' + chSvgEsc(chFmt(v)) + "</text>");
+    });
+    parts_push(a, '<line x1="' + m.l + '" y1="' + (y0 - ph) + '" x2="' + m.l + '" y2="' + y0 + '" stroke="' + a.th.axis + '" stroke-width="1.2"/>',
+      '<line x1="' + m.l + '" y1="' + y0 + '" x2="' + (m.l + pw) + '" y2="' + y0 + '" stroke="' + a.th.axis + '" stroke-width="1.2"/>',
+      '<text x="' + (m.l + pw / 2) + '" y="' + (y0 + 32) + '" font-size="12.5" fill="#4d463a" text-anchor="middle">' + chSvgEsc(cols[0].name) + "</text>",
+      '<text x="' + (m.l - 40) + '" y="' + (m.t + ph / 2) + '" font-size="12.5" fill="#4d463a" text-anchor="middle" transform="rotate(-90 ' + (m.l - 40) + " " + (m.t + ph / 2) + ')">' + chSvgEsc(cols[1].name) + "</text>");
+    var smax = 0; pts.forEach(function (p) { if (isFinite(p.s) && p.s > smax) smax = p.s; });
+    var col = a.th.series[0];
+    pts.forEach(function (p) {
+      var x = m.l + (p.x - xs.lo) / (xs.hi - xs.lo) * pw, y = y0 - (p.y - ys.lo) / (ys.hi - ys.lo) * ph;
+      var r = bubble && smax > 0 && isFinite(p.s) ? 3 + Math.sqrt(p.s / smax) * 14 : 3.6;
+      parts_push(a, '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) +
+        '" fill="' + col + '" fill-opacity="0.5" stroke="' + col + '"><title>' +
+        chSvgEsc((M.labels[p.i] || "点") + "：" + cols[0].name + "=" + chFmt(p.x) + "，" + cols[1].name + "=" + chFmt(p.y) +
+          (bubble && isFinite(p.s) ? "，" + cols[2].name + "=" + chFmt(p.s) : "")) + "</title></circle>");
+    });
+    /* 最小二乘趋势线 */
+    if (pts.length > 2) {
+      var sx = 0, sy = 0, sxy = 0, sxx = 0;
+      pts.forEach(function (p) { sx += p.x; sy += p.y; sxy += p.x * p.y; sxx += p.x * p.x; });
+      var nn = pts.length, b = (nn * sxy - sx * sy) / Math.max(1e-12, nn * sxx - sx * sx),
+        aa = (sy - b * sx) / nn;
+      if (isFinite(b)) {
+        var x1 = xs.lo, x2 = xs.hi,
+          f = function (v) { return y0 - (aa + b * v - ys.lo) / (ys.hi - ys.lo) * ph; };
+        parts_push(a, '<line x1="' + (m.l + (x1 - xs.lo) / (xs.hi - xs.lo) * pw).toFixed(1) + '" y1="' + f(x1).toFixed(1) +
+          '" x2="' + (m.l + (x2 - xs.lo) / (xs.hi - xs.lo) * pw).toFixed(1) + '" y2="' + f(x2).toFixed(1) +
+          '" stroke="' + a.th.series[1] + '" stroke-width="1.8" stroke-dasharray="7 5" stroke-opacity="0.85"/>');
+        a.items.push({ label: cols[0].name + " → " + cols[1].name, color: col, kind: "dot" },
+          { label: "线性趋势", color: a.th.series[1], kind: "line" });
+      }
+    } else a.items.push({ label: cols[0].name + " × " + cols[1].name, color: col, kind: "dot" });
+    if (sampled) a.notes.push("点数过多，已按等间隔抽样至 1500 点");
+    if (bubble && cols.length > 2) a.notes.push("气泡面积对应「" + cols[2].name + "」");
+  };
+  CH_DRAW.bubble = function (a, P) { a.bubble = true; CH_DRAW.scatter(a, P); };
+
+  /* 热力图：行标签 + 全数值列矩阵 */
+  CH_DRAW.heatmap = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    if (cols.length < 2) { parts_push(a, chNoData(a, "热力图需要两列以上数值列")); return; }
+    var nR = Math.min(labels.length, 40);
+    if (labels.length > 40) a.notes.push("行数过多，取前 40 行");
+    var vals = [];
+    for (var i = 0; i < nR; i++) for (var j = 0; j < cols.length; j++) { var v = cols[j].vals[i]; if (isFinite(v)) vals.push(v); }
+    var vmin = Math.min.apply(null, vals), vmax = Math.max.apply(null, vals);
+    var pw = a.W - m.l - m.r, ph = a.H - m.t - m.b,
+      cw = pw / cols.length, rh = ph / nR;
+    var lo2 = chNiceTicks(0, vmax, 4);
+    for (var r = 0; r < nR; r++) {
+      for (var j = 0; j < cols.length; j++) {
+        var v2 = cols[j].vals[r];
+        var tt2 = isFinite(v2) && vmax > vmin ? (v2 - vmin) / (vmax - vmin) : 0;
+        parts_push(a, '<rect x="' + (m.l + j * cw).toFixed(1) + '" y="' + (m.t + r * rh).toFixed(1) +
+          '" width="' + (cw - 1.5).toFixed(1) + '" height="' + (rh - 1.5).toFixed(1) +
+          '" fill="' + chHexLerp("#f5eede", a.th.ink, 0.08 + tt2 * 0.92) + '"><title>' +
+          chSvgEsc(labels[r] + " · " + cols[j].name + "：" + (isFinite(v2) ? chFmt(v2) : "空")) + "</title></rect>");
+        if (cw > 54 && rh > 20) parts_push(a, '<text x="' + (m.l + j * cw + cw / 2 - 1) + '" y="' + (m.t + r * rh + rh / 2 + 4) +
+          '" font-size="10.5" text-anchor="middle" fill="' + (tt2 > 0.55 ? "#fdfcfa" : "#4d463a") + '">' + chSvgEsc(chFmt(v2)) + "</text>");
+      }
+      parts_push(a, '<text x="' + (m.l - 8) + '" y="' + (m.t + r * rh + rh / 2 + 4) + '" font-size="11.5" fill="#6d6459" text-anchor="end">' +
+        chSvgEsc(chCut(labels[r], 10)) + "</text>");
+    }
+    cols.forEach(function (c, j) {
+      parts_push(a, '<text x="' + (m.l + j * cw + cw / 2 - 1) + '" y="' + (m.t - 8) + '" font-size="11.5" fill="#4d463a" text-anchor="middle">' +
+        chSvgEsc(chCut(c.name, Math.max(4, Math.floor(cw / 12)))) + "</text>");
+    });
+    /* 色条图例 */
+    var gx = m.l, gy = m.t + nR * rh + 18;
+    for (var k = 0; k < 40; k++) {
+      parts_push(a, '<rect x="' + (gx + k * 9) + '" y="' + gy + '" width="9" height="10" fill="' +
+        chHexLerp("#f5eede", a.th.ink, 0.08 + k / 39 * 0.92) + '"/>');
+    }
+    parts_push(a, '<text x="' + (gx + 370) + '" y="' + (gy + 9) + '" font-size="11.5" fill="#8b8071">' +
+      chSvgEsc(chFmt(vmin) + " → " + chFmt(vmax)) + "</text>");
+  };
+
+  /* 直方图：单数值列分箱 */
+  CH_DRAW.hist = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, m = a.m;
+    if (!cols.length) { parts_push(a, chNoData(a, "直方图需要一列数值")); return; }
+    var vals = [];
+    cols[0].vals.forEach(function (v) { if (isFinite(v)) vals.push(v); });
+    if (!vals.length) { parts_push(a, chNoData(a)); return; }
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    var nb = Math.max(8, Math.min(24, Math.round(Math.sqrt(vals.length))));
+    var t = chNiceTicks(lo, hi, nb), step = t.step, bins = [];
+    for (var v = t.lo; v < t.hi - 1e-9; v += step) bins.push({ x0: v, x1: v + step, n: 0 });
+    vals.forEach(function (x) {
+      var k = Math.floor((x - t.lo) / step);
+      if (k >= 0 && k < bins.length) bins[k].n++;
+      else if (x === t.hi && bins.length) bins[bins.length - 1].n++;
+    });
+    var max = 0; bins.forEach(function (b) { if (b.n > max) max = b.n; });
+    var yt = chNiceTicks(0, max, 5), y = chAxisY(a, 0, yt.hi, function (v) { return String(Math.round(v)); });
+    var y0 = a.H - m.b, pw = a.W - m.l - m.r, bw = pw / bins.length;
+    bins.forEach(function (b, i) {
+      if (!b.n) return;
+      var yv = y(b.n);
+      parts_push(a, '<rect x="' + (m.l + i * bw + 1).toFixed(1) + '" y="' + yv.toFixed(1) + '" width="' + Math.max(1, bw - 2).toFixed(1) +
+        '" height="' + Math.max(1, y0 - yv).toFixed(1) + '" fill="' + a.th.series[0] + '" fill-opacity="0.85"><title>' +
+        chSvgEsc("[" + chFmt(b.x0) + ", " + chFmt(b.x1) + ")：" + b.n + " 个") + "</title></rect>");
+    });
+    bins.forEach(function (b, i) {
+      if (i % Math.ceil(bins.length / 12) !== 0) return;
+      parts_push(a, '<text x="' + (m.l + i * bw) + '" y="' + (y0 + 16) + '" font-size="11" fill="#8b8071" text-anchor="middle">' + chSvgEsc(chFmt(b.x0)) + "</text>");
+    });
+    parts_push(a, '<text x="' + (m.l + pw / 2) + '" y="' + (y0 + 32) + '" font-size="12.5" fill="#4d463a" text-anchor="middle">' +
+      chSvgEsc(cols[0].name) + "</text>",
+      '<line x1="' + m.l + '" y1="' + y0 + '" x2="' + (m.l + pw) + '" y2="' + y0 + '" stroke="' + a.th.axis + '" stroke-width="1.2"/>');
+    a.items.push({ label: "频次（组距 " + chFmt(step) + "）", color: a.th.series[0] });
+  };
+
+  /* 箱线图：多数值列各一箱；或类别列+单数值列按组分箱 */
+  CH_DRAW.box = function (a, P) {
+    var M = a.M || chMatrix(P, a.cfg), cols = M.cols, labels = M.labels, m = a.m;
+    var groups = [];
+    if (a.cfg.catCol != null && cols.length === 1) {
+      var byc = {};
+      labels.forEach(function (s, i) {
+        var k = s;
+        (byc[k] = byc[k] || []).push(cols[0].vals[i]);
+      });
+      Object.keys(byc).forEach(function (k) { groups.push({ name: k, vals: byc[k].filter(isFinite) }); });
+    } else {
+      cols.forEach(function (c) { groups.push({ name: c.name, vals: c.vals.filter(isFinite) }); });
+    }
+    groups = groups.filter(function (g) { return g.vals.length >= 4; });
+    if (!groups.length) { parts_push(a, chNoData(a, "箱线图每组至少要 4 个数值")); return; }
+    var all = [];
+    groups.forEach(function (g) { g.vals.forEach(function (v) { all.push(v); }); });
+    var t = chNiceTicks(Math.min.apply(null, all), Math.max.apply(null, all), 5);
+    var y = chAxisY(a, t.lo, t.hi, chFmt), X = chAxisXCat(a, groups.map(function (g) { return g.name; }), groups.length > 8);
+    var y0 = a.H - m.b, pw = a.W - m.l - m.r;
+    function quartile(sorted, q) {
+      var pos = (sorted.length - 1) * q, base = Math.floor(pos), rest = pos - base;
+      return sorted[base] + (sorted[base + 1] !== undefined ? rest * (sorted[base + 1] - sorted[base]) : 0);
+    }
+    groups.forEach(function (g, i) {
+      var sv = g.vals.slice().sort(function (x, y2) { return x - y2; });
+      var q1 = quartile(sv, 0.25), q2 = quartile(sv, 0.5), q3 = quartile(sv, 0.75),
+        iqr = q3 - q1, flo = q1 - 1.5 * iqr, fhi = q3 + 1.5 * iqr;
+      var wLo = q1, wHi = q3;
+      for (var k = 0; k < sv.length; k++) { if (sv[k] >= flo) { wLo = sv[k]; break; } }
+      for (var k2 = sv.length - 1; k2 >= 0; k2--) { if (sv[k2] <= fhi) { wHi = sv[k2]; break; } }
+      var col = a.th.series[i % a.th.series.length], cx = X.cx(i), bw = Math.min(X.bw * 0.5, pw / groups.length * 0.5);
+      parts_push(a, '<line x1="' + cx + '" y1="' + y(wLo) + '" x2="' + cx + '" y2="' + y(q1) + '" stroke="' + col + '" stroke-width="1.5"/>',
+        '<line x1="' + cx + '" y1="' + y(q3) + '" x2="' + cx + '" y2="' + y(wHi) + '" stroke="' + col + '" stroke-width="1.5"/>',
+        '<line x1="' + (cx - bw / 3) + '" y1="' + y(wLo) + '" x2="' + (cx + bw / 3) + '" y2="' + y(wLo) + '" stroke="' + col + '" stroke-width="1.5"/>',
+        '<line x1="' + (cx - bw / 3) + '" y1="' + y(wHi) + '" x2="' + (cx + bw / 3) + '" y2="' + y(wHi) + '" stroke="' + col + '" stroke-width="1.5"/>',
+        '<rect x="' + (cx - bw / 2) + '" y="' + y(q3) + '" width="' + bw + '" height="' + Math.max(2, y(q1) - y(q3)) +
+        '" fill="' + col + '" fill-opacity="0.25" stroke="' + col + '" stroke-width="1.6"/>',
+        '<line x1="' + (cx - bw / 2) + '" y1="' + y(q2) + '" x2="' + (cx + bw / 2) + '" y2="' + y(q2) + '" stroke="' + col + '" stroke-width="2.4"/>');
+      sv.forEach(function (v) {
+        if (v < flo || v > fhi) parts_push(a, '<circle cx="' + cx + '" cy="' + y(v) + '" r="2.6" fill="none" stroke="' + col + '" stroke-width="1.3"><title>' +
+          chSvgEsc("离群值 " + chFmt(v)) + "</title></circle>");
+      });
+      parts_push(a, '<rect x="' + (cx - bw / 2) + '" y="' + (y0 - (a.H - m.t - m.b)) + '" width="' + bw + '" height="' + (a.H - m.t - m.b) +
+        '" fill="transparent"><title>' + chSvgEsc(g.name + "：中位数 " + chFmt(q2) + "，Q1 " + chFmt(q1) + "，Q3 " + chFmt(q3) + "，n=" + sv.length) + "</title></rect>");
+    });
+    a.items.push({ label: "中位数与四分位距", color: a.th.series[0] });
+  };
+
+  /* —— 工具面板 UI：导入 → 画像 → 推荐 → 出图 → 改 → 导出。
+     面板分两层重画：数据层（选 sheet/映射列/推荐 chips）整段重画；
+     图形层（标题副题等只影响画面的）只重画 #ch-svg，输入框不丢焦点。 —— */
+  function chartPanel() {
+    return '<section class="tool-card" id="chart">' +
+      "<h2>图表生成</h2>" +
+      '<p class="tool-sub">把一份 Excel（.xlsx）或 CSV 交给它，自动认出列的类型、挑合适的图型，' +
+      "标题、图例、坐标轴、配色都先替你排好，再随手改成想要的。可导出 PNG 与 SVG。" +
+      "文件在本机解析，<u>不上传、不联网</u>。</p>" +
+      '<div class="tt-drop" id="ch-drop" role="button" tabindex="0" data-act="ch-choose" aria-label="选择要绘图的数据文件">' +
+        '<span class="tt-drop-ico" aria-hidden="true">＋</span>' +
+        "<b>把 .xlsx / .csv 文件拖到这里，或点击选择</b>" +
+        '<i>可多份导入；每个工作簿里的每张工作表都可选来画，<u>数据不离开这台电脑</u></i>' +
+        '<input type="file" id="ch-file" multiple accept=".xlsx,.xlsm,.csv">' +
+      "</div>" +
+      '<div class="tt-files" id="ch-files" hidden></div>' +
+      '<p class="tt-filemsg" id="ch-filemsg" hidden></p>' +
+      '<div id="ch-data"></div>' +
+      '<div class="ch-types-note">' +
+        "<h3>它认识哪些图</h3>" +
+        '<div class="ch-type-grid">' +
+          "<div><b>比较类</b><i>柱状图／条形图（可分组、可堆积）：类别之间比大小；" +
+          "雷达图：一个对象的多维综合评估。</i></div>" +
+          "<div><b>趋势类</b><i>折线图：时间序列走势；面积图／堆积面积图：趋势之外看累积效应；" +
+          "瀑布图：分步累积，如收支到利润的构成。</i></div>" +
+          "<div><b>结构与占比类</b><i>饼图／环形图：3–6 类的占比（类别多于 6 个会自动建议改条形图）；" +
+          "树状图：层级关系的面积占比。</i></div>" +
+          "<div><b>关联与分布类</b><i>散点图／气泡图：变量相关性；热力图：矩阵的密度与频率；" +
+          "直方图／箱线图：数值的分布与离散。</i></div>" +
+        "</div>" +
+      "</div>" +
+    "</section>";
+  }
+
+  function chSay(html) {
+    var el = document.getElementById("ch-filemsg");
+    if (!el) return;
+    el.innerHTML = html || "";
+    el.hidden = !html;
+  }
+
+  function chDocsRender() {
+    var box = document.getElementById("ch-files");
+    if (!box) return;
+    if (!CH.docs.length) { box.innerHTML = ""; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = CH.docs.map(function (d, i) {
+      return '<span class="tt-chip' + (d.ok ? "" : " bad") + '">' +
+        "<b>" + esc(d.name) + "</b><i>" + esc(d.ok ? d.sheets.length + " 张工作表" : (d.msg || "解析失败")) + "</i>" +
+        '<button type="button" data-act="ch-filedel" data-idx="' + i + '" title="移除这个文件">✕</button></span>';
+    }).join("");
+  }
+
+  /* 换了 sheet 或文件：重新画像、重排映射、回到推荐的第一张图 */
+  function chResetSheet() {
+    var tb = chCurTable();
+    if (!tb) { CH.cfg = null; CH.type = ""; return; }
+    var P = chProfile(tb);
+    var nums = P.colByKind("num"), cats = P.colByKind("cat"), times = P.colByKind("time");
+    var cfg = {
+      title: chAutoTitle(tb), sub: "自动生成 · " + P.nRows + " 行 × " + Math.max(0, P.cols.length - 1) + " 组数值",
+      legend: "top", theme: "zhusha", stacked: false, donut: false,
+      timeCol: times.length ? times[0].i : null,
+      catCol: cats.length ? cats[0].i : (P.cols.length > 1 ? 0 : null),
+      cat2Col: cats.length > 1 ? cats[1].i : null,
+      valCols: nums.slice(0, 6).map(function (c) { return c.i; })
+    };
+    if (!cfg.valCols.length && P.cols.length > 1) cfg.valCols = [1];
+    CH.cfg = cfg;
+    var rec = chRecommend(P);
+    CH.type = rec[0].type;
+    CH.rec = rec;
+    CH.profile = P;
+  }
+  function chAutoTitle(tb) {
+    var d = CH.docs[CH.doc];
+    return tb.name && tb.name !== "csv" && !/^Sheet/i.test(tb.name) ? tb.name : (d ? d.name.replace(/\.(xlsx|xlsm|csv)$/i, "") : "图表");
+  }
+  function chCurTable() {
+    var d = CH.docs[CH.doc];
+    return d && d.ok ? d.sheets[CH.sheet] : null;
+  }
+
+  function chDataRender() {
+    var box = document.getElementById("ch-data");
+    if (!box) return;
+    var tb = chCurTable();
+    if (!tb) { box.innerHTML = ""; return; }
+    if (!CH.cfg) chResetSheet();
+    var P = CH.profile, cfg = CH.cfg;
+    /* 表体前 6 行预览 */
+    var prev = P.body.slice(0, 6).map(function (r) {
+      return "<tr>" + P.cols.slice(0, 8).map(function (c) {
+        return "<td>" + esc(chCut(String(r[c.i] == null ? "" : r[c.i]), 14)) + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    /* 列映射控件 */
+    var KINDN = { num: "数值", cat: "类别", time: "时间", id: "标识" };
+    function opts(sel, withNone) {
+      var h = withNone ? '<option value="">（无）</option>' : "";
+      P.cols.forEach(function (c, i) {
+        h += '<option value="' + i + '"' + (i === sel ? " selected" : "") + ">" +
+          esc(chCut(c.name, 14)) + "（" + (KINDN[c.kind] || "?") + "）</option>";
+      });
+      return h;
+    }
+    var valOpts = P.cols.map(function (c, i) {
+      return '<option value="' + i + '"' + (cfg.valCols.indexOf(i) > -1 ? " selected" : "") + ">" +
+        esc(chCut(c.name, 14)) + "（" + (KINDN[c.kind] || "?") + "）</option>";
+    }).join("");
+    /* 推荐卡（前三）＋ 全部图型 */
+    var recs = (CH.rec || []).slice(0, 3).map(function (r, i) {
+      return '<button type="button" class="ch-rec' + (r.type === CH.type ? " on" : "") +
+        '" data-act="ch-type" data-id="' + r.type + '"><b>' + (i === 0 ? "首选 · " : "") + esc(r.n) + "</b><i>" + esc(r.why) + "</i></button>";
+    }).join("");
+    var typeOpts = CH_TYPES.map(function (t) {
+      return '<option value="' + t.id + '"' + (t.id === CH.type ? " selected" : "") + ">" +
+        esc("【" + t.g + "】" + t.n) + "</option>";
+    }).join("");
+    var curT = chTypeById(CH.type) || CH_TYPES[0];
+    box.innerHTML =
+      '<div class="ch-pickbar">' +
+        '<label class="wa-lab">工作簿<select id="ch-doc">' +
+          CH.docs.map(function (d, i) {
+            return d.ok ? '<option value="' + i + '"' + (i === CH.doc ? " selected" : "") + ">" + esc(chCut(d.name, 22)) + "</option>" : "";
+          }).join("") + "</select></label>" +
+        '<label class="wa-lab">工作表<select id="ch-sheet">' +
+          (CH.docs[CH.doc] && CH.docs[CH.doc].ok ? CH.docs[CH.doc].sheets.map(function (s, i) {
+            return '<option value="' + i + '"' + (i === CH.sheet ? " selected" : "") + ">" + esc(chCut(s.name, 20)) + "</option>";
+          }).join("") : "") + "</select></label>" +
+      "</div>" +
+      '<div class="ch-preview"><table><thead><tr>' +
+        P.cols.slice(0, 8).map(function (c) { return "<th>" + esc(chCut(c.name, 12)) + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + prev + "</tbody></table>" +
+      '<p class="ch-pv-note">共 ' + P.nRows + ' 行数据；上面是前 6 行的样貌，列名后的括号是自动识别的列型。</p></div>' +
+      '<div class="ch-recs"><p class="ch-rec-h">按这份数据的结构，推荐这样画：</p>' + recs + "</div>" +
+      '<div class="ch-cfg">' +
+        '<label class="wa-lab">全部图型<select id="ch-type-sel">' + typeOpts + "</select></label>" +
+        '<label class="wa-lab">图例<select id="ch-legend">' +
+          ["top|图上 · 横排", "right|图右 · 竖排", "none|不显示"].map(function (x) {
+            var p2 = x.split("|");
+            return '<option value="' + p2[0] + '"' + (cfg.legend === p2[0] ? " selected" : "") + ">" + p2[1] + "</option>";
+          }).join("") + "</select></label>" +
+        '<label class="wa-lab">配色<select id="ch-theme">' +
+          Object.keys(CH_THEMES).map(function (k) {
+            return '<option value="' + k + '"' + (cfg.theme === k ? " selected" : "") + ">" + esc(CH_THEMES[k].n) + "</option>";
+          }).join("") + "</select></label>" +
+        '<label class="ch-chk' + (CH.type === "bar" ? "" : " hide") + '" id="ch-chk-stacked"><input type="checkbox" id="ch-stacked"' +
+          (cfg.stacked ? " checked" : "") + ">改成堆积</label>" +
+        '<label class="ch-chk' + (CH.type === "pie" ? "" : " hide") + '" id="ch-chk-donut"><input type="checkbox" id="ch-donut"' +
+          (cfg.donut ? " checked" : "") + ">改成环形</label>" +
+      "</div>" +
+      '<div class="ch-cfg ch-cfg2">' +
+        '<label class="wa-lab">标题<input type="text" id="ch-title" value="' + esc(cfg.title) + '"></label>' +
+        '<label class="wa-lab">副题<input type="text" id="ch-sub" value="' + esc(cfg.sub) + '"></label>' +
+      "</div>" +
+      '<div class="ch-cfg ch-cfg2">' +
+        '<label class="wa-lab">分类列<select id="ch-cat">' + opts(cfg.catCol, true) + "</select></label>" +
+        '<label class="wa-lab">数值列（可多选）<select id="ch-vals" multiple size="3">' + valOpts + "</select></label>" +
+        '<label class="wa-lab">第二分类列（树状图分层）<select id="ch-cat2">' + opts(cfg.cat2Col, true) + "</select></label>" +
+      "</div>" +
+      '<p class="ch-typewhy">当前：<b>' + esc(curT.n) + "</b>（" + esc(curT.g) + "）—— " + esc(curT.use) + "</p>" +
+      '<div class="tt-acts">' +
+        '<button class="tt-btn primary" type="button" data-act="ch-png">导出 PNG</button>' +
+        '<button class="tt-btn" type="button" data-act="ch-svg">导出 SVG</button>' +
+      "</div>" +
+      '<div class="ch-svgwrap" id="ch-svg">' + chSvgInner() + "</div>";
+    chBindCfg();
+  }
+  /* 只重画图：标题栏输入时不重建整个面板，光标就不会被顶掉 */
+  function chSvgInner() {
+    var tb = chCurTable();
+    if (!tb || !CH.cfg) return "";
+    try {
+      return chChartSvg(CH.type, CH.profile || chProfile(tb), CH.cfg);
+    } catch (e) {
+      return '<p class="warn" style="padding:1rem">这张图画不出来：' + esc((e && e.message) || e) + "</p>";
+    }
+  }
+  function chSvgRender() {
+    var el = document.getElementById("ch-svg");
+    if (el) el.innerHTML = chSvgInner();
+  }
+
+  function chBindCfg() {
+    var g = function (id) { return document.getElementById(id); };
+    var docSel = g("ch-doc");
+    if (docSel) docSel.addEventListener("change", function () {
+      CH.doc = +docSel.value; CH.sheet = 0;
+      chResetSheet(); chDataRender(); chDocsRender();
+    });
+    var sheetSel = g("ch-sheet");
+    if (sheetSel) sheetSel.addEventListener("change", function () {
+      CH.sheet = +sheetSel.value;
+      chResetSheet(); chDataRender();
+    });
+    var typeSel = g("ch-type-sel");
+    if (typeSel) typeSel.addEventListener("change", function () {
+      CH.type = typeSel.value; chDataRender();
+    });
+    var lg = g("ch-legend"), th = g("ch-theme");
+    if (lg) lg.addEventListener("change", function () { CH.cfg.legend = lg.value; chSvgRender(); });
+    if (th) th.addEventListener("change", function () { CH.cfg.theme = th.value; chSvgRender(); });
+    var st = g("ch-stacked");
+    if (st) st.addEventListener("change", function () { CH.cfg.stacked = st.checked; chSvgRender(); });
+    var dn = g("ch-donut");
+    if (dn) dn.addEventListener("change", function () { CH.cfg.donut = dn.checked; chSvgRender(); });
+    ["ch-title", "ch-sub"].forEach(function (id) {
+      var el = g(id);
+      if (el) el.addEventListener("input", function () {
+        CH.cfg[id === "ch-title" ? "title" : "sub"] = el.value;
+        chSvgRender();
+      });
+    });
+    var cat = g("ch-cat"), cat2 = g("ch-cat2"), vals = g("ch-vals");
+    if (cat) cat.addEventListener("change", function () {
+      CH.cfg.catCol = cat.value === "" ? null : +cat.value; chSvgRender();
+    });
+    if (cat2) cat2.addEventListener("change", function () {
+      CH.cfg.cat2Col = cat2.value === "" ? null : +cat2.value; chSvgRender();
+    });
+    if (vals) vals.addEventListener("change", function () {
+      var got = [];
+      Array.prototype.forEach.call(vals.selectedOptions || [], function (o) { got.push(+o.value); });
+      if (got.length) CH.cfg.valCols = got;
+      chSvgRender();
+    });
+  }
+
+  function bindChartTool() {
+    /* 面板内控件是 chDataRender 重画出来的，绑定都在 chBindCfg 里做；
+       这里只占位，与其他工具的 bind* 对齐，路由 after 里统一调。 */
+  }
+
+  /* —— 导入：xlsx 走 ZIP 解压，csv 走文本解析；解析完落进面板 —— */
+  function chLoad(files) {
+    var list = Array.prototype.slice.call(files || []);
+    if (!list.length) return;
+    chSay("正在本机解析 " + list.length + " 个文件……");
+    var left = list.length;
+    function done() { if (--left <= 0 && !document.querySelector("#ch-filemsg .warn")) chSay(""); }
+    list.forEach(function (f) {
+      var fail = function (msg) {
+        CH.docs.push({ name: f.name, ok: false, msg: msg });
+        chSay('<span class="warn">' + esc(f.name) + "：" + esc(msg) + "</span>");
+        chDocsRender(); chDataRender();
+        done();
+      };
+      readAsBuffer(f).then(function (u8) {
+        try {
+          if (/\.csv$/i.test(f.name)) {
+            var rows = chParseCsv(chDecodeCsv(u8));
+            if (!rows.length) throw new Error("CSV 里没有数据");
+            CH.docs.push({ name: f.name, ok: true, sheets: [{ name: "csv", rows: rows }] });
+            CH.doc = CH.docs.length - 1; CH.sheet = 0;
+            chResetSheet();
+            chDocsRender(); chDataRender();
+            done();
+          } else {
+            chartParseXlsx(u8.buffer).then(function (shs) {
+              if (!shs || !shs.length) throw new Error("没有读到可用的数据表");
+              CH.docs.push({ name: f.name, ok: true, sheets: shs });
+              CH.doc = CH.docs.length - 1; CH.sheet = 0;
+              chResetSheet();
+              chDocsRender(); chDataRender();
+              done();
+            }, function (e) { fail((e && e.message) || "解析失败"); });
+          }
+        } catch (e) { fail((e && e.message) || "解析失败"); }
+      }, function () { fail("读取失败"); });
+    });
+  }
+
+  /* —— 导出：SVG 直接落文件；PNG 走聚类网络图同一条 2 倍采样通道 —— */
+  function chExportSvg() {
+    var svg = document.querySelector("#ch-svg svg");
+    if (!svg) { window.alert("先选好数据，出图后再导出。"); return; }
+    var clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
+    dlBytes((CH.cfg && CH.cfg.title ? CH.cfg.title : "图表") + ".svg",
+      new TextEncoder().encode(xml), "image/svg+xml;charset=utf-8");
+  }
+  function chExportPng() {
+    var svg = document.querySelector("#ch-svg svg");
+    if (!svg) { window.alert("先选好数据，出图后再导出。"); return; }
+    exportGraphPng(svg, (CH.cfg && CH.cfg.title ? CH.cfg.title : "图表") + ".png");
+  }
+
   /* ---------------- 绑定 ---------------- */
 
   function bindStudyTools() {
@@ -8020,7 +9290,10 @@
         s: "写发展史、传播史的论述时快速定位时间。" },
       { id: "handout", n: "讲义与投影模式", on: 1,
         w: "勾选词条，生成可打印的讲义，或切成一屏一条的投影模式。",
-        s: "读书会领读、课堂讲一段时直接拿来用。" }
+        s: "读书会领读、课堂讲一段时直接拿来用。" },
+      { id: "chart", n: "图表生成", on: 1,
+        w: "导入 Excel 或 CSV，自动挑合适的图型出图，标题图例配色随手改，可导出 PNG/SVG。",
+        s: "写论文、做汇报要把一张表变成一张图时：不用再开 Excel 对着向导点一遍。" }
     ]}
   ];
 
@@ -8066,7 +9339,7 @@
         }).join("") + "</div>";
     }).join("") +
       '<div class="np-foot"><a href="#/tools"><b>工具台总览</b>' +
-      "<i>十四件一览：" + TOOL_ON + " 件能用，" +
+      "<i>十五件一览：" + TOOL_ON + " 件能用，" +
       (TOOL_FLAT.length - TOOL_ON) + " 件在规划</i></a></div>";
   }
 
@@ -8245,7 +9518,10 @@
       path: pathPanel(),
       calc: calcPanel(),
       chrono: chronoPanel(),
-      handout: handoutPanel()
+      handout: handoutPanel(),
+
+      /* 图表生成（v70）：骨架 +「它认识哪些图」，其余在 #ch-data 里现画 */
+      chart: chartPanel()
     };
 
     var body = TOOL_FLAT.map(function (it) {
@@ -8258,7 +9534,7 @@
       "<b>文本分析</b>一件（六种分析）、<b>原典引文检索</b>、<b>概念对照表</b>、" +
       "<b>写作台</b>、<b>检索词与检索式</b>、<b>笔记板</b>、<b>多语术语对照表</b>、" +
       "<b>自测引擎</b>、<b>间隔重复卡</b>、<b>生词卡导出</b>、" +
-      "<b>概念关系图编辑器</b>、<b>概念计算器</b>、<b>大事年表</b>、<b>讲义与投影模式</b>，" +
+      "<b>概念关系图编辑器</b>、<b>概念计算器</b>、<b>大事年表</b>、<b>讲义与投影模式</b>、<b>图表生成</b>，" +
       "另有导航栏的<b>三卷目录树</b>、顶栏的<b>全文检索</b>（词条之外，原典引文、争鸣观点与自己的笔记也在检索范围内）。" +
       "全部在本机跑，文件不上传、不联网。" +
       "读、记、写、讲四条线到这里各就各位：素材从词条页进写作台，脚注与参考文献自动编号。</p>";
@@ -8447,10 +9723,10 @@
   }
 
   /* 使用手册：按「怎么用这个站」组织，分三部分 ——
-     平台的目的与定位、画传与关系图、十四件工具。
+     平台的目的与定位、画传与关系图、十五件工具。
      这一页不写站点怎么做的、用了什么技术，也不列内部参数与存储细节。 */
   function viewManual() {
-    /* 十四件工具：名称 / 目的 / 用法。四组与工具台的四个分组一致。 */
+    /* 十五件工具：名称 / 目的 / 用法。四组与工具台的四个分组一致。 */
     var GROUPS = [
       ["阅读辅助", "把材料读进来，把可引的原典取出来。", [
         ["文本分析", "统计一批材料的术语出现与分布，判断它实际在谈什么。",
@@ -8487,6 +9763,8 @@
           "可选三条并置，或单看马克思生平、写作与出版、中国译介与传播；按年份、事件、人名或书名筛选。每条标来源类别：卷首文献、站内词条、通行年表。通行年表未逐条核过页码，正式引用须另核。"],
         ["讲义与投影模式", "把一批词条排成讲义，或投到幕布上照讲。",
           "整批加入或逐条手动添加，导出讲义 Word、直接打印，或进入投影模式：一条一屏，方向键翻页，Esc 退出。标注「页码待核」者照样标出，不可念给听众。"],
+        ["图表生成", "把一份表格变成一张像样的图，不必再开 Excel 对着向导点一遍。",
+          "导入 .xlsx 或 .csv（可多份），自动识别每一列是类别、时间还是数值，按数据结构推荐图型并排好标题、图例、坐标轴与配色；可在十六种图型之间切换，改堆积、环形、图例位置、配色主题与列映射，标题副题随手改；每张图可导出 PNG 或 SVG。文件在本机解析，不上传。数据规模大时自动抽样或截断并注明。"],
       ]]
     ];
 
@@ -8506,12 +9784,12 @@
          setHashQuiet 会把地址栏改成非路由的片段，刷新就落到兜底页。 */
       '<a href="#/manual" data-act="jump" data-target="man-1"><i>一</i>目的与功能定位</a>' +
       '<a href="#/manual" data-act="jump" data-target="man-2"><i>二</i>画传与关系图</a>' +
-      '<a href="#/manual" data-act="jump" data-target="man-3"><i>三</i>十四件工具</a></nav>';
+      '<a href="#/manual" data-act="jump" data-target="man-3"><i>三</i>十五件工具</a></nav>';
 
     return '<p class="crumb"><a href="#/">首页</a> / 使用手册</p>' +
       '<h1 class="page-title">使用手册</h1>' +
       '<p class="note">本手册分三部分：先说这个站是做什么的，再说画传与关系图两处该怎么看，' +
-      "最后逐件说明十四件工具的用途与用法。</p>" + toc +
+      "最后逐件说明十五件工具的用途与用法。</p>" + toc +
 
       manualSec("man-1", "一", "目的与功能定位",
         "<p>本平台是一部围绕《资本论》及其理论体系的术语学习与研究辅助工具。" +
@@ -8570,7 +9848,7 @@
         '<p class="man-edge"><b>一处边界。</b>图上的路径与联想，反映编者对这些概念先后与从属的排布，' +
         "不是原著逐句写明的推导次序，也无逐句页码依据。理清思路、组织讲授可行，作引文依据则不可。</p>") +
 
-      manualSec("man-3", "三", "十四件工具",
+      manualSec("man-3", "三", "十五件工具",
         '<p class="man-sub">工具台按用途分四组，与下列四组一致。每件均在本机运行，输入的内容不上传。</p>' +
         toolBody);
   }
@@ -11069,6 +12347,7 @@
         renderTtFiles(); renderTextTool(); renderTa();
         bindQuoteTool(); bindCompareTool(); bindWriteTools(); bindStudyTools();
         bindPathTool(); bindCalcTool(); bindChrono(); bindHandout(); bindWriter();
+        bindChartTool();
       };
     }
     /* 关系图：画布在 pathflow.html，本页只把它托起来（见 viewGraph 的注释） */
@@ -11426,6 +12705,27 @@
         ttChoose();
       }
       else if (act === "tt-filedel") ttDrop(+el.getAttribute("data-idx"));
+      /* —— 图表生成（v70）：文件选择、推荐切换、导出 —— */
+      else if (act === "ch-choose") {
+        if (ev.target && ev.target.id === "ch-file") return;
+        var chF = document.getElementById("ch-file");
+        if (chF) chF.click();
+      }
+      else if (act === "ch-filedel") {
+        var chIdx = +el.getAttribute("data-idx");
+        if (chIdx === CH.doc) { CH.doc = 0; CH.sheet = 0; }
+        else if (chIdx < CH.doc) CH.doc--;
+        CH.docs.splice(chIdx, 1);
+        if (!CH.docs.length) { CH.cfg = null; CH.type = ""; CH.profile = null; CH.rec = null; }
+        else chResetSheet();
+        chDocsRender(); chDataRender();
+      }
+      else if (act === "ch-type") {
+        CH.type = el.getAttribute("data-id") || CH.type;
+        chDataRender();
+      }
+      else if (act === "ch-png") chExportPng();
+      else if (act === "ch-svg") chExportSvg();
       else if (act === "ct-add") ctAdd(el.getAttribute("data-id"));
       else if (act === "ct-del") ctDel(el.getAttribute("data-id"));
       else if (act === "ct-clear") { CT.picks = []; ctSave(); renderCompare(); }
@@ -11458,35 +12758,47 @@
         if (meta) meta.innerHTML = qzMetaHTML();
         return;
       }
-      if (!f || !f.matches || !f.matches("#tt-file")) return;
+      if (!f || !f.matches || !f.matches("#tt-file,#ch-file")) return;
+      if (f.id === "ch-file") {
+        chLoad(f.files);
+        try { f.value = ""; } catch (e) { /* 有的浏览器不许清空 file input，忽略 */ }
+        return;
+      }
       ttLoad(f.files);
       try { f.value = ""; } catch (e) { /* 有的浏览器不许清空 file input，忽略 */ }
     });
+    /* 图表生成的拖放区走同一套 dragover/dragleave 样式，drop 时分流到 chLoad */
     app.addEventListener("dragover", function (ev) {
-      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop") : null;
+      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop,#ch-drop") : null;
       if (!z) return;
       ev.preventDefault();
       if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
       z.classList.add("over");
     });
     app.addEventListener("dragleave", function (ev) {
-      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop") : null;
+      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop,#ch-drop") : null;
       if (z) z.classList.remove("over");
     });
     app.addEventListener("drop", function (ev) {
-      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop") : null;
+      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop,#ch-drop") : null;
       if (!z) return;
       ev.preventDefault();
       z.classList.remove("over");
-      if (ev.dataTransfer && ev.dataTransfer.files) ttLoad(ev.dataTransfer.files);
+      if (ev.dataTransfer && ev.dataTransfer.files) {
+        if (z.id === "ch-drop") chLoad(ev.dataTransfer.files);
+        else ttLoad(ev.dataTransfer.files);
+      }
     });
     /* 键盘可达：拖放区是个 role=button，回车/空格要能唤出文件选择 */
     app.addEventListener("keydown", function (ev) {
       if (ev.key !== "Enter" && ev.key !== " " && ev.key !== "Spacebar") return;
-      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop") : null;
+      var z = ev.target && ev.target.closest ? ev.target.closest("#tt-drop,#ch-drop") : null;
       if (!z) return;
       ev.preventDefault();
-      ttChoose();
+      if (z.id === "ch-drop") {
+        var chF = document.getElementById("ch-file");
+        if (chF) chF.click();
+      } else ttChoose();
     });
 
     /* 笔记：input 事件同样冒泡，委托即可；停止输入 600ms 后才落盘，

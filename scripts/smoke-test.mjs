@@ -1710,6 +1710,45 @@ await wait(300);
 check("v69：已读后再次进首页不弹", !gd());
 await goto("#/");
 
+/* ---- v70：图表生成工具（面板骨架 · 名录 · 手册口径） ---- */
+/* xlsx/CSV 的真实解析与十六种图型的实际渲染依赖 DecompressionStream，
+   jsdom 里没有——那部分由真机探针（tmp/probe-v70.mjs，无头 Edge）覆盖；
+   这里守的是：注册、路由、面板骨架、文案口径与导出按钮的存在。 */
+await goto("#/tools/chart");
+await wait(300);
+check("v70：#/tools/chart 落到图表生成面板",
+  !!doc.getElementById("chart") && !!doc.getElementById("ch-data"));
+check("v70：导入区与文件输入就位（xlsx/csv 白名单）", (() => {
+  const f = doc.getElementById("ch-file");
+  return !!doc.getElementById("ch-drop") && !!f && /\.csv/.test(f.getAttribute("accept"));
+})());
+check("v70：面板列出四类图谱的适用场景", (() => {
+  const t = doc.getElementById("chart").textContent;
+  return ["比较类", "趋势类", "结构与占比类", "关联与分布类"].every((w) => t.includes(w)) &&
+    t.includes("树状图") && t.includes("瀑布图") && t.includes("箱线图") && t.includes("热力图");
+})());
+check("v70：未导入数据时无导出按钮、不出图", (() => {
+  const d = doc.getElementById("ch-data");
+  return d.innerHTML === "" && !doc.querySelector('[data-act="ch-png"]');
+})());
+
+await goto("#/tools");
+await wait(300);
+check("v70：工具台总览收录图表生成（分析与教学组）", (() => {
+  const card = doc.querySelector('.to-item[href="#/tools/chart"]');
+  return !!card && !card.classList.contains("soon") && card.textContent.includes("图表生成");
+})());
+check("v70：顶栏巨型菜单名录含图表生成，计数十五件", (() => {
+  const box = doc.getElementById("navTools");
+  return !!box && box.textContent.includes("图表生成") && box.textContent.includes("十五件一览");
+})());
+
+await goto("#/manual");
+await wait(300);
+check("v70：使用手册改为十五件口径并收录图表生成",
+  text().includes("十五件工具") && text().includes("图表生成") && text().includes("导出 PNG 或 SVG"));
+await goto("#/");
+
 /* ---- 未知路由 ---- */
 await goto("#/nope");
 check("未知路由有兜底", text().includes("页面不存在"));

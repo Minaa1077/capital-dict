@@ -6288,3 +6288,141 @@ body.pj-on .to-top { display: none !important; }
   .gd-acts { flex-wrap: wrap; row-gap: .45rem; }
   .gd-acts .gd-flat { flex-basis: 100%; padding: .1rem 0 .2rem; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════
+   v70 图表生成工具（#chart）
+   导入区/文件 chip/提示条复用 tt-drop/tt-chip/tt-filemsg 既有样式；
+   这里只补图表特有部件：工作表选择条、数据预览、推荐卡、
+   配置行、类型说明格与画布容器。追加在文件末尾，
+   窄屏覆盖也在块内末尾——不与既有规则争权重。
+   ══════════════════════════════════════════════════════════════ */
+.ch-pickbar {
+  display: flex; flex-wrap: wrap; gap: .6rem 1.1rem;
+  margin: 1rem 0 .8rem;
+}
+.ch-preview {
+  border: 1px solid var(--rule);
+  border-radius: .35rem;
+  background: var(--paper);
+  overflow-x: auto;
+}
+.ch-preview table {
+  border-collapse: collapse; width: 100%;
+  font-size: .82rem; line-height: 1.5;
+}
+.ch-preview th, .ch-preview td {
+  padding: .34rem .6rem; text-align: left;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.ch-preview th {
+  font-family: var(--sans); font-weight: 700; font-size: .8rem;
+  color: var(--red-deep); background: var(--paper-2);
+}
+.ch-pv-note {
+  margin: 0; padding: .45rem .7rem;
+  font-size: .8rem; color: var(--ink-2);
+  border-top: 1px solid var(--rule); background: var(--paper-2);
+}
+.ch-recs { margin: 1rem 0 .2rem; }
+.ch-rec-h {
+  margin: 0 0 .5rem;
+  font-family: var(--sans); font-size: .88rem; font-weight: 700;
+  color: var(--ink);
+}
+.ch-recs { display: grid; gap: .55rem; }
+.ch-rec {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: .6rem .8rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule);
+  border-radius: .3rem;
+  font-family: var(--serif);
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.ch-rec b {
+  display: block; margin-bottom: .15rem;
+  font-family: var(--sans); font-size: .86rem; font-weight: 700;
+  color: var(--ink);
+}
+.ch-rec i {
+  font-style: normal; font-size: .8rem; line-height: 1.65;
+  color: var(--ink-2);
+}
+.ch-rec:hover { border-color: var(--gold-line); background: var(--gold-bg); }
+.ch-rec.on {
+  border-color: var(--red-deep); border-left-color: var(--red-deep);
+  background: var(--accent-bg);
+}
+.ch-rec.on b { color: var(--red-deep); }
+.ch-rec:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.ch-cfg {
+  display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: end;
+  margin: .9rem 0 0;
+}
+.ch-cfg2 { margin-top: .6rem; }
+.ch-cfg .wa-lab { min-width: 9rem; flex: 0 1 auto; }
+.ch-cfg input[type="text"] {
+  min-width: 15rem;
+}
+.ch-chk {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .5rem .2rem;
+  font-family: var(--sans); font-size: .86rem; color: var(--ink);
+  cursor: pointer;
+}
+.ch-chk.hide { display: none; }
+.ch-typewhy {
+  margin: .7rem 0 0;
+  font-size: .84rem; color: var(--ink-2);
+}
+.ch-typewhy b { color: var(--red-deep); }
+
+.ch-svgwrap {
+  margin-top: .9rem;
+  border: 1px solid var(--rule);
+  border-radius: .4rem;
+  background: #fdfcfa;
+  overflow: hidden;
+}
+.ch-svgwrap svg { display: block; width: 100%; height: auto; }
+
+.ch-types-note {
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--rule);
+}
+.ch-types-note h3 {
+  margin: 0 0 .6rem;
+  font-family: var(--sans); font-size: .92rem;
+  color: var(--ink);
+}
+.ch-type-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .6rem;
+}
+.ch-type-grid > div {
+  padding: .65rem .8rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: .3rem;
+}
+.ch-type-grid b {
+  display: block; margin-bottom: .2rem;
+  font-family: var(--sans); font-size: .84rem; color: var(--red-deep);
+}
+.ch-type-grid i {
+  font-style: normal; font-size: .8rem; line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* 窄屏：单列排布，配置行整行换行，预览允许横向滚 */
+@media (max-width: 640px) {
+  .ch-type-grid { grid-template-columns: 1fr; }
+  .ch-cfg { flex-direction: column; align-items: stretch; }
+  .ch-cfg .wa-lab { min-width: 0; }
+  .ch-cfg input[type="text"] { min-width: 0; width: 100%; }
+  .ch-rec { padding: .55rem .65rem; }
+}
