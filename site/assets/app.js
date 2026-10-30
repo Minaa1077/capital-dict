@@ -1983,8 +1983,9 @@
     var rels = (t.related || []).map(function (r) {
       var o = BY_ID[r.id];
       if (!o) return "";
+      /* v76：按需求删去关联词条后的小字关系标签（展开／共现／前提等），只留词条名 */
       return '<a class="rel' + (r.rel === "now" ? " now" : "") + '" href="#/t/' + esc(o.id) + '">' +
-        esc(o.term) + '<span class="r-rel">' + esc(RELS[r.rel] || r.rel) + "</span></a>";
+        esc(o.term) + "</a>";
     }).join("");
 
     var originals = (t.original || []).map(function (o) {

@@ -511,9 +511,8 @@ a.chip:hover { text-decoration: none; border-color: var(--accent); }
   background: #fff; color: var(--ink); font-size: .88rem;
 }
 .rel:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
-.rel .r-rel { font-family: var(--mono); font-size: .68rem; color: var(--ink-3); }
+/* v76：关联词条的小字关系标签（.r-rel）已按需求删除，仅词条名入胶囊 */
 .rel.now { border-color: #c3e0d1; background: var(--ok-bg); }
-.rel.now .r-rel { color: var(--ok); }
 
 .footnotes { list-style: none; padding: 0; margin: 0; font-size: .84rem; color: var(--ink-3); }
 .footnotes li { padding: .28rem 0 .28rem 1.5rem; position: relative; border-bottom: 1px dotted var(--rule); }
