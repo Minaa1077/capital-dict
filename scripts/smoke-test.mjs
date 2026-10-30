@@ -1848,6 +1848,31 @@ check("v72：无关联词条（一般词「异化」）不出图块、不空挂�
   text().includes("关系图谱") === false && doc.querySelector(".trel") === null);
 await goto("#/");
 
+/* ---- v75：文本分析 → 图表生成「一键转场」 ---- */
+await goto("#/tools/tt");
+check("v75：结果区底部有「生成图表」按钮，有词频时为可用态并说明会带什么过去", (() => {
+  const cta = doc.getElementById("ta-chart-cta");
+  const b = cta && cta.querySelector(".ta-chart-btn");
+  return !!b && !b.disabled && b.getAttribute("aria-disabled") === "false" &&
+    /生成图表/.test(b.textContent) && /词频表/.test(cta.textContent);
+})());
+check("v75：空结果的禁用与提示逻辑在源码里（无词时 disabled + 原因文案）",
+  html.includes('没有切出可画图的词') && html.includes('(chartOk ? "" : " disabled")'));
+doc.querySelector("#ta-chart-cta .ta-chart-btn").click();
+await wait(80);
+check("v75：点击后落在图表页，文档条出现「文本分析结果」", (() => {
+  const chips = [...doc.querySelectorAll("#ch-files .tt-chip b")].map((b) => b.textContent);
+  return /#\/tools\/chart/.test(window.location.hash) &&
+    chips.some((t) => t.includes("文本分析结果"));
+})());
+check("v75：转入即出图——标题带入、图已渲染，可在图表页继续改图型导出", (() => {
+  const t = doc.getElementById("ch-title");
+  const svg = doc.querySelector("#ch-svg svg");
+  return !!t && t.value === "文本分析 · 词频" && !!svg &&
+    (svg.querySelectorAll("rect, path, circle, polygon").length >= 5);
+})());
+await goto("#/");
+
 /* ---- 未知路由 ---- */
 await goto("#/nope");
 check("未知路由有兜底", text().includes("页面不存在"));

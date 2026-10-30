@@ -4595,7 +4595,17 @@
         "并把各文件共同出现的词画成折线图（横轴是文本标题，纵轴是频率，一条线一个词），可导出 xlsx 与 PNG。</p></div>";
     }
 
-    box.innerHTML = freqHtml + relHtml + netHtml + sentHtml + cmpHtml + dfHtml;
+    /* v75：结果区底部的「生成图表」——把词频（与共现）表一键带进图表工具。
+       没切出可画的词时按钮禁用，并说明原因。 */
+    var chartOk = !!(R.freqRows && R.freqRows.length);
+    var chartCta = '<div class="ta-chart-cta" id="ta-chart-cta">' +
+      '<button type="button" class="ta-chart-btn" data-act="ta-to-chart"' +
+        (chartOk ? "" : " disabled") + ' aria-disabled="' + (chartOk ? "false" : "true") + '">生成图表</button>' +
+      "<span>" + (chartOk
+        ? "把上面的<b>词频表</b>（有共现时连<b>共现表</b>）一并带进「图表生成」，" +
+          "16 种图自动推荐、现画可导出 PNG／SVG。"
+        : "这段文本没有切出可画图的词——多粘一些正文再试试。") + "</span></div>";
+    box.innerHTML = freqHtml + relHtml + netHtml + sentHtml + cmpHtml + dfHtml + chartCta;
 
     /* 词频对比块的勾选／切轴：只重画折线图，不动整块（保住滚动位置与表格） */
     var dfBox = box.querySelector("#ta-docfreq");
@@ -9650,9 +9660,12 @@
 
   function bindChartTool() {
     /* 面板内控件是 chDataRender 重画出来的，绑定都在 chBindCfg 里做；
-       这里管面板外的两件事：导引入口按钮，与首次进入的自动弹出。 */
+       这里管面板外的三件事：已导入文档的入口补画、导引入口按钮、首次自动弹出。 */
     var btn = document.getElementById("ch-guide-btn");
     if (!btn) return;
+    /* v75：换页会重建 DOM，而文档活在模块状态里——进工具页时补画一遍。
+       文本分析的「生成图表」也走这条：灌数在跳转前完成，落到图表页再画。 */
+    if (CH.docs.length) { chDocsRender(); chDataRender(); }
     btn.addEventListener("click", function () { chGuideOpen(0); });
     /* 首次进入：弹一次就记住。标记在实际弹出那刻才写——若用户半秒内
        就离开了图表页，下次进来仍算「没看过」。注意 #/tools 总览页会内嵌
@@ -13212,6 +13225,31 @@
       else if (act === "ta-png") {
         var pngHost = document.getElementById(el.getAttribute("data-target") || "ta-net");
         if (pngHost) exportGraphPng(pngHost.querySelector("svg"), el.getAttribute("data-file") || "聚类网络图.png");
+      }
+      /* v75：文本分析 → 图表生成。词频（与共现）表打包成一份「文档」灌进图表工具，
+         等同于导入了一份 xlsx；随后换 hash 跳页，画图交给图表页的入口渲染。 */
+      else if (act === "ta-to-chart") {
+        if (!TA_RES || !TA_RES.freqRows || !TA_RES.freqRows.length) return;
+        var tshs = taSheets("freq");
+        if (TA_RES.relRows && TA_RES.relRows.length) {
+          var trel = taSheets("rel");
+          if (trel) tshs = tshs.concat(trel);
+        }
+        if (!tshs || !tshs.length) return;
+        CH.docs.push({ name: "文本分析结果", ok: true, sheets: tshs });
+        CH.doc = CH.docs.length - 1; CH.sheet = 0;
+        CH.cfg = null;                     // 让 chResetSheet 按新表重建画像与推荐
+        chResetSheet();
+        if (CH.cfg) {
+          CH.cfg.title = "文本分析 · 词频";
+          CH.cfg.sub = "由文本分析结果一键转入 · " + CH.profile.nRows + " 行";
+          /* 词频表首张工作表结构固定（排名/词/类别/频次/占全部词%）——
+             推荐器面对三列数值会误荐气泡图（x=排名没有读数意义），
+             这里显式落条形图：词在纵轴、频次向右，读数顺序天然自上而下。 */
+          CH.cfg.catCol = 1; CH.cfg.cat2Col = null; CH.cfg.valCols = [3];
+          CH.type = "barH";
+        }
+        window.location.hash = "#/tools/chart";
       }
       /* —— 写作辅助：检索词与检索式 · 笔记板 · 多语术语对照表 —— */
       else if (act === "kw-pick") {

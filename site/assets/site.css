@@ -6636,3 +6636,37 @@ body.chg-lock { overflow: hidden; }
   .chg-keys { display: none; }
   .chg-hl h3 { font-size: .95rem; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   v75 文本分析 → 图表生成：结果区底部的转场条
+   与 v74 的 .ch-guide-bar 同一家族：浅底虚线框 + 朱砂主按钮。
+   追加在文件末尾。
+   ══════════════════════════════════════════════════════════════ */
+.ta-chart-cta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem;
+  margin-top: 1.2rem;
+  padding: .75rem .95rem;
+  background: var(--paper-2);
+  border: 1px dashed var(--rule);
+  border-radius: .35rem;
+}
+.ta-chart-btn {
+  flex: 0 0 auto;
+  padding: .5rem 1rem;
+  font-family: var(--sans); font-size: .86rem; font-weight: 700;
+  letter-spacing: .04em;
+  color: #fdfcfa; background: var(--red-deep);
+  border: 1px solid var(--red-deep); border-radius: .3rem;
+  cursor: pointer;
+}
+.ta-chart-btn:hover { background: #7a1015; }
+.ta-chart-btn:disabled {
+  color: #a89f8f; background: #efe9dc;
+  border-color: var(--rule); cursor: not-allowed;
+}
+.ta-chart-cta > span {
+  flex: 1 1 15rem;
+  font-family: var(--sans); font-size: .78rem; line-height: 1.7;
+  color: var(--ink-2);
+}
+.ta-chart-cta > span b { color: var(--ink); }
