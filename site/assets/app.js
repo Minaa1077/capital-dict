@@ -8412,6 +8412,175 @@
   /* v73：横轴是类别轴的图型才显示「横轴标签」模式开关（条形图横轴是数值、饼/散点等无类别横轴） */
   var CH_XLAB_TYPES = ["bar", "barStack", "line", "area", "areaStack", "waterfall", "box"];
 
+  /* ══ v74 功能导引的 16 套样例数据 ══
+     每条 = 一种图 + 一份表 + 三段说明。表结构照 xlsx 工作表（首行表头），
+     统一走 chProfile / chChartSvg，所以弹窗里看到的图与「导入后画出来」逐像素一致。
+     数值围绕本站自身的词条库、三卷篇幅与引文核验进度取材（示例值，非计量）。 */
+  var CH_DEMO = [
+    { type: "bar", title: "三个板块的词条数：按卷比较",
+      rows: [["卷次", "哲学", "政治经济学", "科学社会主义"],
+        ["第一卷", 42, 96, 28], ["第二卷", 22, 63, 19], ["第三卷", 30, 58, 32]],
+      cfg: { catCol: 0, valCols: [1, 2, 3] },
+      use: "同一批类别在几个指标上并排比大小，一眼看出谁高谁低。",
+      scene: "三卷本的三个理论板块各有多少条目、哪一卷更“厚”。",
+      points: ["政治经济学在三卷里都居首（96 / 63 / 58）。", "第一卷合计 166 条，是另两卷的 1.3–1.5 倍。"],
+      tip: "列数超过 4 组时并排会变窄，改用堆积图或拆成多张。" },
+
+    { type: "barStack", title: "四篇的条目构成：概念 · 规律 · 机制",
+      rows: [["篇", "概念", "规律", "机制"],
+        ["商品与货币", 46, 18, 12], ["货币转化为资本", 28, 14, 9],
+        ["剩余价值", 52, 26, 18], ["工资", 24, 11, 7], ["资本积累", 38, 22, 15]],
+      cfg: { catCol: 0, valCols: [1, 2, 3], stacked: true },
+      use: "看每类的总量，同时看总量内部的构成比例。",
+      scene: "各篇的条目由概念、规律、机制三类组成，比较篇与篇的结构差异。",
+      points: ["「剩余价值」篇总量最高（96 条），是「工资」篇的 1.9 倍。", "规律类在五篇中的占比稳定在 27% 上下。"],
+      tip: "要精确比中间那一段（不是底层）时，堆积不如分组。" },
+
+    { type: "barH", title: "出现频次最高的十个词",
+      rows: [["词", "频次"],
+        ["剩余价值的生产过程", 268], ["生产资料的资本主义私有制", 214], ["劳动力成为商品", 196],
+        ["相对剩余价值生产", 181], ["资本积累的一般规律", 167], ["商品拜物教的秘密", 152],
+        ["社会必要劳动时间", 140], ["利润率趋向下降的规律", 126], ["产业后备军", 112],
+        ["世界市场和殖民体系", 98]],
+      cfg: { catCol: 0, valCols: [1] },
+      use: "类别名长、类别多时横向排布，标签不用旋转就放得下。",
+      scene: "词频排行：长词组做纵轴，数值条向右延伸，读数顺序天然是从上到下。",
+      points: ["前三名合计 678 次，占前十总量的 41%。", "榜首「剩余价值的生产过程」268 次，是末位的 2.7 倍。"],
+      tip: "中文排版本就在意从左到右阅读时，改用竖向柱状图。" },
+
+    { type: "radar", title: "三个板块的六维特征",
+      rows: [["维度", "第一卷", "第二卷", "第三卷"],
+        ["劳动", 92, 48, 40], ["价值", 88, 72, 55], ["资本", 76, 84, 78],
+        ["危机", 60, 52, 70], ["革命", 44, 30, 58], ["国家", 36, 40, 62]],
+      cfg: { catCol: 0, valCols: [1, 2, 3] },
+      use: "一个对象在多个维度上的综合形状，比六根柱子更快看出偏向。",
+      scene: "三卷本在劳动、价值、资本、危机、革命、国家六个主题上的侧重。",
+      points: ["第一卷偏「劳动—价值」（92 / 88），第三卷偏「国家—危机」（62 / 70）。", "三卷在「资本」上最接近（76 / 84 / 78）。"],
+      tip: "维度超过 8 个会挤成一团；量纲不同的指标要先归一。" },
+
+    { type: "line", title: "1848–1894 两个关键词的提及次数",
+      rows: [["年份", "剩余价值", "阶级斗争"],
+        [1848, 12, 38], [1852, 26, 30], [1857, 48, 22], [1861, 66, 18], [1867, 94, 26],
+        [1872, 102, 34], [1875, 96, 42], [1880, 88, 36], [1885, 110, 44], [1890, 96, 52], [1894, 124, 60]],
+      cfg: { timeCol: 0, catCol: null, valCols: [1, 2] },
+      use: "看一段时间里的走势：上升、拐点、两条线何时交叉。",
+      scene: "两个概念在半个世纪里的使用频次，1867 年《资本论》首版前后是分水岭。",
+      points: ["「剩余价值」1867 年跳到 94 次，此后长期在高位。", "「阶级斗争」1848 年最高（38），1870 年代后回升到 60。"],
+      tip: "时间点超过 80 个时圆点会糊，改用无点的细线或先按月聚合。" },
+
+    { type: "area", title: "三卷外文版累计印张（千印张）",
+      rows: [["年份", "德文版", "俄文版", "法文版"],
+        [1867, 100, 0, 0], [1872, 160, 0, 0], [1885, 210, 120, 0], [1890, 240, 150, 60], [1894, 280, 180, 210]],
+      cfg: { timeCol: 0, catCol: null, valCols: [1, 2, 3] },
+      use: "在趋势之外再强调“量”的规模，面积越厚，体量越大。",
+      scene: "三个外文版累计印张随年份扩张，1872 年后俄文、法文相继起步。",
+      points: ["1894 年三版合计 670 千印张，是 1867 年的 6.7 倍。", "俄文版 1885 年一次性补到 120 千印张。"],
+      tip: "多条面积叠在一起会互相遮挡，比较多条时用折线更清楚。" },
+
+    { type: "areaStack", title: "三卷累计篇幅的堆叠",
+      rows: [["年份", "第一卷", "第二卷", "第三卷"],
+        [1867, 700, 0, 0], [1872, 760, 0, 0], [1885, 820, 600, 0], [1890, 850, 640, 0], [1894, 880, 660, 860]],
+      cfg: { timeCol: 0, catCol: null, valCols: [1, 2, 3], stacked: true },
+      use: "各部分累加后的总量怎么长：读最上面那条线就是累计值。",
+      scene: "三卷本逐卷问世的累计页数——每出一卷，顶线就抬升一段。",
+      points: ["1894 年累计 2,400 页；其中第三卷一次贡献 860 页。", "第一卷 700→880 页，27 年间只增 26%。"],
+      tip: "只能读最上面那条线的真实数值，中间各层的斜面不是实际值。" },
+
+    { type: "waterfall", title: "商品价值的构成：从成本到剩余价值",
+      rows: [["项目", "金额（元）"],
+        ["不变资本 c", 400], ["可变资本 v", 100], ["剩余价值 m", 100], ["合计 · 商品价值", 0]],
+      cfg: { catCol: 0, valCols: [1] },
+      use: "分步累积：每一步加减之后，余额落在哪里。",
+      scene: "c + v + m 如何拼成商品价值，剩余价值率一眼可见。",
+      points: ["c : v : m = 4 : 1 : 1，剩余价值率 m/v = 100%。", "合计柱 600 元 = 400 + 100 + 100。"],
+      tip: "行名里带「合计 / 总计 / 期末 / 利润」的那一行会画成汇总柱。" },
+
+    { type: "pie", title: "平台词条按板块占比",
+      rows: [["板块", "条目数"], ["哲学", 94], ["政治经济学", 217], ["科学社会主义", 79], ["一般词", 142]],
+      cfg: { catCol: 0, valCols: [1] },
+      use: "3–6 类看占比，谁最大、谁差不多大，一眼就分出来。",
+      scene: "532 条词条在四个板块间的分布。",
+      points: ["政治经济学 217 条，占 40.8%，接近总量的四成。", "哲学与一般词几乎持平（94 与 142，差 9 个百分点）。"],
+      tip: "类别超过 6 个、或要精确比大小，换条形图（本工具会在 >12 类时合并「其他」）。" },
+
+    { type: "donut", title: "三卷篇幅占比（千字）",
+      rows: [["卷次", "千字"], ["第一卷", 2000], ["第二卷", 1300], ["第三卷", 2100]],
+      cfg: { catCol: 0, valCols: [1], donut: true },
+      use: "与饼图同为占比，但中间留白可以放合计。",
+      scene: "三卷本篇幅配比：第三卷最长，第二卷只占四分之一。",
+      points: ["第三卷 2,100 千字，占 38.9%；第一卷 37.0%；第二卷 24.1%。", "三卷合计 5,400 千字（居中显示）。"],
+      tip: "环形比饼图更省墨，但扇区角度更难比；要精确就用百分比标签。" },
+
+    { type: "treemap", title: "板块 → 篇 的条目分布",
+      rows: [["板块", "篇", "条目数"],
+        ["政治经济学", "商品与货币", 76], ["政治经济学", "剩余价值", 96], ["政治经济学", "资本积累", 75],
+        ["哲学", "唯物史观", 58], ["哲学", "辩证法", 36],
+        ["科学社会主义", "阶级斗争", 45], ["科学社会主义", "未来社会", 34]],
+      cfg: { catCol: 1, cat2Col: 0, valCols: [2] },
+      use: "用面积表示大小，同时保留两层归属（板块里有哪些篇）。",
+      scene: "七个篇分属三个板块，面积即条目数——层级与占比一张图看完。",
+      points: ["「剩余价值」篇面积最大（96 条），占全图的 23%。", "政治经济学板块合计 247 条，占 59%。"],
+      tip: "层级超过两层就不适合面积图，改用分组柱状或树形列表。" },
+
+    { type: "scatter", title: "词条篇幅与引文数的关系",
+      rows: [["词条", "释义字数", "引文条数"],
+        ["剩余价值", 320, 6], ["资本积累", 280, 5], ["商品", 260, 4], ["货币", 240, 4],
+        ["劳动力", 230, 3], ["工资", 210, 3], ["地租", 200, 2], ["利润", 190, 3],
+        ["危机", 180, 2], ["分工", 170, 2], ["机器", 160, 2], ["信用", 150, 1],
+        ["银行", 140, 1], ["股份公司", 130, 1], ["殖民", 120, 1], ["世界市场", 110, 1]],
+      cfg: { catCol: 0, valCols: [1, 2] },
+      use: "两列数值放一起看有没有关系：点往右上走就是正相关。",
+      scene: "释义写得越长的词条，是否引的原典也越多。",
+      points: ["虚线趋势向上：字数每多约 40，引文多一条。", "「剩余价值」两项双高，落点最靠右上。"],
+      tip: "点数过千会自动抽样到 1,500 个，避免糊成一团。" },
+
+    { type: "bubble", title: "引文数 × 争鸣议题 × 关联词条",
+      rows: [["词条", "引文条数", "争鸣议题", "关联词条"],
+        ["剩余价值", 6, 4, 18], ["资本积累", 5, 3, 15], ["商品", 4, 2, 14], ["价值", 4, 3, 12],
+        ["货币", 4, 2, 11], ["劳动力", 3, 2, 10], ["工资", 3, 1, 9], ["利润", 3, 2, 8],
+        ["地租", 2, 1, 7], ["危机", 2, 2, 9], ["分工", 2, 1, 6], ["机器", 2, 1, 5]],
+      cfg: { catCol: 0, valCols: [1, 2, 3] },
+      use: "一张图放三个变量：横、纵定位置，气泡大小定规模。",
+      scene: "三个维度一起看，哪些词条是“又常引、又多争鸣、又连着别人”的枢纽。",
+      points: ["「剩余价值」气泡最大（关联 18 条），处在右上角。", "高争鸣（≥3）的四个词条，引文数都不低于 3。"],
+      tip: "气泡面积按平方根缩放，读“大小”宁可比排序，别比精确倍数。" },
+
+    { type: "heatmap", title: "六个关键词在各年代的提及次数",
+      rows: [["年代", "价值", "劳动", "资本", "危机", "革命"],
+        ["1840年代", 40, 52, 30, 18, 44], ["1850年代", 66, 70, 58, 26, 38],
+        ["1860年代", 92, 88, 84, 40, 30], ["1870年代", 86, 80, 96, 52, 36],
+        ["1880年代", 78, 74, 104, 63, 48], ["1890年代", 96, 86, 112, 70, 58]],
+      cfg: { catCol: 0, valCols: [1, 2, 3, 4, 5] },
+      use: "行 × 列矩阵用深浅表高低，密的地方一眼就看见。",
+      scene: "五个关键词在六个年代的热度迁移，颜色越深提及越多。",
+      points: ["「资本」由 30 升到 112，是涨幅最大的一列。", "「革命」1840 年代最深（44），1860 年代最浅（30）。"],
+      tip: "深浅只适合同一量纲的数值；颜色对色弱读者不友好时，改热力表或直接读数字。" },
+
+    { type: "hist", title: "释义字数的分布",
+      rows: [["释义字数"],
+        [88], [96], [102], [110], [74], [120], [132], [95], [108], [116], [90], [104], [112], [126], [84], [98],
+        [106], [118], [92], [100], [114], [128], [86], [94], [122], [136], [80], [108], [116], [102], [96], [124],
+        [88], [110], [130], [78], [104], [118], [92], [106], [120], [134], [76], [98], [112], [126], [90], [102],
+        [116], [140], [82], [94], [108], [122], [136], [86], [100], [114], [128], [92], [104], [118], [150], [132]],
+      cfg: { catCol: null, valCols: [0] },
+      use: "一列数值落在哪些区间、分布偏不偏，看柱高就懂。",
+      scene: "64 条词条释义的字数分布，检查是否普遍写得太长或太短。",
+      points: ["主峰在 96–120 字，占样本的 44%。", "长尾到 150 字，最短 74 字，两倍差距。"],
+      tip: "组距由数据自动算；要自己定组距，请在表里先分好箱。" },
+
+    { type: "box", title: "三个板块的释义字数离散度",
+      rows: [["哲学", "政治经济学", "科学社会主义"],
+        [96, 118, 104], [112, 132, 98], [104, 126, 112], [88, 142, 96], [120, 110, 120],
+        [132, 138, 106], [96, 124, 102], [108, 116, 110], [114, 146, 116], [102, 130, 94],
+        [126, 122, 108], [150, 134, 124]],
+      cfg: { catCol: null, valCols: [0, 1, 2] },
+      use: "一组数看中位数与四分位：中间的横线是中位数，盒子的高矮是离散度。",
+      scene: "三个板块释义字数的“典型值”与波动范围，谁写得更整齐。",
+      points: ["政治经济学中位数最高（约 127），盒体也最窄。", "哲学有一个 150 字的离群点（空心圈）。"],
+      tip: "每组少于 4 个数值画不出箱线；样本太少时先把数据补足。" }
+  ];
+
+
   function chRecommend(P) {
     var cands = [];
     var nums = P.colByKind("num"), cats = P.colByKind("cat").filter(function (c) { return c.kind === "cat" && c.ndist > 0; }),
@@ -9246,6 +9415,11 @@
       '<p class="tool-sub">把一份 Excel（.xlsx）或 CSV 交给它，自动认出列的类型、挑合适的图型，' +
       "标题、图例、坐标轴、配色都先替你排好，再随手改成想要的。可导出 PNG 与 SVG。" +
       "文件在本机解析，<u>不上传、不联网</u>。</p>" +
+      '<div class="ch-guide-bar">' +
+        '<button class="ch-guide-btn" type="button" id="ch-guide-btn">' +
+          '<span aria-hidden="true">◈</span> 16 种图表怎么用 · 功能导引</button>' +
+        "<span>每张图配一份同一来源的样例数据，说明用途、场景与读数要点；看完可直接把样例灌进来试画。</span>" +
+      "</div>" +
       '<div class="tt-drop" id="ch-drop" role="button" tabindex="0" data-act="ch-choose" aria-label="选择要绘图的数据文件">' +
         '<span class="tt-drop-ico" aria-hidden="true">＋</span>' +
         "<b>把 .xlsx / .csv 文件拖到这里，或点击选择</b>" +
@@ -9476,7 +9650,21 @@
 
   function bindChartTool() {
     /* 面板内控件是 chDataRender 重画出来的，绑定都在 chBindCfg 里做；
-       这里只占位，与其他工具的 bind* 对齐，路由 after 里统一调。 */
+       这里管面板外的两件事：导引入口按钮，与首次进入的自动弹出。 */
+    var btn = document.getElementById("ch-guide-btn");
+    if (!btn) return;
+    btn.addEventListener("click", function () { chGuideOpen(0); });
+    /* 首次进入：弹一次就记住。标记在实际弹出那刻才写——若用户半秒内
+       就离开了图表页，下次进来仍算「没看过」。注意 #/tools 总览页会内嵌
+       整个图表卡（按钮也在），所以必须认路由，不能认元素在不在。 */
+    if (!rdLoad(CHG_KEY, false) && /#\/tools\/chart/.test(window.location.hash)) {
+      window.setTimeout(function () {
+        if (/#\/tools\/chart/.test(window.location.hash) && !CHG.el) {
+          rdStore(CHG_KEY, true);
+          chGuideOpen(0);
+        }
+      }, 520);
+    }
   }
 
   /* —— 导入：xlsx 走 ZIP 解压，csv 走文本解析；解析完落进面板 —— */
@@ -9534,7 +9722,188 @@
     exportGraphPng(svg, (CH.cfg && CH.cfg.title ? CH.cfg.title : "图表") + ".png");
   }
 
-  /* ---------------- 绑定 ---------------- */
+  /* ══ v74 功能导引弹窗 ══
+     16 种图各一页：左边用同一套 chChartSvg 现画（与导入数据后所见一致），
+     右边是用途 / 场景 / 数据要点 / 样例表；底部上一步·下一步与圆点跳转。
+     首次进图表页自动弹出，之后从面板上的「功能导引」入口再看。 */
+  var CHG_KEY = "capital-chart-guide-v1";
+  var CHG = { i: 0, el: null };
+
+  /* 样例表 → 数据画像（缓存：弹窗翻页时不必重算列型） */
+  function chDemoProfile(d) {
+    if (!d._P) d._P = chProfile({ name: d.title, rows: d.rows });
+    return d._P;
+  }
+  function chDemoCfg(d) {
+    var c = d.cfg || {};
+    return {
+      title: d.title, sub: "", legend: "top", theme: "zhusha",
+      stacked: !!c.stacked, donut: !!c.donut, xlab: "full",
+      timeCol: c.timeCol == null ? null : c.timeCol,
+      catCol: c.catCol == null ? null : c.catCol,
+      cat2Col: c.cat2Col == null ? null : c.cat2Col,
+      valCols: (c.valCols || []).slice()
+    };
+  }
+
+  function chGuideEl() {
+    if (CHG.el) return CHG.el;
+    var box = document.createElement("div");
+    box.className = "chg";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    box.setAttribute("aria-label", "图表工具功能导引：十六种图的用途与样例");
+    box.innerHTML =
+      '<div class="chg-mask" data-act="chg-close"></div>' +
+      '<div class="chg-card" role="document">' +
+        '<div class="chg-head">' +
+          '<div class="chg-hl"><span class="chg-kicker">图表工具 · 功能导引</span>' +
+          "<h3>16 种图，各自看什么</h3></div>" +
+          '<div class="chg-hr"><span class="chg-step">第 <b id="chg-i">1</b> / ' + CH_DEMO.length + " 张</span>" +
+          '<button class="chg-x" type="button" data-act="chg-close" aria-label="关闭功能导引">✕</button></div>' +
+        "</div>" +
+        '<div class="chg-body">' +
+          '<div class="chg-fig" id="chg-fig"></div>' +
+          '<aside class="chg-side">' +
+            '<p class="chg-badge" id="chg-badge"></p>' +
+            '<h4 class="chg-name" id="chg-name"></h4>' +
+            '<dl class="chg-dl">' +
+              "<dt>用途</dt><dd id=\"chg-use\"></dd>" +
+              "<dt>适用场景</dt><dd id=\"chg-scene\"></dd>" +
+              '<dt>关键数据要点</dt><dd><ul class="chg-points" id="chg-points"></ul></dd>' +
+            "</dl>" +
+            '<p class="chg-tip" id="chg-tip"></p>' +
+            '<p class="chg-data-h" id="chg-data-h"></p>' +
+            '<div class="chg-data-tb" id="chg-data-tb"></div>' +
+            '<button class="tt-btn primary chg-try" type="button" data-act="chg-try">用这份样例试画 →</button>' +
+            '<p class="chg-try-n">样例会像一份 xlsx 那样灌进工具：随后可换图型、改标题、导出 PNG / SVG。</p>' +
+          "</aside>" +
+        "</div>" +
+        '<div class="chg-foot">' +
+          '<button class="tt-btn chg-prev" type="button" data-act="chg-prev">← 上一步</button>' +
+          '<div class="chg-dots" id="chg-dots">' + CH_DEMO.map(function (d, i) {
+            return '<button type="button" class="chg-dot" data-act="chg-dot" data-i="' + i +
+              '" aria-label="第 ' + (i + 1) + " 张：" + chSvgEsc((chTypeById(d.type) || {}).n || d.type) + '"></button>';
+          }).join("") + "</div>" +
+          '<button class="tt-btn primary chg-next" type="button" data-act="chg-next">下一步 →</button>' +
+        "</div>" +
+        '<p class="chg-keys">键盘 ← → 切换，Esc 关闭</p>' +
+      "</div>";
+    document.body.appendChild(box);
+    box.addEventListener("click", function (ev) {
+      var t = ev.target.closest ? ev.target.closest("[data-act]") : null;
+      if (!t) return;
+      var act = t.getAttribute("data-act");
+      if (act === "chg-close") chGuideClose();
+      else if (act === "chg-prev") chGuideStep(CHG.i - 1);
+      else if (act === "chg-next") chGuideStep(CHG.i + 1);
+      else if (act === "chg-dot") chGuideStep(+t.getAttribute("data-i"));
+      else if (act === "chg-try") chDemoLoad(CHG.i);
+    });
+    document.addEventListener("keydown", function (ev) {
+      if (!CHG.el) return;
+      if (ev.key === "Escape") { chGuideClose(); }
+      else if (ev.key === "ArrowLeft") { chGuideStep(CHG.i - 1); ev.preventDefault(); }
+      else if (ev.key === "ArrowRight") { chGuideStep(CHG.i + 1); ev.preventDefault(); }
+    });
+    /* 离开图表页（换 hash 且目的地不是图表页）就收起来；DOM 留着，下次打开不必重建 */
+    window.addEventListener("hashchange", function () {
+      if (CHG.el && !/#\/tools\/chart/.test(window.location.hash)) chGuideClose();
+    });
+    CHG.el = box;
+    return box;
+  }
+
+  function chGuideOpen(i) {
+    var box = chGuideEl();
+    chGuideStep(i || 0);
+    box.classList.add("on");
+    document.body.classList.add("chg-lock");
+    var x = box.querySelector(".chg-x");
+    if (x) x.focus();
+  }
+  function chGuideClose() {
+    if (!CHG.el) return;
+    CHG.el.classList.remove("on");
+    document.body.classList.remove("chg-lock");
+    var btn = document.getElementById("ch-guide-btn");
+    if (btn) btn.focus();
+  }
+
+  function chGuideStep(i) {
+    var n = CH_DEMO.length;
+    i = Math.max(0, Math.min(n - 1, i | 0));
+    CHG.i = i;
+    var d = CH_DEMO[i], meta = chTypeById(d.type) || { g: "", n: d.type };
+    var P = chDemoProfile(d), cfg = chDemoCfg(d);
+    cfg.sub = "样例数据 · " + P.nRows + " 行 × " + cfg.valCols.length + " 列数值";
+    var fig = document.getElementById("chg-fig");
+    if (fig) {
+      try { fig.innerHTML = chChartSvg(d.type, P, cfg); }
+      catch (e) { fig.innerHTML = '<p class="warn">这张图画不出来：' + esc((e && e.message) || e) + "</p>"; }
+    }
+    var put = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    put("chg-i", String(i + 1));
+    put("chg-badge", meta.g + " · " + meta.n);
+    put("chg-name", d.title);
+    put("chg-use", d.use);
+    put("chg-scene", d.scene);
+    var pl = document.getElementById("chg-points");
+    if (pl) pl.innerHTML = (d.points || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
+    put("chg-tip", d.tip ? "注意：" + d.tip : "");
+    /* 样例表预览：前 4 行 × 前 4 列 */
+    var head = d.rows[0] || [], body = d.rows.slice(1), nc = Math.min(head.length, 4);
+    var tb = document.getElementById("chg-data-tb");
+    if (tb) {
+      tb.innerHTML = "<table><thead><tr>" + head.slice(0, nc).map(function (h) {
+        return "<th>" + esc(chCut(String(h), 9)) + "</th>";
+      }).join("") + "</tr></thead><tbody>" + body.slice(0, 4).map(function (r) {
+        return "<tr>" + r.slice(0, nc).map(function (v) {
+          return "<td>" + esc(chCut(String(v), 9)) + "</td>";
+        }).join("") + "</tr>";
+      }).join("") + "</tbody></table>";
+    }
+    put("chg-data-h", "样例数据（前 4 行，共 " + P.nRows + " 行 × " + head.length + " 列）");
+    var dots = document.getElementById("chg-dots");
+    if (dots) {
+      Array.prototype.forEach.call(dots.children, function (el, k) {
+        el.classList.toggle("on", k === i);
+        el.setAttribute("aria-current", k === i ? "true" : "false");
+      });
+    }
+    var prev = CHG.el && CHG.el.querySelector(".chg-prev"), next = CHG.el && CHG.el.querySelector(".chg-next");
+    if (prev) prev.disabled = i === 0;
+    if (next) next.disabled = i === n - 1;
+    var card = CHG.el && CHG.el.querySelector(".chg-card");
+    if (card) card.scrollTop = 0;
+  }
+
+  /* 把样例表灌进工具（等同于用户导入一份单表 xlsx），并切到它对应的图型 */
+  function chDemoLoad(i) {
+    var d = CH_DEMO[i];
+    if (!d) return;
+    CH.docs.push({ name: d.title + "（样例）", ok: true,
+      sheets: [{ name: "样例数据", rows: d.rows.map(function (r) { return r.slice(); }) }] });
+    CH.doc = CH.docs.length - 1; CH.sheet = 0;
+    CH.cfg = null;                       // 让 chResetSheet 按新表重建，再逐项覆写
+    chResetSheet();
+    var c = d.cfg || {}, cfg = CH.cfg;
+    if (!cfg) { chGuideClose(); return; }
+    cfg.title = d.title;
+    cfg.sub = "样例数据 · " + CH.profile.nRows + " 行";
+    cfg.catCol = c.catCol == null ? null : c.catCol;
+    cfg.cat2Col = c.cat2Col == null ? null : c.cat2Col;
+    cfg.timeCol = c.timeCol == null ? null : c.timeCol;
+    cfg.valCols = (c.valCols || []).slice();
+    cfg.stacked = !!c.stacked;
+    cfg.donut = !!c.donut;
+    cfg.xlab = "full";
+    CH.type = d.type;
+    chGuideClose();
+    chDocsRender(); chDataRender();
+    var box = document.getElementById("ch-svg");
+    if (box && box.scrollIntoView) box.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
 
   function bindStudyTools() {
     var sc = document.getElementById("qz-scope"), qn = document.getElementById("qz-n");

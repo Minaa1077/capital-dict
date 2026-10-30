@@ -6485,3 +6485,154 @@ body.pj-on .to-top { display: none !important; }
 @media (max-width: 640px) {
   .trel { border-radius: .3rem; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   v74 图表工具「功能导引」弹窗
+   左图右文：图用 chChartSvg 现画（960×620 等比缩放），
+   右栏三段说明 + 样例表 + 「用这份样例试画」。追加在文件末尾。
+   ══════════════════════════════════════════════════════════════ */
+/* 面板里的导引入口：一条浅色带 + 主按钮，不抢上传区的注意力 */
+.ch-guide-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem;
+  margin: 0 0 1.1rem;
+  padding: .7rem .9rem;
+  background: var(--paper-2);
+  border: 1px dashed var(--rule);
+  border-radius: .35rem;
+}
+.ch-guide-bar > span {
+  flex: 1 1 16rem;
+  font-family: var(--sans); font-size: .78rem; line-height: 1.7;
+  color: var(--ink-2);
+}
+.ch-guide-btn {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .5rem .9rem;
+  font-family: var(--sans); font-size: .84rem; font-weight: 700;
+  color: #fdfcfa; background: var(--red-deep);
+  border: 1px solid var(--red-deep); border-radius: .3rem;
+  cursor: pointer;
+}
+.ch-guide-btn:hover { background: #7a1015; }
+.ch-guide-btn span { font-size: .9em; opacity: .85; }
+
+.chg { display: none; position: fixed; inset: 0; z-index: 2600;
+  align-items: center; justify-content: center; padding: 2vh 2vw; }
+.chg.on { display: flex; }
+body.chg-lock { overflow: hidden; }
+.chg-mask { position: absolute; inset: 0; background: rgba(20, 6, 7, .58); }
+.chg-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  width: min(1180px, 96vw); max-height: 94vh;
+  background: #fdfcfa;
+  border: 1px solid #d8cbb0;
+  border-radius: .45rem;
+  box-shadow: 0 26px 64px rgba(0, 0, 0, .38);
+  overflow: hidden;
+}
+.chg-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  padding: .85rem 1.1rem .7rem;
+  border-bottom: 1px solid var(--rule);
+  background: linear-gradient(180deg, #fbf6ea, #fdfcfa);
+}
+.chg-hl h3 { margin: .1rem 0 0; font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
+.chg-kicker {
+  font-family: var(--sans); font-size: .7rem; letter-spacing: .16em;
+  color: var(--red-deep);
+}
+.chg-hr { display: flex; align-items: center; gap: .7rem; }
+.chg-step { font-family: var(--sans); font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
+.chg-step b { color: var(--red-deep); font-size: 1rem; }
+.chg-x {
+  width: 1.9rem; height: 1.9rem; line-height: 1;
+  font-size: .95rem; color: var(--ink-2);
+  background: transparent; border: 1px solid var(--rule); border-radius: 50%;
+  cursor: pointer;
+}
+.chg-x:hover { color: var(--red-deep); border-color: var(--red-deep); }
+
+.chg-body {
+  display: grid; grid-template-columns: minmax(0, 1fr) 21rem;
+  gap: 1.1rem; padding: 1rem 1.1rem;
+  overflow: auto;
+}
+.chg-fig {
+  align-self: start;
+  background: #fdfcfa; border: 1px solid var(--rule); border-radius: .3rem;
+  overflow: hidden;
+}
+.chg-fig svg { display: block; width: 100%; height: auto; }
+.chg-side { display: flex; flex-direction: column; gap: .55rem; min-width: 0; }
+.chg-badge {
+  margin: 0; align-self: flex-start;
+  padding: .18rem .55rem;
+  font-family: var(--sans); font-size: .7rem; letter-spacing: .06em;
+  color: var(--red-deep); background: #f7ece0;
+  border: 1px solid #e3cdb4; border-radius: 999px;
+}
+.chg-name { margin: 0; font-size: .98rem; line-height: 1.5; color: var(--ink); }
+.chg-dl { margin: 0; font-family: var(--sans); font-size: .8rem; line-height: 1.75; color: var(--ink-2); }
+.chg-dl dt {
+  margin-top: .35rem;
+  font-size: .7rem; letter-spacing: .12em; color: var(--red-deep);
+}
+.chg-dl dd { margin: .1rem 0 0; color: var(--ink); }
+.chg-points { margin: 0; padding-left: 1.05rem; }
+.chg-points li { margin: .12rem 0; }
+.chg-tip {
+  margin: .2rem 0 0; padding: .45rem .6rem;
+  font-family: var(--sans); font-size: .75rem; line-height: 1.65;
+  color: #6b5a3a; background: #f9f2e2; border-left: 2px solid #c9a24a;
+}
+.chg-tip:empty { display: none; }
+.chg-data-h {
+  margin: .3rem 0 0;
+  font-family: var(--sans); font-size: .7rem; letter-spacing: .06em; color: var(--ink-2);
+}
+.chg-data-tb { overflow-x: auto; border: 1px solid var(--rule); border-radius: .25rem; }
+.chg-data-tb table { width: 100%; border-collapse: collapse; font-size: .72rem; }
+.chg-data-tb th, .chg-data-tb td {
+  padding: .22rem .4rem; border-bottom: 1px solid #efe7d8;
+  white-space: nowrap; text-align: left;
+}
+.chg-data-tb th { font-family: var(--sans); font-weight: 700; color: #6b6157; background: #f8f2e6; }
+.chg-data-tb tr:last-child td { border-bottom: none; }
+.chg-try { align-self: flex-start; margin-top: .3rem; }
+.chg-try-n {
+  margin: 0; font-family: var(--sans); font-size: .7rem; line-height: 1.6; color: #8b8071;
+}
+
+.chg-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  padding: .6rem 1.1rem;
+  border-top: 1px solid var(--rule);
+  background: #fbf7ee;
+}
+.chg-foot .tt-btn { flex: 0 0 auto; }
+.chg-foot .tt-btn[disabled] { opacity: .45; cursor: default; }
+.chg-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; flex: 1 1 auto; }
+.chg-dot {
+  width: .55rem; height: .55rem; padding: 0;
+  background: #e2d6bd; border: none; border-radius: 50%;
+  cursor: pointer;
+}
+.chg-dot:hover { background: #c9a24a; }
+.chg-dot.on { background: var(--red-deep); transform: scale(1.25); }
+.chg-keys {
+  margin: 0; padding: 0 1.1rem .5rem;
+  font-family: var(--sans); font-size: .68rem; color: #a89f8f; text-align: right;
+}
+
+/* 窄屏：单列（图在上、文在下），整卡可滚动；圆点换行不挤压按钮 */
+@media (max-width: 900px) {
+  .chg { padding: 0; }
+  .chg-card { width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; border: none; }
+  .chg-body { grid-template-columns: 1fr; gap: .8rem; padding: .8rem; }
+  .chg-foot { flex-wrap: wrap; }
+  .chg-dots { order: 3; flex-basis: 100%; }
+  .chg-keys { display: none; }
+  .chg-hl h3 { font-size: .95rem; }
+}

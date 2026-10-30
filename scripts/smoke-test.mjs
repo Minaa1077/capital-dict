@@ -1783,6 +1783,50 @@ check("v73：详细模式全显不截断，粗略模式走抽稀；换表保留�
   html.includes('a.cfg.xlab !== "skip"') && html.includes("full ? 1 :") &&
   html.includes("cfg.xlab = CH.cfg.xlab"));
 
+/* ---- v74：图表功能导引弹窗（16 种图 · 分步展示） ---- */
+/* 弹窗的图与工具共用 chChartSvg，纯字符串拼装，jsdom 里就能整段走一遍。 */
+/* v70 段在图表页停留超 520ms 时「首次自动弹出」就已经发生过：弹窗 DOM 被建出、
+   已读标记被写入、随后随换页正常关闭。会话内 CHG.el 只建一次（关闭仅摘 .on），
+   这里断言那次自动弹出的两个证据；完整的打开—驻留—导航时序由
+   真机探针 tmp/probe-v74.mjs（首访自动弹 + 二访不弹）把守。 */
+check("v74：首次进入图表页自动弹出（弹窗已建 + 已读标记已写）",
+  window.localStorage.getItem("capital-chart-guide-v1") === "true" &&
+  !!doc.querySelector(".chg") && doc.querySelectorAll(".chg-dot").length === 16);
+await goto("#/tools/chart");
+await wait(400);
+check("v74：第 1 步分组柱状图出图，用途/场景/要点/样例表齐备", (() => {
+  const fig = doc.getElementById("chg-fig");
+  return !!fig && !!fig.querySelector("svg") && fig.querySelectorAll("rect").length >= 10 &&
+    (doc.getElementById("chg-use") || {}).textContent?.length > 8 &&
+    (doc.getElementById("chg-scene") || {}).textContent?.length > 8 &&
+    doc.querySelectorAll("#chg-points li").length >= 2 &&
+    doc.querySelectorAll("#chg-data-tb tbody tr").length >= 3;
+})());
+check("v74：「下一步」推进到第 2 步，末页前不禁用", (() => {
+  doc.querySelector(".chg-next").click();
+  return doc.getElementById("chg-i").textContent === "2" && !doc.querySelector(".chg-next").disabled;
+})());
+check("v74：× 可关闭，且解锁背景滚动", (() => {
+  doc.querySelector(".chg-x").click();
+  return !doc.querySelector(".chg.on") && !doc.body.classList.contains("chg-lock");
+})());
+check("v74：面板有「功能导引」入口，重开后「用这份样例试画」把样例灌进工具", (() => {
+  const btn = doc.getElementById("ch-guide-btn");
+  if (!btn) return false;
+  btn.click();
+  const opened = !!doc.querySelector(".chg.on");
+  doc.querySelector(".chg-try").click();
+  const svg = doc.querySelector("#ch-svg svg");
+  const docName = (doc.getElementById("ch-doc") || {}).textContent || "";
+  return opened && !!svg && svg.querySelectorAll("rect").length >= 10 &&
+    !doc.querySelector(".chg.on") && docName.includes("样例");
+})());
+check("v74：16 套样例数据全部内联（每套带用途/场景/要点三段）",
+  (html.match(/scene: "/g) || []).length === 16 &&
+  (html.match(/关键数据要点/) || []).length >= 1 &&
+  html.includes("用这份样例试画"));
+await goto("#/");
+
 /* ---- v72：词条关系图谱（词条页内嵌力导向图） ---- */
 await goto("#/t/shengyujiazhi");
 await wait(900);
