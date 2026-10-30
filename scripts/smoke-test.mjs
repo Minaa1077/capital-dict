@@ -1873,6 +1873,13 @@ check("v75：转入即出图——标题带入、图已渲染，可在图表页�
 })());
 await goto("#/");
 
+/* ---- v77：首页 hero 第四枚「图表分析」入口 ---- */
+check("v77：hero 入口四枚且「图表分析」与「文本分析」同款同排、深链直达图表工具",
+  doc.querySelectorAll(".hero-entries a").length === 4 &&
+  [...doc.querySelectorAll(".hero-entries a")].map(a => a.textContent.trim()).join("|") ===
+    "马克思画传|概念关系图|文本分析|图表分析" &&
+  [...doc.querySelectorAll(".hero-entries a")].some(a => a.getAttribute("href") === "#/tools/chart"));
+
 /* ---- 未知路由 ---- */
 await goto("#/nope");
 check("未知路由有兜底", text().includes("页面不存在"));
