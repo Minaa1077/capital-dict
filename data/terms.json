@@ -31,7 +31,7 @@
     "name": "当代对应"
    }
   ],
-    "taxonomies": [
+  "taxonomies": [
    {
     "id": "subject",
     "name": "学科方向",
@@ -87,6 +87,14 @@
       "color": "#0f6f7a",
       "planned": 14,
       "note": "资本原始积累与近代中国：世界市场、殖民主义与民族解放运动、马克思主义在中国的早期传播。"
+     },
+     {
+      "id": "sub-ybc",
+      "name": "一般词（词频补充）",
+      "short": "一般词",
+      "color": "#8a7a5c",
+      "planned": 142,
+      "note": "来自文本分析词频统计的非术语高频词：按通用语文词典体例给出释义，帮助读者分辨术语用法与日常用法的差别。"
      }
     ]
    },
@@ -120,6 +128,15 @@
       "color": "#1f6a3d",
       "planned": 79,
       "note": "从空想到科学：阶级与政党、无产阶级专政、过渡时期、人的解放与自由人联合体。"
+     },
+     {
+      "id": "dom-ybci",
+      "name": "一般词（词频补充）",
+      "short": "一般词",
+      "color": "#5c6b7a",
+      "planned": 142,
+      "note": "《资本论》文本中的高频一般词汇：非马克思主义专业术语，按通用词典体例释义，与术语词条分开单列。",
+      "aux": true
      }
     ]
    }
@@ -310,7 +327,8 @@
    "阶级斗争": "J",
    "雇佣劳动": "G",
    "雇佣劳动与资本": "G",
-   "马克思主义发展": "M"
+   "马克思主义发展": "M",
+   "一般词": "yb"
   },
   "holidays": {
    "note": "依据国务院办公厅年度节假日安排通知整理；仅含全体公民放假的节日与调休补班日，不含妇女节、青年节等部分公民放假的节日。",
@@ -26684,6 +26702,4976 @@
    },
    "verified": true,
    "en": "political abstentionism"
+  },
+  {
+   "id": "shehui",
+   "term": "社会",
+   "pinyin": "she hui",
+   "initials": "sh",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "社会是以共同的物质生产活动为基础而相互联系的人类生活共同体。",
+   "standard": "社会指人们以共同的物质生产活动为基础、按照一定规范相互联系而结成的有机总体。物质资料的生产方式决定社会的性质与更替，生产关系合乎规律地随生产力发展而变革。《资本论》考察的正是资本主义社会这一有机整体，「社会必要劳动时间」「社会分工」「社会总产品」等用语，都强调经济范畴的社会规定性。",
+   "contemporary": "人工智能正在改变就业结构与社会分工，「社会」这一分析框架仍是理解算法平台时代生产关系的基础。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "society"
+  },
+  {
+   "id": "wenti",
+   "term": "问题",
+   "pinyin": "wen ti",
+   "initials": "wt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "问题指需要研究、讨论并加以解决的矛盾、疑难或事项。",
+   "standard": "问题泛指要求回答或解答的题目，也指事物矛盾的实际所在。发现问题是认识的起点，准确地提出问题往往比解决问题更重要。《资本论》对政治经济学旧论的诘难，正是把前人当作既成答案的东西重新变成问题来对待。",
+   "contemporary": "大模型擅长「给答案」，但把现实矛盾提炼为真问题，仍然是人的思考不可外包的部分。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "problem; question"
+  },
+  {
+   "id": "gongren",
+   "term": "工人",
+   "pinyin": "gong ren",
+   "initials": "gr",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "工人指不占有生产资料、靠出卖劳动力为生的雇佣劳动者。",
+   "standard": "工人是资本主义制度下的雇佣劳动者，与生产资料相分离，只能靠出卖劳动力换取工资为生。劳动力的使用创造出大于自身价值的价值，这一差额构成剩余价值的源泉。《资本论》中「工人」高频出现，集中于劳动力买卖、工作日与机器大工业等论述，是资本关系另一极的人格承担者。",
+   "contemporary": "从流水线到数据标注车间，AI 产业链上的「工人」形态在变，劳动力再生产与报酬议价的议题没有变。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "worker"
+  },
+  {
+   "id": "zhengzhi",
+   "term": "政治",
+   "pinyin": "zheng zhi",
+   "initials": "zz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "政治指围绕公共权力与国家而展开的社会活动及其关系。",
+   "standard": "政治是经济的集中表现，核心是国家政权问题，包括阶级关系、国家制度与公共事务的处理。政治根源于经济，阶级斗争是阶级社会政治的主要内容。《资本论》中「政治」多见于「政治经济学」「政治斗争」等搭配，表明经济分析始终带着阶级与国家的视野。",
+   "contemporary": "AI 治理、数据主权与平台监管已成为各国政治议程的新焦点，技术与权力的关系被重新提上桌面。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "politics"
+  },
+  {
+   "id": "xianzai",
+   "term": "现在",
+   "pinyin": "xian zai",
+   "initials": "xz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "现在指说话时的这一时刻，也泛指当前这段时间。",
+   "standard": "「现在」表示正在进行或当前存在的时间，与过去、将来相对。在理论文本中，它常用于把分析锚定在当下阶段，与历史叙述相对照。《资本论》以「现在」点明资本主义生产方式的现存状态，强调分析的着眼点是当下正在运转的经济结构。",
+   "contemporary": "AI 迭代以「月」为单位，「现在」的时间尺度被急剧压缩，也让人更难区分技术现状与技术许诺。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "present; now"
+  },
+  {
+   "id": "fazhan",
+   "term": "发展",
+   "pinyin": "fa zhan",
+   "initials": "fz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "发展指事物由小到大、由简单到复杂、由低级到高级的前进变化。",
+   "standard": "发展是事物不断前进的变化过程，其实质是新事物的产生和旧事物的灭亡。发展不是同一事物的简单重复，而是螺旋式上升与波浪式前进。《资本论》把资本主义生产方式当作历史的产物，描写它发生和发展的过程，揭示其内在矛盾如何推动自身演变。",
+   "contemporary": "「发展」与「治理」的平衡是 AI 时代的中心议题：技术该往哪发展、为谁发展，先于「发展多快」。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "development"
+  },
+  {
+   "id": "laodong",
+   "term": "劳动",
+   "pinyin": "lao dong",
+   "initials": "ld",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "劳动是人们创造物质财富或精神财富的有目的的活动。",
+   "standard": "劳动是劳动力的使用或消费，是人以自身的活动来引起、调整和控制人与自然之间物质变换的过程。劳动过程有三要素：有目的的活动、劳动对象与劳动资料。在商品经济中劳动具有二重性——具体劳动创造使用价值，抽象劳动形成价值，这一学说是理解政治经济学的枢纽。",
+   "contemporary": "AI 让「劳动」的边界问题凸显：训练数据的背后是亿万人的劳动，其价值如何计量正在成为新课题。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "labour"
+  },
+  {
+   "id": "xingshi",
+   "term": "形式",
+   "pinyin": "xing shi",
+   "initials": "xs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "形式指事物的结构、样式或外部表现方式，与内容相对。",
+   "standard": "形式是事物内容的结构和表现方式，与内容构成辩证的统一体：内容决定形式，形式反作用于内容。「价值形式」是《资本论》的关键用语——价值的本质必须通过交换价值这一形式表现出来，从简单价值形式到货币形式的展开构成第一章的核心叙述。",
+   "contemporary": "数据、算力、算法是智能经济的新「内容」，而平台、接口与标准则是它们借以实现的新「形式」。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "form"
+  },
+  {
+   "id": "renmin",
+   "term": "人民",
+   "pinyin": "ren min",
+   "initials": "rm",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "人民指对社会历史起推动作用的大多数社会成员。",
+   "standard": "人民是政治与历史范畴，指创造社会物质财富与精神财富、推动历史前进的社会基本成员，人民群众是历史的创造者。《资本论》对工厂立法、圈地运动等历史叙述，呈现的正是劳动人民在生产方式变革中的命运。",
+   "contemporary": "AI 普惠还是 AI 垄断，衡量标准在于技术进步最终服务于谁——「人民性」仍是评价技术的根本尺度。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "the people"
+  },
+  {
+   "id": "xuyao",
+   "term": "需要",
+   "pinyin": "xu yao",
+   "initials": "xy",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "需要指人对客观事物的欲求，是有机体感到欠缺时的心理与行为倾向。",
+   "standard": "需要是有机体对内部或外部条件的欲求状态，人的需要包括生存、享受与发展等层次，其内容由社会生产方式所塑造。在《资本论》中，「需要」连接着使用价值与消费环节：商品要能满足人的需要，社会需要量则决定总产品各部分的实现。",
+   "contemporary": "推荐算法不断「制造」需要，区分真实需要与被建构的欲望，是数字消费时代的基本素养。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "need"
+  },
+  {
+   "id": "ziyou",
+   "term": "自由",
+   "pinyin": "zi you",
+   "initials": "zy",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "自由指不受奴役与强制的状态，也指对必然的认识和对客观世界的改造。",
+   "standard": "自由既指政治上不受压迫奴役的权利，也在哲学上指对必然性的把握——认识了客观规律并据以行动，才获得真正的自由。「自由得一无所有」的雇佣工人是资本关系形成的前提，《资本论》以此揭示「自由」的双重含义：摆脱封建束缚的自由，与被迫出卖劳动力的「自由」。",
+   "contemporary": "生成式 AI 带来表达与创作的便利，也带来信息茧房与依赖，「技术赋自由」同样需要辨析其边界。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "freedom; liberty"
+  },
+  {
+   "id": "lishi",
+   "term": "历史",
+   "pinyin": "li shi",
+   "initials": "ls",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "历史指人类社会过去的发展过程，也指对这一过程的记载与研究。",
+   "standard": "历史是事物产生和发展的过程，尤指人类社会的演化进程；唯物史观把历史理解为有规律的客观过程，生产力与生产关系的矛盾是其根本动力。《资本论》的方法是把经济范畴当作历史性的东西来把握——资本不是物，而是一种历史的、暂时的生产关系。",
+   "contemporary": "大模型从既有文本中「学习历史」，也由历史数据携带偏见——理解技术，同样需要历史的眼光。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "history"
+  },
+  {
+   "id": "jingyan",
+   "term": "经验",
+   "pinyin": "jing yan",
+   "initials": "jy",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "经验指通过实践获得的知识与感受，是认识的初步形态。",
+   "standard": "经验是人们在同客观事物接触中获得的感性认识与实际体验，是认识的来源，但须上升为理性认识才能把握事物的本质。《资本论》强调经济规律作为内在趋势在经验现象背后起作用，单凭经验观察无法直接读出价值关系。",
+   "contemporary": "AI 的「经验」来自数据，人的经验来自实践——两者能否互校，决定机器判断能否可信。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "experience"
+  },
+  {
+   "id": "shengchan",
+   "term": "生产",
+   "pinyin": "sheng chan",
+   "initials": "sc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "生产指人们创造物质财富的过程，是社会再生产的决定性环节。",
+   "standard": "生产是人们结成一定社会关系、利用生产资料改造自然以创造物质资料的实践活动，与分配、交换、消费共同构成再生产全过程并居于支配地位。《资本论》研究的正是资本主义生产的运动规律，剩余价值的生产是其绝对目的。",
+   "contemporary": "AI 把「生产」扩展到知识与内容领域：文字、图像、代码都能被规模化生成，生产关系随之被重写。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "production"
+  },
+  {
+   "id": "yiyi",
+   "term": "意义",
+   "pinyin": "yi yi",
+   "initials": "yy",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "意义指事物所包含的思想、价值或作用。",
+   "standard": "意义是事物对人所具有的价值与作用，也指语言符号所表达的内容。确定一个事件的意义，须把它放进更大的联系之中。《资本论》各范畴的意义只有在体系之中才能显现——例如货币的意义在于它是价值形式发展的完成形态，而非单纯的流通工具。",
+   "contemporary": "当 AI 生成内容泛滥，「意义」的稀缺在于：谁来赋予文本以意图、语境与价值指向。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "meaning; significance"
+  },
+  {
+   "id": "teshu",
+   "term": "特殊",
+   "pinyin": "te shu",
+   "initials": "ts",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "特殊指不同于一般、具有独自特点的事物属性。",
+   "standard": "特殊与一般相对，指事物区别于其他事物的个别的、具体的属性；一般寓于特殊之中，共性通过个性表现出来。《资本论》的方法正是从特殊上升到一般，再由一般回到特殊：对资本一般的分析最终要落到商业资本、生息资本等特殊形式。",
+   "contemporary": "通用大模型追求「一般」，行业模型深耕「特殊」——通用与专用的张力是 AI 产品路线的根本抉择。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "particular; special"
+  },
+  {
+   "id": "jieduan",
+   "term": "阶段",
+   "pinyin": "jie duan",
+   "initials": "jd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "阶段指事物发展进程中划分的段落。",
+   "standard": "阶段是事物发展过程中性质相对稳定的一段时期，不同阶段由主要矛盾的性质所界定，把握发展阶段是制定策略的前提。《资本论》对资本主义生产从简单协作、工场手工业到机器大工业的阶段划分，是分析生产方式演进节奏的经典范例。",
+   "contemporary": "从判别式 AI 到生成式 AI 再到智能体，技术演进同样呈阶段式跃迁，每一阶段的问题清单各不相同。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "stage; phase"
+  },
+  {
+   "id": "chansheng",
+   "term": "产生",
+   "pinyin": "chan sheng",
+   "initials": "cs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "产生指由已有的事物生出新生的事物。",
+   "standard": "产生指从已有事物中生长出新事物的过程，任何产生都有其条件与原因，脱离条件谈来源无从谈起。《资本论》反复追问货币如何转化为资本、利润从何产生，把「来源问题」当作政治经济学批判的枢纽。",
+   "contemporary": "AI 生成内容的「产生」机制与人类创作的区别——从概率分布中采样是否算创造——仍是争议焦点。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "arise; originate"
+  },
+  {
+   "id": "sixiang",
+   "term": "思想",
+   "pinyin": "si xiang",
+   "initials": "sx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "思想指客观存在反映在人的意识中、经过思维活动产生的观念结果。",
+   "standard": "思想是理性认识活动的结果，包括观念、理论、学说等形态。社会存在决定社会意识，思想一经形成便具有相对独立性与能动作用。《资本论》既是经济分析，也是思想史的清算——它批判的对象正是古典政治经济学的思想传统。",
+   "contemporary": "意识形态如何渗入训练语料、再由模型输出放大，「思想」的物质载体问题在 AI 时代变得具体。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "thought; idea"
+  },
+  {
+   "id": "xiandai",
+   "term": "现代",
+   "pinyin": "xian dai",
+   "initials": "xd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "现代指现在这个时代，也指具有当下先进特征的。",
+   "standard": "现代指当前所处的时代，也用来标示较新形态的事物；「现代」是相对的历史概念，每一时代都有自己的「现代」。《资本论》所分析的「现代工业」等用语，特指当时正在确立的资本主义形态，提示读者在历史坐标中理解范畴。",
+   "contemporary": "「现代性」问题在 AI 时代有了新版本：当技术更新快于制度调适，「现代」自身成为亟待反思的概念。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "modern"
+  },
+  {
+   "id": "zhengfu",
+   "term": "政府",
+   "pinyin": "zheng fu",
+   "initials": "zf",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "政府指国家进行统治和社会管理的权力机关。",
+   "standard": "政府是国家机构的组成部分，负责行政管理与公共事务，其性质由国家的阶级性质所决定。《资本论》多处记述工厂立法、济贫法与殖民政策，显示政府如何介入资本积累过程——国家对经济的干预从来不是中立的。",
+   "contemporary": "从算法备案到生成内容标识，各国政府正在为 AI 划定合规边界，「政府与市场」的老问题有了新对象。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "government"
+  },
+  {
+   "id": "jingji",
+   "term": "经济",
+   "pinyin": "jing ji",
+   "initials": "jj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "经济指社会物质生产、流通与消费活动的总称，也指节约高效。",
+   "standard": "经济是人类社会进行物质资料生产、分配、交换与消费活动的总称，也指一个国家国民经济的总体状况；经济是基础，政治与文化是其上层建筑。《资本论》通过对资本主义经济体系的解剖，揭示经济规律如何不以人的意志为转移地发挥作用。",
+   "contemporary": "AI 已成为新的经济增长引擎，「智能经济」的资源配置方式正在改写传统生产函数。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "economy"
+  },
+  {
+   "id": "cunzai",
+   "term": "存在",
+   "pinyin": "cun zai",
+   "initials": "cz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "存在指事物的实际有，哲学上指独立于意识的客观实在。",
+   "standard": "存在是与思维相对的哲学范畴，指一切客观实在的事物及其过程；唯物主义主张存在决定意识，社会存在是社会生活的物质方面。《资本论》开篇即面对「庞大的商品堆积」这一感性存在，分析其背后被遮蔽的价值存在形式。",
+   "contemporary": "虚拟现实与数字分身让「存在」多了数字形态，物理实在与虚拟存在的边界正在被重划。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "existence; being"
+  },
+  {
+   "id": "tiaojian",
+   "term": "条件",
+   "pinyin": "tiao jian",
+   "initials": "tj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "条件指影响事物存在和发展的因素，也指所要求或具备的标准。",
+   "standard": "条件是事物存在、发展变化所依赖的因素与前提，任何过程的实现都需要一定条件，条件变化则过程随之改变。《资本论》强调劳动力成为商品需要「双重自由」这一历史条件，货币积累到一定量是资本出现的先决条件。",
+   "contemporary": "算力、数据、能源是 AI 发展的三大条件，条件分布不均直接映射为智能产业的地缘格局。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "condition"
+  },
+  {
+   "id": "juti",
+   "term": "具体",
+   "pinyin": "ju ti",
+   "initials": "jt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "具体指不抽象、细节明确的属性，哲学上指多样规定的统一。",
+   "standard": "具体既指感官可及的、细节明确的对象，也是辩证法的重要范畴——具体是许多规定的综合，是多样性的统一。从抽象上升到具体的方法，是思维用以掌握具体总体的途径。《资本论》正是沿着这一方法，从最简单的规定出发，逐步重建资本主义经济的具体总体。",
+   "contemporary": "AI 的输出常常「像」具体而实则笼统，把抽象知识落到具体情境，仍依赖人的经验校准。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "concrete"
+  },
+  {
+   "id": "yiban",
+   "term": "一般",
+   "pinyin": "yi ban",
+   "initials": "yb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "一般指同类事物的共同属性，与个别、特殊相对。",
+   "standard": "一般（普遍）指一类事物共同具有的属性，存在于个别之中并通过个别表现出来；从个别到一般、再由一般回到个别，是认识运动的基本路径。《资本论》中「一般等价物」「一般利润率」等用语，都承担着从具体现象中提炼共同规定的功能。",
+   "contemporary": "「通用人工智能」的「一般」追求，恰是哲学上一般与个别关系的技术表达——通用能力总要通过具体任务显形。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "general; universal"
+  },
+  {
+   "id": "fenxi",
+   "term": "分析",
+   "pinyin": "fen xi",
+   "initials": "fx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "分析指把整体分解为部分加以研究的思维方法。",
+   "standard": "分析是把对象分解为各个部分、方面与要素，分别加以考察的思维方法，与综合相对，二者互为前提。《资本论》的分析从商品这一「经济细胞」入手，先分析再综合，层层重构出资本主义经济的整体结构。",
+   "contemporary": "文本分析工具把「分析」自动化：词频、共现与聚类让宏文变得可算，但解读结论仍须回到语境。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "analysis"
+  },
+  {
+   "id": "shiqi",
+   "term": "时期",
+   "pinyin": "shi qi",
+   "initials": "sq",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "时期指具有某种特征的一段较长时间。",
+   "standard": "时期是按一定标志划分的时间段落，常用来标示发展进程中的阶段性。《资本论》对原始积累时期、大工业时期等的历史叙述，把经济范畴放回具体时段中考察，避免把特定时期的特征当成永恒规律。",
+   "contemporary": "AI 治理进入「立法窗口期」，各国规则密集出台，技术企业正处于合规重构的过渡时期。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "period"
+  },
+  {
+   "id": "jiandan",
+   "term": "简单",
+   "pinyin": "jian dan",
+   "initials": "jd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "简单指结构不复杂、易于认识和处理，与复杂相对。",
+   "standard": "简单指事物结构单纯、构成要素少；辩证法要求从简单上升到复杂，最简单的规定往往孕育着后续关系的胚芽。《资本论》从简单的商品交换讲起，「简单流通」「简单再生产」均为体系展开的先行环节。",
+   "contemporary": "从简单规则到大模型涌现，AI 系统重新演示了「简单生成复杂」——但可解释性仍是最难啃的部分。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "simple"
+  },
+  {
+   "id": "minzu",
+   "term": "民族",
+   "pinyin": "min zu",
+   "initials": "mz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "民族指人们在历史上形成的有共同语言、地域与文化的稳定共同体。",
+   "standard": "民族是人们在历史上形成的具有共同语言、共同地域、共同经济生活与共同心理素质的稳定共同体，其形成与社会分工和商品交换的发展相联系。《资本论》论及世界市场与殖民体系时，呈现了各民族被卷入资本主义体系的不平衡过程。",
+   "contemporary": "大模型的语言偏向使小语种民族面临数字边缘化，文化多样性成为 AI 治理的关切。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "nation"
+  },
+  {
+   "id": "xiaoshi",
+   "term": "消失",
+   "pinyin": "xiao shi",
+   "initials": "xs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "消失指事物逐渐减少以至不复存在。",
+   "standard": "消失指事物在发展过程中逐渐隐没乃至不复存在的现象。经济范畴的历史性意味着：特定关系消亡，附着其上的范畴也随之退场。《资本论》显示小生产方式在资本积累中趋于消失，同时不断再生产出新的两极分化。",
+   "contemporary": "AI 替代之下，不少职业正在「消失」，新岗位同时涌现——技能半衰期缩短成为普遍焦虑。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "disappear; vanish"
+  },
+  {
+   "id": "guodu",
+   "term": "过渡",
+   "pinyin": "guo du",
+   "initials": "gd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "过渡指事物由一个阶段转入另一个阶段的中间状态。",
+   "standard": "过渡指事物从一种质态转向另一种质态的中间环节，是发展连续性与阶段性的统一。《资本论》中「过渡形式」频繁出现：简单商品生产到资本主义商品生产、封建地租到资本主义地租，都经过中介环节，并非一刀两断。",
+   "contemporary": "人机协作正处在「过渡阶段」：既非全面替代，也非简单叠加，组织形态与评价体系都在重构。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "transition"
+  },
+  {
+   "id": "genju",
+   "term": "根据",
+   "pinyin": "gen ju",
+   "initials": "gj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "根据指事物赖以建立的基础，也指作为论断前提的依据。",
+   "standard": "根据是结论赖以成立的前提与凭据，论证要求言必有据，科学研究从经过核实的事实出发。《资本论》的叙述处处标明根据——如把工资形式视为表象、把劳动力的日价值当作依据，层层剥开现象与根据的关系。",
+   "contemporary": "AI 生成内容须标注「根据」（来源与训练口径），可溯源性正在成为信息可信度的基本要求。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "basis; according to"
+  },
+  {
+   "id": "guandian",
+   "term": "观点",
+   "pinyin": "guan dian",
+   "initials": "gd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "观点指观察事物和处理问题时所处的立场与所持的看法。",
+   "standard": "观点是人们观察事物时所处的立场或出发点，以及由此得出的看法；立场不同，对同一事实的判断可以截然相反。《资本论》公开申明自己的阶级立场，并以此批评古典学派自诩「超立场」的科学幻觉。",
+   "contemporary": "模型的「观点」来自语料的立场分布——追问 AI 观点的来源，就是追问训练数据的立场构成。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "viewpoint"
+  },
+  {
+   "id": "taidu",
+   "term": "态度",
+   "pinyin": "tai du",
+   "initials": "td",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "态度指人对事物所持的评价与行为倾向。",
+   "standard": "态度是主体对特定对象相对稳定的心理倾向，包含认知、情感与行为意向；学术态度决定研究取向——是描述现实还是批判现实。《资本论》对资产阶级经济学各流派的态度有严整的分辨：赞赏其科学成分，批判其辩护性质。",
+   "contemporary": "面对 AI，既不神化也不妖魔化，这种「态度」本身就是信息素养教育要培养的核心。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "attitude"
+  },
+  {
+   "id": "ziran",
+   "term": "自然",
+   "pinyin": "zi ran",
+   "initials": "zr",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "自然指独立于人的意识的客观物质世界，也指事物的本来性状。",
+   "standard": "自然是离开人的意识而独立存在的物质世界，也指事物按其本性所是的状态；人是自然界的一部分，劳动是人与自然之间的物质变换过程。《资本论》以「自然财富」「自然力」等用语提醒：生产力从来离不开自然的馈赠。",
+   "contemporary": "AI 的能耗与碳排放让「自然」重新进入技术评价：智能的每一次跃升都有自然代价。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "nature"
+  },
+  {
+   "id": "yundong",
+   "term": "运动",
+   "pinyin": "yun dong",
+   "initials": "yd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "运动指宇宙间一切事物、现象的变化及其过程。",
+   "standard": "运动是物质的根本属性和存在方式，包括宇宙中发生的一切变化与过程，静止是运动的特殊形态。《资本论》把资本理解为自行增殖的运动——资本不是静止的物，而是不断经历形态变换的价值运动。",
+   "contemporary": "数据流、资金流、模型权重更新，「运动」的形态在数字世界延续，只是节奏快了几个量级。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "movement; motion"
+  },
+  {
+   "id": "duili",
+   "term": "对立",
+   "pinyin": "dui li",
+   "initials": "dl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "对立指事物之间相互排斥、相互斗争的关系与趋势。",
+   "standard": "对立是矛盾双方相互排斥、相互否定的趋势，与统一构成矛盾的基本属性，对立的双方在一定条件下相互转化。《资本论》通篇是对立的运动：商品内部使用价值与价值的对立，如何在交换中外化为商品与货币的对立，再发展为劳动与资本的对立。",
+   "contemporary": "人机对立还是人机协同？AI 时代的「对立」叙事需要具体分析：对立的是技术，还是技术背后的关系。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "opposition"
+  },
+  {
+   "id": "shidai",
+   "term": "时代",
+   "pinyin": "shi dai",
+   "initials": "sd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "时代指依据一定特征划分的社会发展时期。",
+   "standard": "时代是历史上以经济、政治、文化等状况为依据划分的时期，生产方式的变革是划分时代结构的深层标尺。《资本论》描绘的大工业时代，机器体系成为时代的物质标志，社会关系随之整体改组。",
+   "contemporary": "「智能时代」的命名正在发生，而判断一个时代是否到来的标准，仍要看生产方式的实质变化。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "era; epoch"
+  },
+  {
+   "id": "zhengming",
+   "term": "证明",
+   "pinyin": "zheng ming",
+   "initials": "zm",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "证明指用可靠材料来表明或断定人或事物的真实性。",
+   "standard": "证明是依据已知真实的判断，确定另一判断真实性的思维过程，由论题、论据与论证方式构成。《资本论》的说服力来自体系化的证明：从商品的二因素出发，一步一步推出剩余价值的来源，而非诉诸道德义愤。",
+   "contemporary": "大模型的输出难以「证明」——可验证性与幻觉问题，使证明机制成为可信 AI 的核心工程。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "prove; proof"
+  },
+  {
+   "id": "shishi",
+   "term": "事实",
+   "pinyin": "shi shi",
+   "initials": "ss",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "事实指事情的真实情况，是认识的基础和检验认识的标准之一。",
+   "standard": "事实是事物及其过程的实际情况，科学研究要求从事实的总和与联系中把握事实，而不是抽取孤立的例子。《资本论》大量引用工厂视察员的官方报告，用连资产阶级官方都承认的事实说话，构成其论证风格的重要一面。",
+   "contemporary": "深度伪造让「眼见为实」失效，事实核查成为 AI 时代的基础设施级需求。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "fact"
+  },
+  {
+   "id": "yuanze",
+   "term": "原则",
+   "pinyin": "yuan ze",
+   "initials": "yz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "原则指说话做事所依据的法则或标准。",
+   "standard": "原则是人们观察和处理问题时所依据的准则，具有相对稳定性。《资本论》申明的研究原则是不屈服任何人的良心与偏见；同时揭示流通领域的「交换原则」如何在表象上平等、在实质上不平等。",
+   "contemporary": "「对齐原则」是 AI 工程的新词：让模型行为符合人类价值准则，本质是把原则工程化。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "principle"
+  },
+  {
+   "id": "jichu",
+   "term": "基础",
+   "pinyin": "ji chu",
+   "initials": "jc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "基础指事物赖以建立的根本，建筑学上指建筑物的根部。",
+   "standard": "基础是事物发展的根本与起点，哲学上特指经济基础——社会一定发展阶段上生产关系的总和，经济基础决定上层建筑。《资本论》常以「基础」点明决定关系：剩余价值的生产是分配关系的基础，商品交换是其上的法权形式的基础。",
+   "contemporary": "算力与数据成为智能经济的基础设施，谁掌握「基础」，谁就掌握新经济的地基。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "base; foundation"
+  },
+  {
+   "id": "biran",
+   "term": "必然",
+   "pinyin": "bi ran",
+   "initials": "br",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "必然指事物发展合乎规律、不可避免的确定趋势。",
+   "standard": "必然是与偶然相对的哲学范畴，指由事物内部根本矛盾决定的确定不移的趋势；必然性通过偶然性开辟道路，科学的任务在于透过偶然把握必然。《资本论》揭示资本主义基本矛盾运动的必然趋势，正是这种方法的典范。",
+   "contemporary": "「AI 必然取代人类工作」之类的断言，恰需区分技术的可能与社会的必然——后者取决于制度选择。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "necessity"
+  },
+  {
+   "id": "biyao",
+   "term": "必要",
+   "pinyin": "bi yao",
+   "initials": "by",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "必要指不可缺少、一定要有的。",
+   "standard": "必要指达到一定目的所不可缺少的条件。「社会必要劳动时间」是《资本论》价值理论的中枢概念：在现有社会正常的生产条件下，生产一件商品所需的劳动时间决定其价值量，多余的耗费不被社会承认。",
+   "contemporary": "大模型的「过度能力」与真实需求错配，识别「必要」的功能边界成为产品与治理的共同课题。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "necessary"
+  },
+  {
+   "id": "guocheng",
+   "term": "过程",
+   "pinyin": "guo cheng",
+   "initials": "gc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "过程指事物进行或发展所经历的程序与阶段。",
+   "standard": "过程是事物发生、发展直至终结的运动历程，一切事物都作为过程而存在。劳动过程与价值增殖过程的统一，是资本主义生产过程的二重规定——《资本论》第五篇的标题即点明这一分析框架。",
+   "contemporary": "从「结果导向」到「过程留痕」，AI 系统的训练、对齐与部署各环节都要可审计，过程治理成为新范式。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "process"
+  },
+  {
+   "id": "guoji",
+   "term": "国际",
+   "pinyin": "guo ji",
+   "initials": "gj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "国际指国家之间或与世界各国相关的。",
+   "standard": "国际是跨越国界的，指国家与国家之间发生的关系与活动；世界市场使一切国家的生产与消费成为世界性的。《资本论》对国际分工、世界货币与国际信用制度的论述，是其世界市场理论的组成部分。",
+   "contemporary": "芯片管制、模型开源与跨境数据流动，「国际」竞争与协作的格局决定着 AI 技术的扩散路径。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "international"
+  },
+  {
+   "id": "bufen",
+   "term": "部分",
+   "pinyin": "bu fen",
+   "initials": "bf",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "部分指整体中的局部，与整体相对。",
+   "standard": "部分是整体中的各个局部，整体由部分构成但不等于部分的简单相加，部分之间的关系规定整体的性质。《资本论》三卷的结构本身就是整体的展开：把资本运动分割为生产过程、流通过程与总过程各部分，再综合为体系。",
+   "contemporary": "参数微调、模型蒸馏都在处理「部分与整体」：局部最优的模块如何拼成可靠的大系统。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "part"
+  },
+  {
+   "id": "lilun",
+   "term": "理论",
+   "pinyin": "li lun",
+   "initials": "ll",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "理论指概念、原理的体系，是系统化了的理性认识。",
+   "standard": "理论是人们从实践中概括出来的关于自然和社会知识的系统结论；理论一经掌握群众，就会变成物质力量。《资本论》本身就是理论批判与理论创造的统一：批判古典政治经济学，创立剩余价值理论。",
+   "contemporary": "深度学习「没有理论只有调参」的旧讥正在失效，机制可解释性研究试图为 AI 补上理论。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "theory"
+  },
+  {
+   "id": "yanjiu",
+   "term": "研究",
+   "pinyin": "yan jiu",
+   "initials": "yj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "研究指探求事物的真相、性质与规律的实践活动与思维活动。",
+   "standard": "研究是人们探求未知、认识事物本质与规律的活动，要求从实际出发，详细占有材料并加以分析和综合。《资本论》把研究方法与叙述方法区分开：研究须充分占有材料，分析其内在联系；叙述则在研究完成后，把材料的生命以观念形态反映出来。",
+   "contemporary": "AI for Science 让「研究」的范式扩充：假设生成、实验设计都可由模型辅助，但问题意识仍属于人。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "research"
+  },
+  {
+   "id": "nongmin",
+   "term": "农民",
+   "pinyin": "nong min",
+   "initials": "nm",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "农民指从事农业生产的劳动者。",
+   "standard": "农民是直接从事农业生产的劳动者，在小农经济中既是小私有者又是劳动者。《资本论》叙述了圈地运动对农民的剥夺与农业资本主义的形成，揭示「农民与土地的分离」如何构成资本原始积累的原型。",
+   "contemporary": "数字农业与无人机植保正在改造「农民」的职业内涵，农业现代化的数字落差成为新议题。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "peasant; farmer"
+  },
+  {
+   "id": "weilai",
+   "term": "未来",
+   "pinyin": "wei lai",
+   "initials": "wl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "未来指将要到来的时间，也指事物往后的发展趋势。",
+   "standard": "未来是相对于过去与现在的时间范畴，指尚未到来而必将到来的阶段，科学的预见建立在对规律的认识之上。《资本论》不作乌托邦的许诺，而以对现实矛盾的分析指明历史运动的趋向——这正是它与空想社会主义的分野。",
+   "contemporary": "AI 安全研究讨论「未来」的方式近乎保险精算：为尚不存在的能力提前定价风险。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "future"
+  },
+  {
+   "id": "lianxi",
+   "term": "联系",
+   "pinyin": "lian xi",
+   "initials": "lx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "联系指事物之间及事物内部各要素之间的相互作用与制约。",
+   "standard": "联系是事物之间以及事物内部诸要素之间的相互依赖、相互制约与相互作用，具有客观性、普遍性与多样性，普遍联系的观点要求用整体的、关系的眼光看世界。《资本论》把每个经济范畴都放在联系之网中界定：离开流通与再生产，孤立地看资本什么也说明不了。",
+   "contemporary": "知识图谱正是「联系」的技术化：把概念连成网络加以推理，关系本身就是知识。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "connection; relation"
+  },
+  {
+   "id": "pipan",
+   "term": "批判",
+   "pinyin": "pi pan",
+   "initials": "pp",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "批判指对错误的思想、言行进行系统的分析并加以否定。",
+   "standard": "批判是对既有理论、制度与现实的辨析与否定性考察，辩证的批判包含着扬弃——既克服又保留。《资本论》的副标题即「政治经济学批判」：它对旧经济学的批判不是简单否定，而是在清算中拯救其科学成分。",
+   "contemporary": "对 AI 的「批判」不是拒斥技术，而是追问其数据来源、权力结构与分配后果——这同样是扬弃。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "critique"
+  },
+  {
+   "id": "chengdu",
+   "term": "程度",
+   "pinyin": "cheng du",
+   "initials": "cd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "程度指事物发展变化达到的水平或状况。",
+   "standard": "程度是事物达到的某种水平，是量的规定性的一种表述；量的变化超过一定界限会引起质的改变。《资本论》对剥削程度（剩余价值率）、积累程度的量化分析，示范了如何用量的语言刻画质的对抗。",
+   "contemporary": "模型能力的「程度」以基准测试衡量，但基准饱和之后的真实水平，仍要看具体场景的可靠性。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "degree; extent"
+  },
+  {
+   "id": "zongjie",
+   "term": "总结",
+   "pinyin": "zong jie",
+   "initials": "zj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "总结指对一定时期的工作或认识加以分析研究，得出规律性结论。",
+   "standard": "总结是对已进行的工作与认识过程作全面的回顾与评判，从中提炼经验与规律，是从实践上升到认识的环节。《资本论》各篇的收束常以总结性的论断点明规律，如关于积累的一般规律的表述。",
+   "contemporary": "会议纪要、文献综述都可交给 AI 总结，但「总结出什么取决于问什么」，提问框架仍由人设定。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "summarize; sum up"
+  },
+  {
+   "id": "maodun",
+   "term": "矛盾",
+   "pinyin": "mao dun",
+   "initials": "md",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "矛盾指事物内部对立面之间既相互依存又相互排斥的关系。",
+   "standard": "矛盾是对立统一，是事物发展的源泉与动力，分为主要矛盾与次要矛盾、矛盾的主要方面与次要方面，矛盾分析法是认识事物的根本方法。《资本论》的整个叙述就是矛盾的展开：商品内在矛盾如何一步步外化、深化为资本主义的总体危机。",
+   "contemporary": "效率与公平、发展与安全的矛盾在 AI 治理中集中显现，矛盾分析法仍是把握技术社会的利器。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "contradiction"
+  },
+  {
+   "id": "kexue",
+   "term": "科学",
+   "pinyin": "ke xue",
+   "initials": "kx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "科学指反映事物本质与规律的知识体系及其认识活动。",
+   "standard": "科学是关于自然、社会与思维的知识体系，以概念、定律的形式把握对象的本质与规律，其真理性由实践检验。《资本论》自认是一门科学——把资本主义经济当作自然史过程来考察，排除价值判断的干扰。",
+   "contemporary": "「AI 是否科学」的争论映射科学的多元形象：工程传统、统计传统与认知传统在深度学习里交汇。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "science"
+  },
+  {
+   "id": "fenpei",
+   "term": "分配",
+   "pinyin": "fen pei",
+   "initials": "fp",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "分配指社会在一定时期内新创造的产品在不同主体间的分割。",
+   "standard": "分配是社会再生产的环节之一，指对产品尤其是消费资料的分割，生产方式的性质决定分配方式。《资本论》批判把分配当作独立领域来「公平化」的改良思路：分配关系不过是生产关系的表现。",
+   "contemporary": "算力与数据的「分配」先于收入分配：智能时代的分配正义要从生产资料的占有谈起。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "distribution"
+  },
+  {
+   "id": "jieguo",
+   "term": "结果",
+   "pinyin": "jie guo",
+   "initials": "jg",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "结果指事物发展到最后阶段所达到的状态，与原因相对。",
+   "standard": "结果是原因引起的事物的最终状态，因果范畴是把握事物联系的基本框架，同一行为在不同结构中产生不同结果。《资本论》区分「预期的结果」与「实际的结果」：资本家追逐交换价值，历史的结果却是生产方式的变革。",
+   "contemporary": "大模型的涌现能力是训练目标的「意外结果」，对齐研究正是要在原因与结果之间架设可控桥梁。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "result; outcome"
+  },
+  {
+   "id": "guanxi",
+   "term": "关系",
+   "pinyin": "guan xi",
+   "initials": "gx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "关系指事物之间相互作用、相互影响的状态。",
+   "standard": "关系是事物之间以及事物内部要素之间的相互联系与相互作用；经济学的「关系」特指生产关系——人们在生产中结成的社会关系，它是不以人的意志为转移的客观存在。《资本论》的核心命题即资本不是物，而是一种社会关系。",
+   "contemporary": "数据的关系结构（谁授权、谁使用、谁受益）正在成为 AI 治理的底层语法。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "relation; relationship"
+  },
+  {
+   "id": "tongyi",
+   "term": "统一",
+   "pinyin": "tong yi",
+   "initials": "ty",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "统一指部分连成整体、分歧归于一致，也指矛盾双方的相互依存。",
+   "standard": "统一指矛盾双方相互依存、联结成一体的情况，与斗争性相对，是矛盾同一性的表现；统一是相对的、暂时的，斗争则是绝对的。《资本论》中生产过程与流通过程的统一构成资本的总体运动，割裂二者就无法理解资本循环。",
+   "contemporary": "开源与闭源、能力与安全的「统一」不是折中，而是要在动态平衡中寻找技术路线。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "unity; unification"
+  },
+  {
+   "id": "fanwei",
+   "term": "范围",
+   "pinyin": "fan wei",
+   "initials": "fw",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "范围指一定的界限或限度内的区域。",
+   "standard": "范围是事物活动的界限与覆盖面，界定研究范围是科学工作的第一步：范围不清，结论必然含混。《资本论》申明其考察范围是资本主义生产方式及与之相适应的生产关系和交换关系，而非一切社会形态。",
+   "contemporary": "模型的「能力范围」须向用户明示，超出范围的输出恰是幻觉与误导的高发区。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "scope; range"
+  },
+  {
+   "id": "shijie",
+   "term": "世界",
+   "pinyin": "shi jie",
+   "initials": "sj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "世界指自然界与人类社会的总体，也指某一领域或活动范围。",
+   "standard": "世界是包括自然界与人类社会在内的物质总体，世界历史随着各民族的普遍交往而形成。《资本论》描绘了资本主义如何开创世界市场，使「世界」第一次成为经济范畴——生产与消费的世界性是其最直观的表现。",
+   "contemporary": "大模型训练数据的语言分布是一张「世界」地图：英语主导的现实再次提醒世界市场的不对称。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "world"
+  },
+  {
+   "id": "qianti",
+   "term": "前提",
+   "pinyin": "qian ti",
+   "initials": "qt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "前提指事物发生或推理得以展开的先决条件。",
+   "standard": "前提是推理中已知的判断，也指事物存在的先决条件，前提的真假决定结论的可靠性。《资本论》明示自己的前提——劳动力成为商品、生产资料集中于少数人手中——并把交代前提视为理论的诚实。",
+   "contemporary": "评价任何 AI 声明都先查「前提」：训练截止时间、评测口径与隐藏假设。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "premise; prerequisite"
+  },
+  {
+   "id": "qubie",
+   "term": "区别",
+   "pinyin": "qu bie",
+   "initials": "qb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "区别指彼此不同、有差异的地方。",
+   "standard": "区别是比较中显现的差异，认识事物首先在于把握其区别性规定，科学的区分不是任意的，而是对象本质差异的反映。《资本论》的辨析功夫体现在一系列区别上：不变资本与可变资本、固定资本与流动资本，每个区别都通向一块新的理论领地。",
+   "contemporary": "「AI 生成」与「人写」的边界检测成为技术问题，「区别」本身正在变成一个产业。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "difference; distinction"
+  },
+  {
+   "id": "shouduan",
+   "term": "手段",
+   "pinyin": "shou duan",
+   "initials": "sd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "手段指为达到目的所采取的方法与措施。",
+   "standard": "手段是实现目的所凭借的方法、工具与途径，目的与手段的统一构成实践活动的基本结构，手段的正当性不能脱离目的来评价。《资本论》揭示资本积累的「手段」——从圈地到殖民——如何暴露出文明进步背后的血腥内容。",
+   "contemporary": "AI 是手段不是目的：以效率之名把人当作手段的算法管理，正是要警惕的颠倒。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "means; instrument"
+  },
+  {
+   "id": "xianxiang",
+   "term": "现象",
+   "pinyin": "xian xiang",
+   "initials": "xx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "现象指事物的表面特征与外部联系，是本质的外部表现。",
+   "standard": "现象是事物的外部表现与表面特征，可以直接被感官感知；本质则隐藏在现象之后，须靠理性把握，现象与本质可能相反相成。《资本论》的经典方法即从现象形态下探到本质：利润、地租等现象形态，都是剩余价值的转化形式。",
+   "contemporary": "推荐流的「现象」是内容偏好，「本质」是注意力经济的激励结构——看穿现象层是数据素养的要义。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "phenomenon"
+  },
+  {
+   "id": "guannian",
+   "term": "观念",
+   "pinyin": "guan nian",
+   "initials": "gn",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "观念指人对客观事物的概括性认识与看法。",
+   "standard": "观念是客观事物在意识中的反映形式，既包括感性印象，也包括经过加工的思想图式，社会意识形式根源于社会存在。《资本论》以「商品拜物教」分析观念如何从物与物的关系背后折射人与人的关系——观念不是凭空而来。",
+   "contemporary": "AI 生成内容正在反哺人类观念的形成，「观念的闭环」是否还由现实决定，值得警惕。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "idea; notion"
+  },
+  {
+   "id": "renshi",
+   "term": "认识",
+   "pinyin": "ren shi",
+   "initials": "rs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "认识指人脑对客观事物的反映，包括感性与理性两个阶段。",
+   "standard": "认识是主体对客体的能动反映，经由感性认识上升到理性认识，并接受实践的检验，循环往复以至无穷。《资本论》的认识路径是示范性的：从商品的表象出发，抵达价值关系的本质，再回到现象形态。",
+   "contemporary": "人机混合的认知环境里，「认识」要经过算法中介——认识论的旧问题获得了技术新形态。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "cognition; knowing"
+  },
+  {
+   "id": "zuozhe",
+   "term": "作者",
+   "pinyin": "zuo zhe",
+   "initials": "zz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "作者指创作文章、著作等作品的人。",
+   "standard": "作者是对作品享有创作主体身份的人，其立场、方法与时代处境塑造着文本的样貌，读一本书要了解其作者的时代位置。《资本论》的作者自述其研究在极其困顿的流亡生活中进行，数十年如一日——作者的工作方式本身已是文本的注脚。",
+   "contemporary": "AI 参与写作之后，「作者」的身份被拆解为提示者、模型与修订者，署名伦理随之更新。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "author"
+  },
+  {
+   "id": "neirong",
+   "term": "内容",
+   "pinyin": "nei rong",
+   "initials": "nr",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "内容指事物内部所包含的实质与意义，与形式相对。",
+   "standard": "内容是构成事物的一切要素的总和，形式则是这些要素的结构与表现；内容决定形式，形式服务内容。《资本论》批评只重形式的烦琐哲学：经济范畴的内容是社会关系，离开内容谈范畴，剩下的只是空壳。",
+   "contemporary": "「内容产业」被 AI 改写：生成成本趋零之后，稀缺的不再是内容的形式，而是内容的可信与洞见。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "content"
+  },
+  {
+   "id": "yingxiang",
+   "term": "影响",
+   "pinyin": "ying xiang",
+   "initials": "yx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "影响指一事物对他事物所发生的作用与改变。",
+   "standard": "影响是一事物对另一事物产生的作用，作用的大小与方向取决于双方的性质与所处的条件，理论的影响经由接受者的实践来实现。《资本论》对后世的影响不止于学说，更在于提供了一种分析社会的方法。",
+   "contemporary": "算法「影响」以毫秒级推送完成，影响的规模与隐性使其成为传播治理的焦点。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "influence; effect"
+  },
+  {
+   "id": "jishu",
+   "term": "技术",
+   "pinyin": "ji shu",
+   "initials": "js",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "技术指人类改造自然的工艺方法、技能与工具手段的总和。",
+   "standard": "技术是人类在生产实践中积累的工艺方法与操作技能，物化形态则是工具与机器；技术是生产力的重要因素，其变革带动生产方式的连锁变化。《资本论》对机器与大工业的分析表明：技术从来不是中立的，它的资本主义应用改变着劳动的性质。",
+   "contemporary": "深度学习是又一次通用技术革命，其「资本主义应用」的历史类比值得每个从业者重读。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "technology; technique"
+  },
+  {
+   "id": "pubian",
+   "term": "普遍",
+   "pinyin": "pu bian",
+   "initials": "pb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "普遍指具有共同性、覆盖面广的属性，与特殊相对。",
+   "standard": "普遍是事物在同类对象中共同具有的规定，普遍性寓于特殊性之中；规律之所以为规律，正在于它的普遍适用。《资本论》所揭示的价值规律与积累规律，都是抽取自千差万别现象的普遍联系。",
+   "contemporary": "「普遍基准」难以覆盖文化差异，评测集的地域偏向提醒我们：普遍性要从特殊性中重新校准。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "universal; pervasive"
+  },
+  {
+   "id": "gainian",
+   "term": "概念",
+   "pinyin": "gai nian",
+   "initials": "gn",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "概念是反映事物本质属性的思维形式，是判断与推理的基础。",
+   "standard": "概念是思维的基本单位，通过内涵与外延把握对象的本质属性；概念不是僵死的，其内容随认识深化而发展。《资本论》的叙述方式就是概念的自我运动：从商品到货币到资本，每个概念都在关系中获得规定。",
+   "contemporary": "提示词工程的本质是与「概念」打交道：把意图翻译成模型可计算的概念结构。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "concept"
+  },
+  {
+   "id": "jiegou",
+   "term": "结构",
+   "pinyin": "jie gou",
+   "initials": "jg",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "结构指事物各组成部分的搭配与排列方式。",
+   "standard": "结构是系统内部各要素之间相对稳定的联系方式与组织秩序，结构决定系统的功能表现，经济结构是社会的基础结构。《资本论》对资本有机构成的分析，就是用结构语言刻画技术构成与价值构成的统一。",
+   "contemporary": "Transformer 结构的成功证明：结构创新本身就是能力来源，「架构」成为 AI 竞赛的主战场。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "structure"
+  },
+  {
+   "id": "daolu",
+   "term": "道路",
+   "pinyin": "dao lu",
+   "initials": "dl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "道路指事物发展的途径与方向，也指供人车通行的通道。",
+   "standard": "道路是达到目标所经由的途径，其选择由条件与规律共同决定；历史没有单行道，各民族的道路各有其特点。《资本论》揭示西欧资本主义的原始积累道路，并提醒读者不能把它当成一切民族注定要走的「一般道路」。",
+   "contemporary": "「技术道路」之争（开源路线与闭源路线）是当代版的发展道路问题，没有放之四海的唯一答案。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "road; path; way"
+  },
+  {
+   "id": "renlei",
+   "term": "人类",
+   "pinyin": "ren lei",
+   "initials": "rl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "人类指人的总称，是在劳动与语言中形成的高级生命共同体。",
+   "standard": "人类是在生物演化与社会劳动双重进程中形成的高级生命共同体，以制造工具与语言交往为标志，人的全面发展与人类的解放是马克思主义的最高命题。《资本论》对劳动的人类学规定——有目的、会使用工具——正以人类的一般本质为参照。",
+   "contemporary": "「人类对齐」把整个物种当作价值参照系，AI 议题第一次让「人类」成为工程学的操作变量。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "humanity; mankind"
+  },
+  {
+   "id": "guonei",
+   "term": "国内",
+   "pinyin": "guo nei",
+   "initials": "gn",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "国内指一国疆域之内，与国外相对。",
+   "standard": "国内指国家主权所及的范围，国内市场是国内交换关系的总和，民族国家的市场结构是世界市场形成的前史。《资本论》多处对比国内流通与世界流通的不同规定：货币在国内是国内铸币，在世界市场上则脱去民族外衣。",
+   "contemporary": "「国内合规」与「跨境流动」的双轨管理，是每一家 AI 公司的必修课。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "domestic"
+  },
+  {
+   "id": "fangfa",
+   "term": "方法",
+   "pinyin": "fang fa",
+   "initials": "ff",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "方法指为达到某种目的而采取的途径、手段与方式的总和。",
+   "standard": "方法是人们认识世界与改造世界所遵循的方式与程序，方法论则是关于方法的理论，方法是否科学决定研究的成败。《资本论》的方法——从抽象上升到具体、逻辑与历史相统一——本身就是其最重要的理论遗产之一。",
+   "contemporary": "检索增强、微调、思维链……AI 应用方法层出不穷，但「方法服务于问题」的次序不能颠倒。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "method"
+  },
+  {
+   "id": "benzhi",
+   "term": "本质",
+   "pinyin": "ben zhi",
+   "initials": "bz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "本质指事物内部稳定的联系与根本性质，与现象相对。",
+   "standard": "本质是事物所固有的、决定其性质与发展的内部联系，通过现象表现出来，又深藏于现象之后，科学的任务即由现象进入本质。《资本论》反复演示「本质与现象的分离」：价值的本质在价格现象之后，剩余价值的本质在利润现象之后。",
+   "contemporary": "「模型行为」是现象，「训练数据的结构」更接近本质——对齐失败常因只调现象层。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "essence"
+  },
+  {
+   "id": "shuiping",
+   "term": "水平",
+   "pinyin": "shui ping",
+   "initials": "sp",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "水平指在某方面达到的高度或一般标准。",
+   "standard": "水平是事物在发展进程中所处的高度，以可比的尺度衡量，生产力水平决定社会形态所能容纳的空间。《资本论》以劳动生产力水平的差异说明价值量的变化，提示经济范畴始终带着具体水平的印记。",
+   "contemporary": "「能力水平」的说法在 AI 语境常被误读为类人智能，实际只是一组任务上的统计表现。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "level"
+  },
+  {
+   "id": "lichang",
+   "term": "立场",
+   "pinyin": "li chang",
+   "initials": "lc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "立场指认识和处理问题时所处的地位与所持的态度。",
+   "standard": "立场是人们观察与处理问题时所处的阶级地位或利益位置，立场决定视角与价值取向；没有超立场的科学，只有自觉申明立场的科学。《资本论》公开站在雇佣劳动的立场上说话，同时以事实与逻辑立于不败。",
+   "contemporary": "每个模型都有「立场」——语料的立场即模型的立场，这一点应像免责声明一样被写进产品说明。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "position; standpoint"
+  },
+  {
+   "id": "jingshen",
+   "term": "精神",
+   "pinyin": "jing shen",
+   "initials": "js",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "精神指人的意识、思维活动与心理状态，也指宗旨与活力。",
+   "standard": "精神是与物质相对的意识范畴，包括思想、情感、意志等，也引申为事物的宗旨与积极内容；社会精神生活由社会存在决定。《资本论》中「精神」多见于「精神生产」「精神劳动」，表明精神生产同样受生产方式规定。",
+   "contemporary": "大模型被称作「数字精神」的候选者，但它没有需要与意志——拟人化修辞恰恰遮蔽了精神的社会性。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "spirit; mind"
+  },
+  {
+   "id": "xitong",
+   "term": "系统",
+   "pinyin": "xi tong",
+   "initials": "xt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "系统指由相互联系的部分组成的有机整体。",
+   "standard": "系统是由相互作用、相互依赖的要素结合成的有机整体，具有整体性、层次性与动态性，整体功能不等于部分功能的简单加总。《资本论》把资本主义经济当作系统来写：各卷之间的衔接，展示了一个自我再生产的系统如何运转。",
+   "contemporary": "「AI 系统」不只是模型：数据管道、检索、护栏与界面共同构成系统，短板总在系统层。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "system"
+  },
+  {
+   "id": "guimo",
+   "term": "规模",
+   "pinyin": "gui mo",
+   "initials": "gm",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "规模指事物在数量、范围等方面所达到的格局与程度。",
+   "standard": "规模是事物在空间与数量上的大小格局，规模的变化会引发性质的变化——规模经济与规模不经济是经济学的基本范畴。《资本论》强调积累使生产规模不断扩大，而规模的扩大又改写着竞争的形态。",
+   "contemporary": "Scaling Law 把「规模」变成 AI 的第一性变量：参数、数据与算力的规模决定能力曲线。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "scale"
+  },
+  {
+   "id": "fuza",
+   "term": "复杂",
+   "pinyin": "fu za",
+   "initials": "fz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "复杂指事物的头绪多而结构繁，与简单相对。",
+   "standard": "复杂指事物构成要素多、联系交织深，认识复杂对象须借助分析与模型，把混沌的表象整理为有序的结构。《资本论》面对的正是现代经济这一最复杂的有机体，其方法价值在于示范了复杂性如何被概念地把握。",
+   "contemporary": "大模型是「复杂系统」的样本：涌现、相变与不可预测性，复杂科学的概念正被 AI 研究借用。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "complex; complicated"
+  },
+  {
+   "id": "xingzhi",
+   "term": "性质",
+   "pinyin": "xing zhi",
+   "initials": "xz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "性质指事物区别于其他事物的根本属性。",
+   "standard": "性质是事物内在的、与其他事物相区别的规定性，性质决定事物的类属与变化方向，性质分析先于数量分析。《资本论》对「劳动的性质」「资本的性质」的追问贯穿全书。",
+   "contemporary": "给 AI 划性质（工具还是行为主体）不是文字游戏，它决定法律责任的分配框架。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "nature; property"
+  },
+  {
+   "id": "fangshi",
+   "term": "方式",
+   "pinyin": "fang shi",
+   "initials": "fs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "方式指做事所采取的方法与形式。",
+   "standard": "方式是行为与过程所采取的形式与样态；「生产方式」是马克思主义的核心范畴——生产力与生产关系的统一，《资本论》书名所指的生产方式决定社会的整个面貌，分析任何社会现象都从生产方式入手。",
+   "contemporary": "「生产方式」的当代版本是「智能生产方式」：数据驱动、模型中介、人机协作正在成建制地形成。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "way; mode"
+  },
+  {
+   "id": "xiaofei",
+   "term": "消费",
+   "pinyin": "xiao fei",
+   "initials": "xf",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "消费指人们消耗物质资料与精神产品以满足需要的行为。",
+   "standard": "消费是社会再生产的最终环节，包括生产消费与生活消费，消费反过来生产着生产的动机与目的。《资本论》分析消费如何被生产所规定：工人的消费是劳动力再生产，资本家的消费是剩余价值的实现形式之一。",
+   "contemporary": "生成式 AI 把「消费」与「生产」的界限打碎：每个用户既是内容的消费者也是提示的生产者。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "consumption"
+  },
+  {
+   "id": "tezheng",
+   "term": "特征",
+   "pinyin": "te zheng",
+   "initials": "tz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "特征指事物可供识别的特别征象与标志。",
+   "standard": "特征是事物区别于他物的显著标志，是本质的外显，抓住特征即抓住了识别事物的关键。《资本论》概括资本主义积累的「绝对的一般规律」，正是从大量现象中提炼特征性联系。",
+   "contemporary": "AI 幻觉的「特征」（流畅而虚构）已被总结为检测线索，特征工程从数据侧转向输出侧。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "characteristic; feature"
+  },
+  {
+   "id": "tedian",
+   "term": "特点",
+   "pinyin": "te dian",
+   "initials": "td",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "特点指人或事物所具有的独特的地方。",
+   "standard": "特点是事物所独有的性质与表现，与特征相近而更强调「独有」，把握特点是比较分析的结果。《资本论》比较各生产方式的异同，凸显资本主义的特点——劳动力成为商品——作为全部分析的钥匙。",
+   "contemporary": "各家大模型的「特点」在基准上趋同，真正的差异常在数据管线与安全文化的细节里。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "distinguishing feature; trait"
+  },
+  {
+   "id": "zhuanhua",
+   "term": "转化",
+   "pinyin": "zhuan hua",
+   "initials": "zh",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "转化指甲事物转变为性质不同的事物的过程。",
+   "standard": "转化是事物由一种质态向另一种质态的转变，矛盾双方在一定条件下各向其对立面转化，条件是转化的枢纽。《资本论》有一整组「转化」范畴：价值转化为生产价格、剩余价值转化为利润——每个转化都对应着竞争的现实机制。",
+   "contemporary": "数据「转化」为智能、算力「转化」为服务，转化链条的每一环都是价值与权力重新分配的节点。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "transform; conversion"
+  },
+  {
+   "id": "lingyu",
+   "term": "领域",
+   "pinyin": "ling yu",
+   "initials": "ly",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "领域指学术思想或社会活动的范围分区。",
+   "standard": "领域是按性质划分的活动或知识范围，领域之间的边界随分工与综合的运动而变动。《资本论》区分生产领域与流通领域，正是要说明剩余价值为何「看起来」产生于流通，实则形成于生产领域。",
+   "contemporary": "「领域模型」的兴起对应着知识的领域分化：通用能力之下，每个领域都在重建自己的知识库。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "domain; field"
+  },
+  {
+   "id": "fanbo",
+   "term": "反驳",
+   "pinyin": "fan bo",
+   "initials": "fb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "反驳指举出理由与事实来否定对方的论点。",
+   "standard": "反驳是论证的一种，用已知真实的判断确立对方论题的虚假，可以反驳论题、论据或论证方式。《资本论》常以「以子之矛」的方式反驳论敌：用古典学派自己的材料推翻其自己的结论。",
+   "contemporary": "对 AI 输出的「反驳」成本低了：再问一轮即可生成反例——但识别哪句值得反驳，仍靠批判性思维。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "refute; rebut"
+  },
+  {
+   "id": "yihua",
+   "term": "异化",
+   "pinyin": "yi hua",
+   "initials": "yh",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "异化指人自己的创造物反过来变成支配、压迫人自身的力量。",
+   "standard": "异化指主体在实践中产生的客体反过来支配主体的状态，表现为劳动产品的异化、劳动过程的异化、类本质的异化与人与人的异化；马克思后期以物化、拜物教等范畴继续这一批判，《资本论》的商品拜物教理论即异化批判的成熟形态。",
+   "contemporary": "算法评分、指标异化，是「异化」概念的当代续写：人所造的推荐系统反过来规定人的表达。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "alienation"
+  },
+  {
+   "id": "bijiao",
+   "term": "比较",
+   "pinyin": "bi jiao",
+   "initials": "bj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "比较指就两种或多种事物辨别其异同与高下。",
+   "standard": "比较是确定对象之间共同点与差异点的逻辑方法，有比较才有鉴别，比较须在同一标准下进行。《资本论》广泛使用比较：比较不同国家的工资、比较手工业与机器生产，从中提炼结构性结论。",
+   "contemporary": "模型评测的「排行榜」是比较的工业化，但可比性（口径、提示、成本）常被榜单的爽感掩盖。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "compare; comparison"
+  },
+  {
+   "id": "huanjing",
+   "term": "环境",
+   "pinyin": "huan jing",
+   "initials": "hj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "环境指围绕着人类的外部世界，是人类生存与发展的条件。",
+   "standard": "环境是主体之外的、与主体发生相互作用的外部条件总体，包括自然环境与社会环境；环境塑造行为，人也在改变环境。《资本论》描写的大工业城市环境恶化，是环境问题与资本积累内在关联的早期记录。",
+   "contemporary": "AI 的数据中心能耗与冷却用水使「环境成本」进入模型评价表，绿色计算成为工程要求。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "environment"
+  },
+  {
+   "id": "zhenli",
+   "term": "真理",
+   "pinyin": "zhen li",
+   "initials": "zl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "真理指与客观实际相符合的认识。",
+   "standard": "真理是主观与客观相符合的认识，其标准是社会实践；真理是具体的、有条件的，并在与谬误的斗争中发展。《资本论》自视为对资本主义经济运动规律的真理性认识，并明言理论的检验要交给历史的实践。",
+   "contemporary": "模型「说得像真的」不等于真，真理符合论的朴素标准（可验证、可复查）在 AI 时代反而更显珍贵。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "truth"
+  },
+  {
+   "id": "zhishi",
+   "term": "知识",
+   "pinyin": "zhi shi",
+   "initials": "zs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "知识指人在实践中获得的、对客观事物的认识成果。",
+   "standard": "知识是主体在与客体相互作用中获得的认识成果，包括事实性知识与程序性知识，知识可以凝结于物而进入生产过程。《资本论》关于「一般智力」的论述，被视为理解知识经济的预言——科学成为直接生产力。",
+   "contemporary": "大模型把人类知识压缩为参数，知识的载体变了——但「知识由实践检验」的哲学判断没有变。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "knowledge"
+  },
+  {
+   "id": "caifu",
+   "term": "财富",
+   "pinyin": "cai fu",
+   "initials": "cf",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "财富指具有价值的东西，包括物质财富与精神财富。",
+   "standard": "财富是满足人的需要的有用物的总和，其源泉是劳动与自然力的结合，财富的社会形式则因生产方式而异。《资本论》开篇即以「财富」立论：资本主义社会的财富表现为庞大的商品堆积——把财富当商品来研究，正是批判的起点。",
+   "contemporary": "数据被称作「新石油」，但财富的定义权正在移动：什么算财富，决定 AI 时代的分配叙事。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "wealth"
+  },
+  {
+   "id": "guoqu",
+   "term": "过去",
+   "pinyin": "guo qu",
+   "initials": "gq",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "过去指现在以前的时间，也指事物已经历的发展阶段。",
+   "standard": "过去是已经完成的时间与历程，与现在、未来构成时间的三态；理解过去是理解现在的条件，历史的内在联系比编年更重要。《资本论》以「过去」回溯资本的史前史——原始积累——来说明现在的结构从何而来。",
+   "contemporary": "模型的「过去」（训练数据）决定了它的现在：了解一个模型的出身，是评估其可靠性的第一步。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "past"
+  },
+  {
+   "id": "bianhua",
+   "term": "变化",
+   "pinyin": "bian hua",
+   "initials": "bh",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "变化指事物在形态或本质上产生新的状况。",
+   "standard": "变化是事物状态的更新，包括量变与质变两种基本形式，量变积累到关节点引起质变。《资本论》把「变化」规律化：劳动生产力的变化引起价值量的反向变化，这种定量关系使辩证法成为可操作的分析工具。",
+   "contemporary": "模型权重冻结但「环境」在变：插件、外部工具与实时数据让系统的实际行为持续变化。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "change; variation"
+  },
+  {
+   "id": "gaikuo",
+   "term": "概括",
+   "pinyin": "gai kuo",
+   "initials": "gk",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "概括指把同类事物的共同本质归结起来，形成一般性认识。",
+   "standard": "概括是从个别事实中提炼共同本质的思维方法，与抽象相辅而行，概括的可靠性取决于所依据材料的充分与典型。《资本论》的规律表述都是高度概括的成果：从数千页的工厂报告中概括出积累的一般规律。",
+   "contemporary": "大模型天然是「概括机器」，但概括不能替代验证——生成式摘要的失真风险正在于此。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "generalize; summarize"
+  },
+  {
+   "id": "guancha",
+   "term": "观察",
+   "pinyin": "guan cha",
+   "initials": "gc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "观察指有目的、有计划地考察事物的现象。",
+   "standard": "观察是认识主体通过感官与工具有计划地考察对象的方法，是一切经验科学的基础环节；观察渗透理论，带着什么问题去看，决定能看见什么。《资本论》的观察集中而系统：工厂视察员报告等官方文献是其经验材料的宝库。",
+   "contemporary": "「观察」AI 的行为靠评测与探针，黑箱之下的观察方法论，本身就是一门新兴科学。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "observation"
+  },
+  {
+   "id": "sudu",
+   "term": "速度",
+   "pinyin": "su du",
+   "initials": "sd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "速度指事物运动变化的快慢程度。",
+   "standard": "速度是描述运动快慢的量，经济学中泛指周转、流通与增长的速率，速度与效益的关系要求在质的约束下追求量的快。《资本论》分析资本周转速度对年剩余价值率的影响：同样的资本，周转越快，增殖越多。",
+   "contemporary": "「推理速度」成为模型竞争力指标，而提速的能耗代价提示：速度从来不是免费的。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "speed; velocity"
+  },
+  {
+   "id": "gebie",
+   "term": "个别",
+   "pinyin": "ge bie",
+   "initials": "gb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "个别指单个的、具体的事物，与一般相对。",
+   "standard": "个别是单个事物及其独有的属性，一般是同类事物的共同性；一般只能在个别中存在，只能通过个别而存在，从个别上升到一般是认识的路径。《资本论》从「一个商品」这个个别对象出发，展开对整个资本主义的一般分析。",
+   "contemporary": "AI 评测的「个别案例」与平均分同样重要：个别失败暴露的是系统性的缺陷。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "individual; particular"
+  },
+  {
+   "id": "tili",
+   "term": "体力",
+   "pinyin": "ti li",
+   "initials": "tl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "体力指人的身体的力量与耐力，是劳动能力的自然基础。",
+   "standard": "体力是人体活动所具有的力量，与脑力相对，共同构成劳动力，体力劳动与脑力劳动的分工是历史发展的产物。《资本论》描述机器大工业如何消耗工人的体力——加班、夜工与童工——使劳动力的透支成为制度性现象。",
+   "contemporary": "「体力」与「脑力」的界限被机器人重构：具身智能正在接管体力侧，人的身体重新定位。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "physical strength"
+  },
+  {
+   "id": "yiju",
+   "term": "依据",
+   "pinyin": "yi ju",
+   "initials": "yj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "依据指作为论断或行动前提的根据。",
+   "standard": "依据是判断与行动所凭借的基础材料或准则，依据的真实与充分决定结论的效力。《资本论》立论的依据是经过核实的经济事实与官方文献，其引证体例本身就是「言必有据」的示范。",
+   "contemporary": "AI 回答要给出「依据」（引用与出处）才能被信任，检索增强生成正是把依据工程化。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "basis; ground"
+  },
+  {
+   "id": "yishi",
+   "term": "意识",
+   "pinyin": "yi shi",
+   "initials": "ys",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "意识指人的头脑对客观世界的反映，是物质高度发展的产物。",
+   "standard": "意识是存在的反映，包括感觉、知觉与思维等形态，具有目的性与能动性，社会意识由社会存在决定并具有相对独立性。《资本论》指出观念的东西不过是移入人脑并在人的头脑中改造过的物质的东西——意识的唯物论在这里获得经济学表达。",
+   "contemporary": "「机器意识」仍是悬案：大模型有输出无体验，讨论意识的机器版本首先要界定意识本身。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "consciousness"
+  },
+  {
+   "id": "chouxiang",
+   "term": "抽象",
+   "pinyin": "chou xiang",
+   "initials": "cx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "抽象指从具体事物中抽取共同的、本质的属性而舍弃非本质属性。",
+   "standard": "抽象是透过现象抽取本质规定的思维方法，科学的抽象更深刻、更正确地反映着自然。「抽象劳动」是《资本论》的关键概念：把劳动的具体形式抽去，剩下的无差别的人类劳动形成价值。",
+   "contemporary": "「抽象」在 AI 里是字面操作：嵌入向量正是文本的数学抽象，抽象的质量决定检索与推理的质量。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "abstract"
+  },
+  {
+   "id": "shuliang",
+   "term": "数量",
+   "pinyin": "shu liang",
+   "initials": "sl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "数量指事物的多少与长短等量的规定。",
+   "standard": "数量是事物存在的规模与程度的量的规定，与质相对，量变积累到一定限度引起质变，定量分析使规律可以检验。《资本论》把价值量、剩余价值率、有机构成等数量范畴纳入统一框架，是经济分析科学化的标志。",
+   "contemporary": "Token 数、参数量、基准分——AI 治理处处是「数量」，但数量指标的过拟合恰是伦理风险之源。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "quantity; amount"
+  },
+  {
+   "id": "wenhua",
+   "term": "文化",
+   "pinyin": "wen hua",
+   "initials": "wh",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "文化指人类创造的物质财富与精神财富的总和，也指运用文字的能力与修养。",
+   "standard": "文化是人类在社会实践中创造的物质成果与精神成果的总和，狭义指精神生产及其产品；文化由经济基础决定，又反作用于经济基础。《资本论》时代「文化工业」尚未成形，但它对精神生产的分析已为文化批判提供了经济学根基。",
+   "contemporary": "语料即文化：大模型默认输出的价值偏好，实质是一种文化权力的行使。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "culture"
+  },
+  {
+   "id": "richang",
+   "term": "日常",
+   "pinyin": "ri chang",
+   "initials": "rc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "日常指平时经常的、普通的生活内容。",
+   "standard": "日常指反复进行的普通生活过程，日常经验是最直接的感性来源，但也最容易把习以为常当作天然合理。《资本论》的功夫恰在于把日常的买卖行为陌生化：人人熟悉的商店与市场，底下藏着从未被看清的社会关系。",
+   "contemporary": "AI 正在渗入日常的每一个缝隙，把「日常」重新陌生化一遍——追问习以为常的自动化是否合理，正是人文教育的用武之地。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "daily; everyday"
+  },
+  {
+   "id": "xianshi",
+   "term": "现实",
+   "pinyin": "xian shi",
+   "initials": "xs",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "现实指实际存在的客观事物与状况。",
+   "standard": "现实是当下实际存在着的一切事物与过程，哲学上与可能性相对，现实由可能发展而来，又孕育着新的可能。《资本论》的自许是从「现实」出发而非从原则出发：对现实的分析先于对未来的设计。",
+   "contemporary": "「数字现实」与物理现实并行生长，增强现实与生成内容让「眼见」与「实在」进一步脱钩。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "reality; actuality"
+  },
+  {
+   "id": "duzhe",
+   "term": "读者",
+   "pinyin": "du zhe",
+   "initials": "dz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "读者指阅读书刊文章的人。",
+   "standard": "读者是文本的接受者，阅读不是被动的接收，而是以自身经验参与意义建构的过程，为谁写作决定怎样写作。《资本论》的作者深知其读者的处境，特意把最深的理论章节写得让工人也能跟上——对读者的尊重是其文风的一部分。",
+   "contemporary": "大模型成为「第一读者」：先于人类阅读海量文本，读者的定义被机器分走了一半。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "reader"
+  },
+  {
+   "id": "chuantong",
+   "term": "传统",
+   "pinyin": "chuan tong",
+   "initials": "ct",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "传统指历史沿传下来的思想、文化与习俗。",
+   "standard": "传统是世代相传的社会因素，包括制度、观念与技艺，既有保守性也孕育变革的资源，对待传统要取其精华、去其糟粕。《资本论》对「传统」的态度是分析性的：政治经济学的传统既要被继承（劳动价值论），更要被批判（辩护体系）。",
+   "contemporary": "「传统行业」的智能化转型，不是用模型覆盖经验，而是让传统知识进入数据管线。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "tradition"
+  },
+  {
+   "id": "gudai",
+   "term": "古代",
+   "pinyin": "gu dai",
+   "initials": "gd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "古代指距离现在较远的时代，各文明有各自的划分。",
+   "standard": "古代是人类历史按时间划分的早期阶段，其社会结构以自然经济与人身依附为特征，古代社会的研究为理解现代提供参照系。《资本论》偶以古代世界的比较材料说明：古典古代的奴隶制与近代的雇佣制是不同的强制方式。",
+   "contemporary": "数字考古与古籍大模型让「古代」可计算，古代典籍的数字化正成为文化科技的新界面。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "antiquity; ancient times"
+  },
+  {
+   "id": "changhe",
+   "term": "场合",
+   "pinyin": "chang he",
+   "initials": "ch",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "场合指一定的时间、地点与情形。",
+   "standard": "场合是行为发生时的具体情境，同一行为在不同场合有不同的意义与规范。《资本论》提醒区分范畴适用的场合：同样的货币，在这个场合只是货币，在另一个场合转化为资本——场合不同，规定不同。",
+   "contemporary": "提示工程讲究「场合」：同一个模型在不同上下文里的表现判若两物，上下文即场合。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "occasion; case"
+  },
+  {
+   "id": "xuezhe",
+   "term": "学者",
+   "pinyin": "xue zhe",
+   "initials": "xz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "学者指在学术上有一定造诣的人。",
+   "standard": "学者是以研究为业、在专门领域有系统造诣的人，学者的独立性在于只服从事实与逻辑。《资本论》对同时代学者的评价公允而锋利：肯定李嘉图的科学诚实，揭露辩护论者的媚骨——学者品格的两种类型。",
+   "contemporary": "AI 辅助研究改变学者的工作流，但问题意识、史源鉴别与学术伦理，仍是学者之为学者的部分。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "scholar"
+  },
+  {
+   "id": "duixiang",
+   "term": "对象",
+   "pinyin": "dui xiang",
+   "initials": "dx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "对象指行动或思考时作为目标的事物。",
+   "standard": "对象是主体的认识与实践活动所指向的东西，研究对象的规定决定方法的选择。《资本论》开宗明义：本书研究的是资本主义生产方式以及和它相适应的生产关系和交换关系——对象一句话，方法跟着定。",
+   "contemporary": "大模型研究的「对象」在漂移：从模型到智能体到人机系统，对象变了，方法论就得重造。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "object; target"
+  },
+  {
+   "id": "xingcheng",
+   "term": "形成",
+   "pinyin": "xing cheng",
+   "initials": "xc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "形成指事物经过发展变化而成为新的形态。",
+   "standard": "形成是事物在条件具备后逐步生成的过程，形成史揭示事物的来龙去脉。《资本论》用大量篇幅写「形成」：价值的形成、资本关系的形成、世界市场的形成——先讲清生成史，再讲结构。",
+   "contemporary": "「数据集的形成过程」决定模型行为，溯源数据集如同追溯产品的原料产地。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "form; take shape"
+  },
+  {
+   "id": "zhengti",
+   "term": "整体",
+   "pinyin": "zheng ti",
+   "initials": "zt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "整体指事物的全部与总体，与部分相对。",
+   "standard": "整体是由各部分构成的有机总体，整体的性质不是部分的简单相加，整体统摄并规定部分的地位，整体分析的要点在于把握结构。《资本论》三卷合观才是资本的整体：只读其中一卷，都会得到片面印象。",
+   "contemporary": "评测 AI 系统要看「整体」：模型、检索、护栏与产品界面的组合，单点优异不代表整体可靠。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "whole; entirety"
+  },
+  {
+   "id": "fangxiang",
+   "term": "方向",
+   "pinyin": "fang xiang",
+   "initials": "fx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "方向指事物发展的趋向与目标所指。",
+   "standard": "方向是运动所指向的路径与目标，方向的判断先于速度的选择，方向错误，速度越快损失越大。《资本论》提供的是一种「方向感」：认识规律不是为了宿命，而是为了在必然中开辟自觉的道路。",
+   "contemporary": "「对齐方向」是 AI 的方向盘：目标函数定错方向，能力越强偏得越远。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "direction"
+  },
+  {
+   "id": "qiaoliang",
+   "term": "桥梁",
+   "pinyin": "qiao liang",
+   "initials": "ql",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "桥梁指架在水面或空中以便通行的建筑物，比喻起沟通作用的事物。",
+   "standard": "桥梁是连接两岸的通道，引申为沟通两域的中介环节，中介与桥梁范畴在辩证法中承担过渡的功能。《资本论》中的货币正是商品世界的「桥梁」：它使互相独立的私人劳动联结为社会劳动。",
+   "contemporary": "检索增强是模型与事实之间的「桥梁」，检索层把开放生成锚定在可信语料上。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "bridge"
+  },
+  {
+   "id": "wuzhi",
+   "term": "物质",
+   "pinyin": "wu zhi",
+   "initials": "wz",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "物质指独立于意识而存在、又能被意识所反映的客观实在。",
+   "standard": "物质是标志客观实在的哲学范畴，它不依赖于人的意识而存在，并能为人的意识所反映，世界的统一性在于它的物质性，物质资料的生产方式是社会存在的核心。《资本论》的叙述常把观念形态还原到物质基础：法权观念的物质基础在交换关系。",
+   "contemporary": "「物质性」是理解 AI 的清醒剂：模型建在硅、电与冷却水之上，智能从来不是无重的。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "matter"
+  },
+  {
+   "id": "lixiang",
+   "term": "理想",
+   "pinyin": "li xiang",
+   "initials": "lx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "理想指对未来事物的美好想象与希望。",
+   "standard": "理想是人们向往并力求实现的未来图景，以现实条件为根据的理想才有实现的可能，理想与现实的关系是哲学的恒久问题。《资本论》不描绘理想国，却处处以理想尺度观照现实：对现实矛盾的解剖本身就是对理想的论证。",
+   "contemporary": "「通用人工智能理想」驱动着行业狂奔，理想的现实检验标准应是：它让多数人的生活更自由还是更局促。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "ideal"
+  },
+  {
+   "id": "naoli",
+   "term": "脑力",
+   "pinyin": "nao li",
+   "initials": "nl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "脑力指人的思维能力与智力活动能量。",
+   "standard": "脑力是人脑进行思维与认识活动的能力，与体力共同构成劳动力，脑力劳动与体力劳动的分离是社会分工的重大结果。《资本论》指出随着大工业发展，科学智力日益对象化于机器体系之中，工人须以全面发展应对。",
+   "contemporary": "「脑力外包」给模型成为常态，教育的回应不是竞争记忆，而是训练机器不擅长的判断与品味。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "mental power; intellect"
+  },
+  {
+   "id": "zhongguo",
+   "term": "中国",
+   "pinyin": "zhong guo",
+   "initials": "zg",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "中国是中华人民共和国的简称，位于亚洲东部、太平洋西岸。",
+   "standard": "中国是世界上历史最悠久的文明古国之一，历经各代发展形成统一的多民族国家；近现代以来，马克思主义与中国的具体实际相结合，深刻改变了中国的发展道路。《资本论》早在二十世纪初即被译介到中国，深刻影响了中国的革命、建设与改革实践。",
+   "contemporary": "从开源大模型到智能制造，中国正在 AI 时代探索技术与制度协同的发展路径。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "China"
+  },
+  {
+   "id": "fenlei",
+   "term": "分类",
+   "pinyin": "fen lei",
+   "initials": "fl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "分类指按照一定的标准把事物分门别类地加以整理。",
+   "standard": "分类是根据对象的共同点与差异点，把对象区分为不同种类的逻辑方法，分类的标准须与对象的本质联系相应，分类体系的调整往往是学科进步的标志。《资本论》对资本的分类（不变与可变、固定与流动）各有分工，混用即致谬误。",
+   "contemporary": "数据分类分级是 AI 合规的第一步：什么数据可用、怎么用，从分类开始。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "classification"
+  },
+  {
+   "id": "yinsu",
+   "term": "因素",
+   "pinyin": "yin su",
+   "initials": "ys",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "因素指构成事物本质的成分或决定事物发展的原因与条件。",
+   "standard": "因素是影响事物存在与变化的成分，分析因素要区分主要与次要、内部与外部，多因素分析须抓住起决定作用的那个。《资本论》把劳动生产率的因素归结为多种（自然条件、分工、科学水平等），再考察它们如何作用于价值量。",
+   "contemporary": "算力、数据、算法之外，组织与能源正在被列为影响 AI 能力的新的决定因素。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "factor"
+  },
+  {
+   "id": "moxing",
+   "term": "模型",
+   "pinyin": "mo xing",
+   "initials": "mx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "模型指依照实物的形状与结构按比例制成的物品，也指理论概括的范式框架。",
+   "standard": "模型是对原型的模拟与抽象，科学模型以简化结构再现对象的关键关系，便于推理与预测，模型的价值在于似真性与可操作性的平衡。《资本论》的方法论常被概括为建立经济范畴的体系：从最简单的规定出发重构整体。",
+   "contemporary": "今天的「模型」一词几乎被 AI 垄断：参数即模型的肉身，而科学哲学的老问题——模型与实在的关系——重新变得紧迫。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "model"
+  },
+  {
+   "id": "zhuangtai",
+   "term": "状态",
+   "pinyin": "zhuang tai",
+   "initials": "zt",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "状态指事物表现出来的形态与状况。",
+   "standard": "状态是事物在特定时刻所具有的形态与性质的总和，状态的变化刻画事物运动的轨迹，稳态与变态的区分有助于识别变化。《资本论》考察资本的「潜伏状态」等用语，把静止也当作运动的一个状态来处理。",
+   "contemporary": "「模型状态」成为运维概念：权重版本、上下文与安全策略共同构成一个可审计的服务状态。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "state; status"
+  },
+  {
+   "id": "lixing",
+   "term": "理性",
+   "pinyin": "li xing",
+   "initials": "lx",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "理性指概念、判断、推理等思维活动与能力，也指理智地控制行为的能力。",
+   "standard": "理性是认识的高级阶段，以抽象思维把握事物的本质与规律，与感性相对而高于感性，理性的运用有其历史与社会条件。《资本论》批判把资本主义当作「理性」的化身：形式的理性（交换平等）之下可以有实质的非理性。",
+   "contemporary": "「理性智能体」是 AI 的技术定义（效用最大化），与哲学的理性相去甚远——两个「理性」的对照正是 AI 哲学的入口。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "reason; rationality"
+  },
+  {
+   "id": "mubiao",
+   "term": "目标",
+   "pinyin": "mu biao",
+   "initials": "mb",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "目标指想要达到的境地或标准。",
+   "standard": "目标是行为所要达到的最终状态，目标的选择受需要与条件制约，目标的分解构成计划，目标与手段须相互匹配。《资本论》明示其最终目标：揭示现代社会的经济运动规律——目标决定详略，与目标无关的枝节一概从略。",
+   "contemporary": "AI 对齐的目标设定难题：目标函数永远是真实价值的简化版，简化处即风险处。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "goal; target; objective"
+  },
+  {
+   "id": "jicheng",
+   "term": "继承",
+   "pinyin": "ji cheng",
+   "initials": "jc",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "继承指依法承受死者遗留的财产，也指继续前人未竟的事业与文化。",
+   "standard": "继承在法律上指依法承受他人遗产，在文化上指对前人成果的承接与发展，批判的继承是扬弃——既保存又超越。《资本论》是批判继承的典范：继承古典政治经济学的科学成分，扬弃其非批判的态度。",
+   "contemporary": "「继承」开源社区的知识（模型权重、代码、语料）时，许可证与署名即数字时代的继承法。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "inherit; carry on"
+  },
+  {
+   "id": "zijue",
+   "term": "自觉",
+   "pinyin": "zi jue",
+   "initials": "zj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "自觉指自己有所认识而主动去做，与盲目相对。",
+   "standard": "自觉是主体对自身行为及其意义的清晰认识与主动把握，自觉的行动以对规律的认识为前提，从自在走向自觉是主体成长的标志。《资本论》的思想史意义之一，即把工人运动从自在阶段的挣扎，导向自觉阶段的目标。",
+   "contemporary": "「AI 自觉」尚不存在，但「使用 AI 的自觉」真实存在：知道何时该用它、何时该关掉它。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "self-aware; conscious (of one's own accord)"
+  },
+  {
+   "id": "guilv",
+   "term": "规律",
+   "pinyin": "gui lv",
+   "initials": "gl",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "规律指事物发展过程中的本质联系与必然趋势。",
+   "standard": "规律是事物运动中固有的、本质的、必然的、稳定的联系，具有客观性与普遍性，人不能创造或废除规律，但可以认识与利用规律。《资本论》的使命即「揭示现代社会的经济运动规律」——一个社会即使探索到了规律，也不能跳过它的发展阶段。",
+   "contemporary": "AI 的「Scaling 规律」是经验性的而非终极的，认识规律的边界与认识规律本身同样重要。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "law; regularity"
+  },
+  {
+   "id": "luoji",
+   "term": "逻辑",
+   "pinyin": "luo ji",
+   "initials": "lj",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "逻辑指思维的规律与规则，也指研究思维规律的学科。",
+   "standard": "逻辑是关于思维形式及其规律的科学，包括概念、判断、推理的有效性规则，也引申指事物本身的内在联系次序。《资本论》的叙述逻辑是范畴的自我展开：从抽象到具体，逻辑的进程与历史的进程在关键处相一致。",
+   "contemporary": "大模型的能力是否等于「逻辑」？形式推理与统计推断的关系，正是评估 AI 推理能力的关键区分。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "logic"
+  },
+  {
+   "id": "zhongdian",
+   "term": "重点",
+   "pinyin": "zhong dian",
+   "initials": "zd",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "重点指同类事物中重要的或主要的部分。",
+   "standard": "重点是诸多矛盾与任务中起主导作用的部分，抓重点即抓主要矛盾，以重点带动一般，平均用力是工作的大忌。《资本论》的详略安排处处体现重点意识：与剩余价值来源相关的分析不惜篇幅，其余从简。",
+   "contemporary": "安全投入是 AI 研发的「重点」，而不是上线前补丁——重点错置是风险治理的常见病。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "emphasis; focus; priority"
+  },
+  {
+   "id": "xuqiu",
+   "term": "需求",
+   "pinyin": "xu qiu",
+   "initials": "xq",
+   "category": "sub-ybc",
+   "domain": "dom-ybci",
+   "tags": [
+    "一般词"
+   ],
+   "oneline": "需求指由需要而产生的要求，经济学上指有支付能力的需要。",
+   "standard": "需求是有支付能力支持的需要，与单纯的欲望相区别，市场需求的总和构成商品实现的边界。《资本论》区分需要与需求的思想，预示了后来经济学的严格区分：欲望无限，需求受购买力约束。",
+   "contemporary": "「提示」是新的需求表达：把模糊的需要翻译成精确的需求，正在成为一种通用技能。",
+   "original": [
+    {
+     "text": "",
+     "cite": "（一般词词条：以通用词典释义为主，暂不作原典引注，引文待补）",
+     "chapter": "一般词 · 通用释义",
+     "verify": false,
+     "pending": true
+    }
+   ],
+   "scholars": [],
+   "related": [],
+   "refs": [],
+   "credit": {
+    "author": "",
+    "ai": "依通用语文词典与百科体例起草一句话释义、标准释义与 AI 的当代场景；不涉原典引文与学界争鸣。",
+    "human_fix": "作者核定收录词表、释义取舍与例述分寸。",
+    "checker": "作者通读抽检",
+    "checked_against": "通用语文词典与百科释义（非《资本论》原典核验）"
+   },
+   "verified": false,
+   "en": "demand; requirement"
   }
  ]
 }

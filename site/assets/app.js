@@ -203,10 +203,12 @@
   });
   function subName(id) { return (SUBS[id] && SUBS[id].name) || id; }
   function subShort(id) { return (SUBS[id] && SUBS[id].short) || subName(id); }
-  /* 「板块·方向」合并短标注（如「哲学·基本原理」）；没有方向数据时退回板块短名 */
+  /* 「板块·方向」合并短标注（如「哲学·基本原理」）；没有方向数据时退回板块短名；
+     aux 补充栏（一般词）的 category 与 domain 同义，不叠加二次标注 */
   function domSubLabel(t) {
     var s = (t && t.category && SUBS[t.category]) ? "·" + subShort(t.category) : "";
-    return catShort(t && t.domain) + s;
+    var d = catShort(t && t.domain);
+    return s && d !== subShort(t.category) ? d + s : d;
   }
   /* 知识板块 × 学科方向 的组合清单 */
   function termsInSub(domId, subId) {
@@ -1067,8 +1069,13 @@
   }
 
   function chips(t) {
-    var out = [catChips(t)];
-    (t.tags || []).forEach(function (g) { out.push('<span class="chip">' + esc(g) + "</span>"); });
+    var catChip = catChips(t);
+    var out = [catChip];
+    var catTxt = catChip.replace(/<[^>]*>/g, "");   // aux 补充栏的分类标注与「一般词」标签同文，去重
+    (t.tags || []).forEach(function (g) {
+      if (g === catTxt) return;
+      out.push('<span class="chip">' + esc(g) + "</span>");
+    });
     var pend = (t.original || []).filter(function (o) { return o.pending; }).length;
     if (isVerified(t)) out.push('<span class="chip ok">原典已核</span>');
     else if (pend) out.push('<span class="chip warn">原典引文待补</span>');
@@ -1123,11 +1130,13 @@
         (have === 0 ? ' · <b class="pend">待补</b>' : "") + "</span></a>";
   }
 
-  /* 门类导航：把知识板块的门类卡片直接铺开——站点只有这一个分类维度，不需要页签切换 */
+  /* 门类导航：把知识板块的门类卡片直接铺开——站点只有这一个分类维度，不需要页签切换
+     （aux=true 的补充栏「一般词」不上首页，只在总览与门类页出现） */
   function taxBlock() {
     var tx = TAXES[0] || { id: "domain", name: "知识板块", cats: [] };
     return '<div class="tax"><div class="card-grid" data-cat-cards data-tax-panel="' + esc(tx.id) + '">' +
-        (tx.cats || []).map(function (c) { return catCard(c, true); }).join("") +
+        (tx.cats || []).filter(function (c) { return !c.aux; })
+          .map(function (c) { return catCard(c, true); }).join("") +
       "</div></div>";
   }
 
@@ -1150,9 +1159,10 @@
       }).join("") +
       '<h2 class="sec-title">按学科方向细分</h2>' +
       '<div class="sibs ov-subs">' +
-        ((TAXES[0] && TAXES[0].cats) || []).reduce(function (acc, d) {
+        ((TAXES[0] && TAXES[0].cats) || []).filter(function (c) { return !c.aux; }).reduce(function (acc, d) {
           return acc + ((SUB_TX && SUB_TX.cats) || []).map(function (s) {
             var n = termsInSub(d.id, s.id).length;
+            if (n === 0) return "";   // 组合为空（如各板块下的「·一般词」）不列
             return '<a class="sib" href="#/c/' + esc(d.id) + "?sub=" + esc(s.id) + '">' +
               esc(catShort(d.id)) + "·" + esc(subShort(s.id)) + "<em>" + n + "</em></a>";
           }).join("");
@@ -1931,8 +1941,10 @@
 
     var sibs;
     if (sub) {
+      /* 组合导航只列该板块下确有词条的方向——aux 补充栏（一般词）不在三大板块下挂 0 条组合 */
       sibs = ((SUB_TX && SUB_TX.cats) || []).map(function (s) {
         var n = termsInSub(cid, s.id).length;
+        if (n === 0 && s.id !== sub) return "";
         return '<a class="sib' + (s.id === sub ? " on" : "") + '" href="#/c/' + esc(cid) + "?sub=" + esc(s.id) + '">' +
           esc(catShort(cid)) + "·" + esc(subShort(s.id)) + "<em>" + n + "</em></a>";
       }).join("");
@@ -9815,7 +9827,8 @@
 
       manualSec("man-1", "一", "目的与功能定位",
         "<p>本平台是一部围绕《资本论》及其理论体系的术语学习与研究辅助工具。" +
-        "全站收 <b>" + TERMS.length + "</b> 条词条、<b>392</b> 条原典引文、<b>298</b> 个争鸣议题与 <b>" +
+        "全站收 <b>" + TERMS.length + "</b> 条词条、<b>" +
+        TERMS.reduce(function (n, t) { return n + (t.original || []).length; }, 0) + "</b> 条原典条目、<b>" + stats().scholar + "</b> 个争鸣议题与 <b>" +
         relCount() + "</b> 条概念关系，合为一个网页文件：双击即开，不联网，不注册。</p>" +
         "<p>它针对三处实际困难。其一，概念分散：同一术语的释义在词条，原句在各卷各章，" +
         "学界分歧散在文献之中，读者须在数本书之间往复翻检。其二，出处难核：引用须核版本与页码，" +
@@ -12059,7 +12072,7 @@
       lede: "认全这四件，这个站就会用了；其余内容慢慢逛。",
       steps: [
         { name: "词条检索", href: "#/idx",
-          text: "390 条《资本论》术语，支持汉字、全拼与拼音首字母缩写（如 syjz = 剩余价值）。顶栏搜索框全站可用，能直达词条、原典引文与争鸣观点。" },
+          text: TERMS.length + " 条词条——除《资本论》术语外，另有按通用词典释义的一般词补栏；支持汉字、全拼与拼音首字母缩写（如 syjz = 剩余价值）。顶栏搜索框全站可用，能直达词条、原典引文与争鸣观点。" },
         { name: "马克思画传", href: "#/pictorial",
           text: "卷轴式画册：马克思的生平按年代铺开，图像、手迹与说明卡逐段展开，像翻一本可以滚动的传记。" },
         { name: "概念关系图", href: "#/graph",

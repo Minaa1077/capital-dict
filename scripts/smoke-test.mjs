@@ -137,7 +137,7 @@ const DATA = window.CAPITAL_DATA;
 const TAX = DATA.meta.taxonomies;
 const TOTAL = DATA.terms.length;
 const colCount = (tx, cid) => DATA.terms.filter((t) => t[tx.field] === cid).length;
-check("词条规模已达 390 条", TOTAL === 390, `实际 ${TOTAL} 条`);
+check("词条规模已达 532 条（390 术语 + 142 一般词）", TOTAL === 532, `实际 ${TOTAL} 条`);
 check(`数据里两套分类均已配平（已有 = 计划 = ${TOTAL}）`, TAX.every((tx) => {
   const have = tx.cats.reduce((a, c) => a + colCount(tx, c.id), 0);
   const plan = tx.cats.reduce((a, c) => a + (c.planned || 0), 0);
@@ -413,7 +413,15 @@ check("原「学科方向」门类已下线，旧地址给兜底", text().includ
 
 await goto("#/c/dom-zzjj");
 check("知识板块门类页渲染", text().includes("政治经济学批判") && text().includes("知识板块"));
-check("门类页有同维度门类导航（3 个板块）", view().querySelectorAll(".sibs .sib").length === 3);
+check("门类页有同维度门类导航（3 板块 + 一般词补充栏）", view().querySelectorAll(".sibs .sib").length === 4);
+
+await goto("#/c/dom-ybci");
+check("v71：一般词补充栏单列成栏（142 条齐全）", (() => {
+  const n = view().querySelectorAll(".term-list li").length;
+  return view().querySelector("h1").textContent.includes("一般词") && n === 142;
+})());
+check("v71：一般词释义样例可达（社会 / 劳动 / 异化）",
+  text().includes("社会") && text().includes("劳动") && text().includes("异化"));
 
 await goto("#/c/dom-zx?sub=sub-jb");
 check("组合筛选页：标题按「板块·方向」合并标注",
@@ -427,6 +435,22 @@ check("组合筛选：未知方向退回整块门类", view().querySelector("h1"
 
 await goto("#/c/nope-x");
 check("未知名门类有兜底", text().includes("没有这个门类"));
+
+await goto("#/t/shehui");
+check("v71：一般词词条页渲染（一句话 + 标准释义 + 当代场景 + 待补引文）", (() => {
+  const t = text();
+  return t.includes("社会") && t.includes("人类生活共同体") &&
+    t.includes("AI") && /待补|待核/.test(t);
+})());
+check("v71：一般词词条不显示未核页码（原典栏只有待补提示）", (() => {
+  const os = [...view().querySelectorAll(".orig, .quote, [class*=orig]")].map((x) => x.textContent).join("");
+  return os.length === 0 || (!/\d+ 页/.test(os) && !/\d+—\d+ 页/.test(os));
+})());
+await goto("#/tax");
+check("v71：总览页门类卡含一般词补充栏（4 张 domain 卡）", (() => {
+  const cards = [...view().querySelectorAll(".card-grid .card .c-name")];
+  return cards.some((x) => x.textContent.includes("一般词"));
+})());
 
 await goto("#/tax");
 check("总览页：知识板块一维照旧（卡片网格 1 个、导语黄框已全部撤除）",
@@ -591,7 +615,7 @@ check("关系图页：标题、统计与整页单 h1", (() => {
   const h1 = view().querySelector("h1.page-title");
   return !!h1 && h1.textContent.trim() === "概念关系图" &&
     view().querySelectorAll("h1").length === 1 &&
-    /全站 390 条词条、1347 条关系/.test(text());
+    /全站 532 条词条、1347 条关系/.test(text());
 })());
 check("关系图页：内嵌 pathflow（iframe 指向同目录 pathflow.html，且未加 lazy）", (() => {
   const f = view().querySelector(".graph-page .pfe-frame");
@@ -853,16 +877,16 @@ check("笔记板：导出的 Markdown 按层级缩进，含根与子节点", (()
 })());
 
 /* —— 多语术语对照表 —— */
-check("多语对照表：默认列全站 390 条，中英德三列齐", (() => {
+check("多语对照表：默认列全站 532 条，中英德三列齐", (() => {
   const rows = view().querySelectorAll("#mt-out .mt-tbl tbody tr");
   const head = [...view().querySelectorAll("#mt-out .mt-tbl thead th")].map((x) => x.textContent);
   return rows.length === window.CAPITAL_DATA.terms.length &&
     head.join(",") === "中文,英文,德文,别名,知识板块";
 })());
-check("多语对照表：英文名 390 条都有，德文空着的就是没有（不拿别的语言充数）", (() => {
+check("多语对照表：英文名 532 条都有，德文空着的就是没有（不拿别的语言充数）", (() => {
   const body = WIO.mtRows().slice(1);
   const deData = window.CAPITAL_DATA.terms.filter((t) => t.de).length;
-  return body.length === 390 && body.every((r) => r[1]) &&
+  return body.length === 532 && body.every((r) => r[1]) &&
     body.filter((r) => r[2]).length === deData && deData > 40 && deData < 60;
 })());
 check("多语对照表：切「仅有德文原名」正好剩那些条", (() => {
