@@ -6669,3 +6669,93 @@ body.chg-lock { overflow: hidden; }
   color: var(--ink-2);
 }
 .ta-chart-cta > span b { color: var(--ink); }
+
+/* ============ v79：引导弹窗统一外壳（拖动 · 今日不再 · 常驻入口） ============
+   四份引导（首页导览／关系图／阅读器／图表）共用同一套外壳行为，样式也收在一处：
+   .gd-grip（顶部拖动条）、.gd-today（今日不再弹出）、.gd-fab（左下常驻入口）。
+   拖动定位走 JS 的 left/top，不在这里写 transform——卡片的入场动画用 transform，
+   两者混用会让坐标系漂；拖动开始时 JS 会把 animation 置 none。 */
+
+body.gd-lock { overflow: hidden; }
+/* 拖动中禁掉文本选择与默认手势，松手即恢复（只影响拖动那几百毫秒） */
+body.gd-dragging, body.gd-dragging * {
+  -webkit-user-select: none; user-select: none;
+}
+
+/* —— 拖动条：贴在卡片最上沿，平时半透明，hover 加深 —— */
+.gd-grip {
+  position: absolute; left: 0; right: 0; top: 0; height: 1.25rem;
+  display: flex; align-items: center; justify-content: center; gap: .3rem;
+  z-index: 3;
+  color: var(--ink-soft); font-family: var(--sans); font-size: .64rem;
+  letter-spacing: .14em; line-height: 1;
+  cursor: grab; touch-action: none;
+  opacity: .45;
+  border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  background: transparent;
+  transition: opacity .16s var(--ease), background-color .16s var(--ease);
+}
+.gd-grip svg { fill: currentColor; }
+.gd-card:hover > .gd-grip, .chg-card:hover > .gd-grip { opacity: .8; }
+.gd-grip:hover { opacity: 1; background: linear-gradient(180deg, var(--paper-2), transparent); }
+.gd-grip:active { cursor: grabbing; }
+.gd-card.is-moved, .chg-card.is-moved { box-shadow: 0 30px 70px rgba(40, 8, 6, .42); }
+.gd-card.is-moved > .gd-grip, .chg-card.is-moved > .gd-grip { opacity: .9; }
+/* 图表卡片头部原有 .85rem 上内距放不下 20px 的把手，加高一行，
+   文字随之下移 8px——视觉几乎无差，但拖动条不再压住 kicker */
+.chg-card .chg-head { padding-top: 1.6rem; }
+
+/* —— 今日不再弹出：放在按钮行上方，块级一行，勾选即写当天日期 —— */
+.gd-today {
+  display: flex; align-items: center; gap: .42rem;
+  margin: .85rem 0 -.1rem;
+  font-family: var(--sans); font-size: .76rem; line-height: 1.5;
+  color: var(--ink-3);
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+}
+.gd-today input {
+  width: .95rem; height: .95rem; margin: 0;
+  accent-color: var(--accent); cursor: pointer;
+}
+.gd-today:hover { color: var(--ink-2); }
+/* 图表卡片的按钮行带左右内距，这一行跟着对齐 */
+.chg-card > .gd-today { padding: 0 1.1rem; margin: .55rem 0 .05rem; }
+
+/* —— 常驻入口：左下角。挂在 body、#view 之外，fixed 才不被 .page-in 的 transform 捕获 —— */
+.gd-fab {
+  position: fixed; left: 1.1rem; bottom: 1.1rem; z-index: 58;
+  display: inline-flex; align-items: center; gap: .38rem;
+  padding: .4rem .8rem .4rem .45rem;
+  font: inherit; font-family: var(--sans); font-size: .8rem; font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--red-deep);
+  background: var(--paper);
+  border: 1px solid var(--gold-a-45);
+  border-radius: var(--r-pill);
+  box-shadow: 0 8px 22px rgba(56, 4, 6, .16), 0 1px 0 rgba(255, 255, 255, .8) inset;
+  cursor: pointer;
+}
+.gd-fab:hover { background: var(--red-deep); color: var(--paper); border-color: var(--red-deep); }
+.gd-fab:active { transform: translateY(1px); }
+.gd-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.gd-fab-i {
+  width: 1.35rem; height: 1.35rem;
+  display: grid; place-items: center;
+  font-size: .78rem; font-weight: 700; line-height: 1;
+  border: 1px solid currentColor; border-radius: 50%;
+}
+
+@media (max-width: 640px) {
+  .gd-fab { left: .7rem; bottom: .7rem; padding: .3rem; }
+  .gd-fab-t { display: none; }        /* 窄屏只留「?」，省出正文宽度 */
+  .gd-grip { height: 1.1rem; font-size: .6rem; }
+  .gd-today { font-size: .74rem; }
+}
+/* 投影模式与打印：不出现任何悬浮控件（与 .to-top 同一条规矩） */
+body.pj-on .gd-fab { display: none !important; }
+@media print { .gd-fab { display: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .gd-grip, .gd-fab { transition: none; }
+  .gd-fab:active { transform: none; }
+}

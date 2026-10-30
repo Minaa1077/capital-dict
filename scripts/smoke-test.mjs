@@ -1627,9 +1627,10 @@ try {
   window.localStorage.removeItem("capital-guide-reader-v1");
 } catch (e) { /* 存储不可用时本就只有内存标记 */ }
 if (gd()) gd().remove();
+delete window.__gdShown;   /* v79：清「本会话已弹过」，保证这里测的确实是首次 */
 
 await goto("#/graph");
-await wait(360);
+await wait(780);
 check("v65：首次进入概念关系图自动弹出引导", !!gd() && gd().getAttribute("data-kind") === "graph");
 check("v65：概念关系图引导列全四种操作（左键／中键／滚轮／Ctrl+滚轮）", (() => {
   if (!gd()) return false;
@@ -1648,7 +1649,9 @@ check("v65：引导挂在 body 下、#view 之外（不受 .page-in 的 transfor
   !!gd() && gd().parentElement === doc.body);
 
 doc.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-check("v65：Esc 关闭引导并写入「已读」", !gd() && !!window.localStorage.getItem("capital-guide-graph-v1"));
+check("v79：Esc 关闭引导；未勾「今日不再」时不落标记，且解锁背景滚动",
+  !gd() && !window.localStorage.getItem("capital-guide-graph-v1") &&
+  !doc.body.classList.contains("gd-lock"));
 
 await goto("#/");
 await goto("#/graph");
@@ -1656,14 +1659,15 @@ await wait(360);
 check("v65：同一页第二次进入不再自动弹出", !gd());
 
 await goto("#/reader");
-await wait(360);
+await wait(780);
 check("v65：首次进入阅读器自动弹出引导，且讲到「选中即查」「书签」「阅读进度」", (() => {
   if (!gd() || gd().getAttribute("data-kind") !== "reader") return false;
   const t = gd().textContent;
   return /选中即查/.test(t) && /书签/.test(t) && /阅读进度/.test(t);
 })());
 gd().querySelector(".gd-skip").click();
-check("v65：点「跳过」关闭并写入「已读」", !gd() && !!window.localStorage.getItem("capital-guide-reader-v1"));
+check("v79：点「跳过」关闭；未勾选时同样不落标记",
+  !gd() && !window.localStorage.getItem("capital-guide-reader-v1"));
 await goto("#/");
 
 /* ---- v69：首页功能导览（分步 / 单页，第一次进入自动弹出） ---- */
@@ -1672,9 +1676,10 @@ try {
   window.sessionStorage.removeItem("capital-guide-home-v1");
 } catch (e) { /* 同上 */ }
 if (gd()) gd().remove();
+delete window.__gdShown;   /* v79：清「本会话已弹过」，保证这里测的确实是首次 */
 
 await goto("#/");
-await wait(520);
+await wait(900);
 check("v69：首次进首页自动弹出功能导览（分步形态）",
   !!gd() && gd().getAttribute("data-kind") === "home" && !!gd().querySelector(".gd-steps"));
 check("v69：四枚圆点导航，首步讲「词条检索」且带落地链接", (() => {
@@ -1728,8 +1733,8 @@ check("v69：「分步看」切回分步形态，仍停在第 4 步", (() => {
     gd().querySelectorAll(".gd-dot")[3].classList.contains("on");
 })());
 gd().querySelector(".gd-skip").click();
-check("v69：「跳过」关闭并写入「已读」",
-  !gd() && !!window.localStorage.getItem("capital-guide-home-v1"));
+check("v79：首页导览「跳过」关闭；未勾选不落标记",
+  !gd() && !window.localStorage.getItem("capital-guide-home-v1"));
 
 await goto("#/");
 await wait(300);
@@ -1786,16 +1791,15 @@ check("v73：详细模式全显不截断，粗略模式走抽稀；换表保留�
   html.includes("cfg.xlab = CH.cfg.xlab"));
 
 /* ---- v74：图表功能导引弹窗（16 种图 · 分步展示） ---- */
-/* 弹窗的图与工具共用 chChartSvg，纯字符串拼装，jsdom 里就能整段走一遍。 */
-/* v70 段在图表页停留超 520ms 时「首次自动弹出」就已经发生过：弹窗 DOM 被建出、
-   已读标记被写入、随后随换页正常关闭。会话内 CHG.el 只建一次（关闭仅摘 .on），
-   这里断言那次自动弹出的两个证据；完整的打开—驻留—导航时序由
-   真机探针 tmp/probe-v74.mjs（首访自动弹 + 二访不弹）把守。 */
-check("v74：首次进入图表页自动弹出（弹窗已建 + 已读标记已写）",
-  window.localStorage.getItem("capital-chart-guide-v1") === "true" &&
-  !!doc.querySelector(".chg") && doc.querySelectorAll(".chg-dot").length === 16);
+/* 弹窗的图与工具共用 chChartSvg，纯字符串拼装，jsdom 里就能整段走一遍。
+   v79 起自动弹出的延时统一为 480ms，且「已弹过」只记在会话内存里——
+   先把标记清掉再进页，才能测到真正的首次弹出。 */
+delete window.__gdShown;   /* v79：图表页的首次自动弹也要重新测 */
 await goto("#/tools/chart");
-await wait(400);
+await wait(900);
+check("v79：首次进入图表页自动弹出（弹窗已开 + 16 个圆点；不再写「已读」）",
+  !window.localStorage.getItem("capital-chart-guide-v1") &&
+  !!doc.querySelector(".chg.on") && doc.querySelectorAll(".chg-dot").length === 16);
 check("v74：第 1 步分组柱状图出图，用途/场景/要点/样例表齐备", (() => {
   const fig = doc.getElementById("chg-fig");
   return !!fig && !!fig.querySelector("svg") && fig.querySelectorAll("rect").length >= 10 &&
@@ -1827,6 +1831,94 @@ check("v74：16 套样例数据全部内联（每套带用途/场景/要点三�
   (html.match(/scene: "/g) || []).length === 16 &&
   (html.match(/关键数据要点/) || []).length >= 1 &&
   html.includes("用这份样例试画"));
+
+/* ---- v79：引导统一外壳（拖动条 · 今日不再 · 常驻入口） ---- */
+/* 拖动与视口夹取依赖真实布局（jsdom 没有布局），由真机探针
+   tmp/probe-v79-guide.mjs 把守；这里守外壳 DOM、日期语义与四页入口的一致性。 */
+const dayStr = (d) => d.getFullYear() + "-" +
+  String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const TODAY = dayStr(new Date());
+const YESTERDAY = dayStr(new Date(Date.now() - 864e5));
+const openChartGuide = () => {
+  const b = doc.getElementById("ch-guide-btn");
+  if (b) b.click();
+  return !!doc.querySelector(".chg.on");
+};
+
+check("v79：图表导引卡片装了拖动条与「今日不再弹出」选项", (() => {
+  const card = doc.querySelector(".chg-card");
+  return !!card && !!card.querySelector(".gd-grip") &&
+    !!card.querySelector(".gd-today input") &&
+    /今日不再弹出/.test(card.querySelector(".gd-today").textContent);
+})());
+check("v79：勾「今日不再」后关闭，写入当天日期（YYYY-MM-DD，本地时区）", (() => {
+  if (!openChartGuide()) return false;
+  doc.querySelector(".chg-card .gd-today input").checked = true;
+  doc.querySelector(".chg-x").click();
+  return window.localStorage.getItem("capital-chart-guide-v1") === TODAY;
+})());
+
+delete window.__gdShown;
+await goto("#/");
+await goto("#/tools/chart");
+await wait(900);
+check("v79：当天已勾选 → 清掉会话标记也不再自动弹", !doc.querySelector(".chg.on"));
+
+check("v79：今天禁着也能从入口手动重开（可随时重复弹出）", (() => {
+  const b = doc.getElementById("ch-guide-btn");
+  if (!b) return false;
+  b.click();
+  const opened = !!doc.querySelector(".chg.on");
+  doc.querySelector(".chg-x").click();
+  return opened && !doc.querySelector(".chg.on");
+})());
+
+check("v79：图表页左下角有常驻「指引」入口，挂在 body 下", (() => {
+  const f = doc.getElementById("gd-fab");
+  return !!f && f.parentElement === doc.body && f.getAttribute("data-guide") === "chart";
+})());
+
+/* 次日恢复：把日期改成昨天，同一天内仍会弹 */
+window.localStorage.setItem("capital-chart-guide-v1", YESTERDAY);
+delete window.__gdShown;
+await goto("#/");
+await goto("#/tools/chart");
+await wait(900);
+check("v79：日期是昨天 → 次日恢复自动弹出", !!doc.querySelector(".chg.on"));
+if (doc.querySelector(".chg.on")) doc.querySelector(".chg-x").click();
+
+/* 四页入口同款：data-guide 随路由切换 */
+await goto("#/");
+await wait(220);
+check("v79：首页的「指引」入口指向平台导览", (() => {
+  const f = doc.getElementById("gd-fab");
+  return !!f && f.getAttribute("data-guide") === "home";
+})());
+await goto("#/graph");
+await wait(220);
+check("v79：关系图的「指引」入口指向操作指引", (() => {
+  const f = doc.getElementById("gd-fab");
+  return !!f && f.getAttribute("data-guide") === "graph";
+})());
+await goto("#/reader");
+await wait(220);
+check("v79：阅读器的「指引」入口指向使用提示", (() => {
+  const f = doc.getElementById("gd-fab");
+  return !!f && f.getAttribute("data-guide") === "reader";
+})());
+await goto("#/tools");
+await wait(160);
+check("v79：工具台总览不属于四页，入口自动收起", !doc.getElementById("gd-fab"));
+
+/* 清场：别把今日标记留给后面的用例 */
+try {
+  ["capital-guide-graph-v1", "capital-guide-reader-v1", "capital-guide-home-v1",
+    "capital-chart-guide-v1"].forEach((k) => {
+    window.localStorage.removeItem(k);
+    window.sessionStorage.removeItem(k);
+  });
+} catch (e) { /* 存储不可用就算了 */ }
+delete window.__gdShown;
 await goto("#/");
 
 /* ---- v72：词条关系图谱（词条页内嵌力导向图） ---- */

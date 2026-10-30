@@ -9663,24 +9663,15 @@
 
   function bindChartTool() {
     /* 面板内控件是 chDataRender 重画出来的，绑定都在 chBindCfg 里做；
-       这里管面板外的三件事：已导入文档的入口补画、导引入口按钮、首次自动弹出。 */
+       这里管面板外的两件事：已导入文档的入口补画、导引入口按钮。
+       v79：自动弹出挪进 guideOnRoute 统一调度——#/tools 总览页也内嵌整个图表卡
+       （按钮在、#ch-data 也在），按元素判断会误弹，必须按路由判断。 */
     var btn = document.getElementById("ch-guide-btn");
     if (!btn) return;
     /* v75：换页会重建 DOM，而文档活在模块状态里——进工具页时补画一遍。
        文本分析的「生成图表」也走这条：灌数在跳转前完成，落到图表页再画。 */
     if (CH.docs.length) { chDocsRender(); chDataRender(); }
-    btn.addEventListener("click", function () { chGuideOpen(0); });
-    /* 首次进入：弹一次就记住。标记在实际弹出那刻才写——若用户半秒内
-       就离开了图表页，下次进来仍算「没看过」。注意 #/tools 总览页会内嵌
-       整个图表卡（按钮也在），所以必须认路由，不能认元素在不在。 */
-    if (!rdLoad(CHG_KEY, false) && /#\/tools\/chart/.test(window.location.hash)) {
-      window.setTimeout(function () {
-        if (/#\/tools\/chart/.test(window.location.hash) && !CHG.el) {
-          rdStore(CHG_KEY, true);
-          chGuideOpen(0);
-        }
-      }, 520);
-    }
+    btn.addEventListener("click", function () { gdOpen("chart"); });
   }
 
   /* —— 导入：xlsx 走 ZIP 解压，csv 走文本解析；解析完落进面板 —— */
@@ -9806,21 +9797,17 @@
         '<p class="chg-keys">键盘 ← → 切换，Esc 关闭</p>' +
       "</div>";
     document.body.appendChild(box);
+    /* v79：图表导引也装上统一外壳（拖动条 + 今日不再），行为与另外三份一致 */
+    gdEnhance(box, box.querySelector(".chg-card"), "chart");
     box.addEventListener("click", function (ev) {
       var t = ev.target.closest ? ev.target.closest("[data-act]") : null;
       if (!t) return;
       var act = t.getAttribute("data-act");
-      if (act === "chg-close") chGuideClose();
+      if (act === "chg-close") gdClose();
       else if (act === "chg-prev") chGuideStep(CHG.i - 1);
       else if (act === "chg-next") chGuideStep(CHG.i + 1);
       else if (act === "chg-dot") chGuideStep(+t.getAttribute("data-i"));
       else if (act === "chg-try") chDemoLoad(CHG.i);
-    });
-    document.addEventListener("keydown", function (ev) {
-      if (!CHG.el) return;
-      if (ev.key === "Escape") { chGuideClose(); }
-      else if (ev.key === "ArrowLeft") { chGuideStep(CHG.i - 1); ev.preventDefault(); }
-      else if (ev.key === "ArrowRight") { chGuideStep(CHG.i + 1); ev.preventDefault(); }
     });
     /* 离开图表页（换 hash 且目的地不是图表页）就收起来；DOM 留着，下次打开不必重建 */
     window.addEventListener("hashchange", function () {
@@ -9830,21 +9817,32 @@
     return box;
   }
 
+  /* 图表导引的键盘：只在真正打开时生效（v79 前只要 CHG.el 建过就一直响应 Esc） */
+  function chGuideKey(ev) {
+    if (!CHG.el || !CHG.el.classList.contains("on")) return;
+    if (ev.key === "Escape") { ev.preventDefault(); gdClose(); }
+    else if (ev.key === "ArrowLeft") { chGuideStep(CHG.i - 1); ev.preventDefault(); }
+    else if (ev.key === "ArrowRight") { chGuideStep(CHG.i + 1); ev.preventDefault(); }
+  }
+
   function chGuideOpen(i) {
     var box = chGuideEl();
+    var card = box.querySelector(".chg-card");
+    gdResetPos(card);                       /* 每次重开回到居中，与 gd 卡片一致 */
     chGuideStep(i || 0);
     box.classList.add("on");
+    if (!GD_BACK) GD_BACK = document.activeElement;
+    gdShown().chart = 1;
+    gdLock(true);
     document.body.classList.add("chg-lock");
-    var x = box.querySelector(".chg-x");
-    if (x) x.focus();
+    document.addEventListener("keydown", chGuideKey, true);
+    var next = box.querySelector(".chg-next");
+    setTimeout(function () {
+      try { (next || box).focus({ preventScroll: true }); } catch (e) { /* 老浏览器 */ }
+    }, 60);
   }
-  function chGuideClose() {
-    if (!CHG.el) return;
-    CHG.el.classList.remove("on");
-    document.body.classList.remove("chg-lock");
-    var btn = document.getElementById("ch-guide-btn");
-    if (btn) btn.focus();
-  }
+  /* 关闭统一交给 gdClose：应用「今日不再」、解绑键盘、解锁滚动、还焦点 */
+  function chGuideClose() { gdClose(); }
 
   function chGuideStep(i) {
     var n = CH_DEMO.length;
@@ -12706,16 +12704,14 @@
      两处入口各一份：概念关系图（#/graph，以及 工具台 → 概念关系图编辑器 走同一份文案、
      同一个键）、本地阅读器（#/reader）。
 
-     三条硬约束：
-     ① **只在首次进入自动展开**：关掉（× / 跳过 / 知道了 / Esc / 点遮罩）即写
-        localStorage；隐私模式下 localStorage 会抛，退回 sessionStorage，再退回内存标记。
+     v65 定的三条硬约束，v79 起前两条由统一层接管、第三条不变：
+     ① **自动展开的时机与频次**：交给 gdOpen / guideOnRoute——本会话每页首次进入弹一次，
+        勾「今日不再弹出」则当天不再自动弹（次日恢复），随时可从左下角「指引」重开。
      ② **必须挂 body、#view 之外**：#view 常驻 .page-in（animation …both），transform 的
         计算值是 matrix(1,0,0,1,0,0)（不是 none），在它里面 position: fixed 会以此为
         包含块、跟着页面滚 —— 站内已经踩过两次（#crumb-back、.to-top）。
      ③ **内容只讲「这里能做什么」**：每行一条操作，键位用 .gd-key 胶囊标出，末行小字给
         一条最容易漏的提示；不写实现细节、不写版本号。 */
-  var GUIDE_SEEN = { graph: 0, reader: 0, home: 0 };   /* 存储全不可用时的会话内兜底 */
-  var guideBackFocus = null;
   var GUIDE = {
     graph: {
       key: "capital-guide-graph-v1",
@@ -12763,58 +12759,253 @@
         { name: "文本分析", href: "#/tools/tt",
           text: "把读过的文献粘贴进来：自动识别《资本论》概念、算词频与覆盖度、做多文本比对——检验自己有没有把术语读进去。" }
       ],
-      tip: "这四件的入口顶栏常驻；画传与关系图在首页也有快捷按钮。本弹窗只出现这一次，之后随时可从导航重新找到它们。"
+      tip: "这四件的入口顶栏常驻；画传与关系图在首页也有快捷按钮。本弹窗每天首次进首页自动出现一次，左下角「指引」也随时能重开。"
     }
   };
+
+  /* ================= 引导弹窗统一层（v79） =================
+     四份引导（home / graph / reader / chart）此前各管各的：前三份关一次就永久写
+     「已读」，chart 另用一套键、另一套 z 与锁；三份都没有重看入口，也都不支持拖动。
+     v79 把「外壳行为」抽到这里，文案与卡片内部结构仍各管各的：
+
+     ① 触发：统一由 guideOnRoute 调度，延时 GD_DELAY 后弹；同一会话内每个 kind 只自动
+        弹一次（GD_SHOWN）；当天勾过「今日不再」则整天不弹（gdOffDay），次日自动恢复。
+     ② 关闭：× / 跳过 / 知道了 / 末步 / Esc / 点遮罩 全走 gdClose——统一解绑键盘、
+        解锁滚动、把焦点还回原处；只有勾了「今日不再」才写日期，不再有「永久已读」。
+     ③ 拖动：卡片顶上一条 .gd-grip，pointer events 拖动，用 left/top 定位而不用
+        transform（站内 transform 包含块的老坑）；拖出视口会被夹回，窗口缩放再收一次。
+     ④ 入口：.gd-fab 常驻左下，四页各一枚，随时可重开（手动打开不看「今日不再」）。
+     日期用本地时区拼 YYYY-MM-DD；不用 toISOString（UTC 比北京晚 8 小时，
+     晚上 8 点后会被算成"明天"，当天勾的选项立刻失效）。 */
+  var GD_DELAY = 480;
+  /* 本会话已自动弹过的 kind。挂在 window 上而不是闭包变量：
+     刷新即重置；验收脚本也能一次清干净（delete window.__gdShown）。 */
+  function gdShown() {
+    if (!window.__gdShown) window.__gdShown = {};
+    return window.__gdShown;
+  }
+  var GD_BACK = null;         /* 打开前的焦点，关闭时还回去 */
+  var GD_LABEL = { home: "平台导览", graph: "操作指引", reader: "使用提示", chart: "16 图导引" };
+
+  function gdDay() {
+    var d = new Date();
+    return d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1) +
+      "-" + (d.getDate() < 10 ? "0" : "") + d.getDate();
+  }
+  function gdKey(kind) {
+    return kind === "chart" ? CHG_KEY : (GUIDE[kind] ? GUIDE[kind].key : "");
+  }
+  /* 今天是否已被勾过「今日不再」。旧版写的是 "1"/"true"（永久已读）——
+     新语义下按「没设过」处理：老用户升级后当天会再见一次，之后按新规则走。 */
+  function gdOffDay(kind) {
+    var k = gdKey(kind);
+    if (!k) return false;
+    var v = null;
+    try { v = localStorage.getItem(k); } catch (e) { /* 隐私模式 */ }
+    if (v == null) { try { v = sessionStorage.getItem(k); } catch (e) { /* 同上 */ } }
+    if (v == null || v === "1" || v === "true") return false;
+    return v === gdDay();
+  }
+  function gdSetOffDay(kind, on) {
+    var k = gdKey(kind);
+    if (!k) return;
+    var v = on ? gdDay() : "";
+    try { if (on) localStorage.setItem(k, v); else localStorage.removeItem(k); }
+    catch (e) { /* 配额满就只写会话级 */ }
+    try { if (on) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); }
+    catch (e2) { /* 都不行就只在本会话内生效 */ }
+  }
+  function gdOpenEl() {
+    var m = document.getElementById("gd-mask");
+    if (m) return m;
+    return (CHG.el && CHG.el.classList.contains("on")) ? CHG.el : null;
+  }
+  function gdLock(on) {
+    if (document.body) document.body.classList.toggle("gd-lock", !!on);
+  }
+  /* 位置复位：每次重开都回到居中，与「新建」的 gd 卡片行为一致 */
+  function gdResetPos(card) {
+    if (!card) return;
+    ["position", "left", "top", "width", "maxWidth", "maxHeight", "margin", "animation"]
+      .forEach(function (k) { card.style[k] = ""; });
+    card.classList.remove("is-moved");
+  }
+
+  /* 拖动：卡片顶部一条 1.25rem 的把手。用 left/top 而非 transform——
+     transform 会给子元素建包含块（站内已踩过），也会让内部 fixed 元素漂移。 */
+  function gdBindDrag(mask, card, grip) {
+    var st = null;
+    function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+    function place(x, y) { card.style.left = x + "px"; card.style.top = y + "px"; }
+    /* 至少留 140px 宽、52px 高在视口里：拖到边缘也抓得回来 */
+    function inView(x, y, w) {
+      return [clamp(x, 12 - w + 140, Math.max(12, window.innerWidth - 140)),
+        clamp(y, 8, Math.max(8, window.innerHeight - 52))];
+    }
+    grip.addEventListener("pointerdown", function (e) {
+      if (e.button != null && e.button !== 0) return;
+      var r = card.getBoundingClientRect();
+      st = { id: e.pointerId, x: e.clientX, y: e.clientY,
+        l: r.left, t: r.top, w: r.width, h: r.height, moved: false };
+      try { grip.setPointerCapture(e.pointerId); } catch (err) { /* 旧浏览器 */ }
+      e.preventDefault();       /* 拖把手不该带出文本选择 */
+    });
+    grip.addEventListener("pointermove", function (e) {
+      if (!st || e.pointerId !== st.id) return;
+      var dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!st.moved) {
+        if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;   /* 3px 阈值：抖动不算拖动 */
+        st.moved = true;
+        /* 先钉住宽度与位置，避免从 flex 居中态切到固定定位时跳一下 */
+        card.style.position = "fixed";
+        card.style.left = st.l + "px";
+        card.style.top = st.t + "px";
+        card.style.width = st.w + "px";
+        card.style.maxWidth = "none";
+        card.style.maxHeight = Math.min(st.h, window.innerHeight - 24) + "px";
+        card.style.margin = "0";
+        card.style.animation = "none";
+        card.classList.add("is-moved");
+        mask.classList.add("is-dragging");
+        document.body.classList.add("gd-dragging");
+      }
+      var p = inView(st.l + dx, st.t + dy, st.w);
+      place(p[0], p[1]);
+      e.preventDefault();
+    }, { passive: false });
+    function end(e) {
+      if (!st) return;
+      try { grip.releasePointerCapture(e.pointerId); } catch (err) { /* 已释放 */ }
+      st = null;
+      mask.classList.remove("is-dragging");
+      document.body.classList.remove("gd-dragging");
+    }
+    grip.addEventListener("pointerup", end);
+    grip.addEventListener("pointercancel", end);
+    grip.addEventListener("lostpointercapture", end);
+    /* 窗口变小后把卡片收回视口，免得拖到边缘再缩窗就再也够不着 */
+    card._gdResize = function () {
+      if (!card.classList.contains("is-moved") || !document.body.contains(card)) return;
+      var r = card.getBoundingClientRect();
+      card.style.maxHeight = Math.min(r.height, window.innerHeight - 24) + "px";
+      var p = inView(r.left, r.top, r.width);
+      place(p[0], p[1]);
+    };
+    window.addEventListener("resize", card._gdResize);
+  }
+
+  /* 给任意引导卡片装上统一外壳：拖动条 + 「今日不再弹出」。幂等，不叠两条把手 */
+  function gdEnhance(mask, card, kind) {
+    if (!mask || !card || card.getAttribute("data-gd") === "1") return;
+    card.setAttribute("data-gd", "1");
+    mask.setAttribute("data-kind", kind);
+    var grip = document.createElement("div");
+    grip.className = "gd-grip";
+    grip.setAttribute("aria-hidden", "true");
+    grip.innerHTML = '<svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">' +
+      '<circle cx="3" cy="3" r="1.1"/><circle cx="9" cy="3" r="1.1"/>' +
+      '<circle cx="3" cy="6" r="1.1"/><circle cx="9" cy="6" r="1.1"/>' +
+      '<circle cx="3" cy="9" r="1.1"/><circle cx="9" cy="9" r="1.1"/></svg>' +
+      "<span>拖动</span>";
+    card.appendChild(grip);
+    gdBindDrag(mask, card, grip);
+    var lab = document.createElement("label");
+    lab.className = "gd-today";
+    lab.innerHTML = '<input type="checkbox"><span>今日不再弹出</span>';
+    var acts = card.querySelector(".gd-acts") || card.querySelector(".chg-foot");
+    if (acts) acts.parentNode.insertBefore(lab, acts);
+    else card.appendChild(lab);
+  }
+
+  /* 统一关闭：四份引导共用。只有勾了「今日不再」才落日期 */
+  function gdClose() {
+    var el = gdOpenEl();
+    if (!el) return;
+    var card = el.querySelector(".gd-card, .chg-card");
+    var kind = el.getAttribute("data-kind") || (el === CHG.el ? "chart" : "");
+    var cb = card && card.querySelector(".gd-today input");
+    if (cb && cb.checked) gdSetOffDay(kind, true);
+    if (kind) gdShown()[kind] = 1;
+    if (card && card._gdResize) {
+      window.removeEventListener("resize", card._gdResize);
+      card._gdResize = null;
+    }
+    if (el === CHG.el) {
+      el.classList.remove("on");
+      document.body.classList.remove("chg-lock");
+      document.removeEventListener("keydown", chGuideKey, true);
+      gdResetPos(card);
+    } else {
+      document.removeEventListener("keydown", guideKey, true);
+      el.remove();
+    }
+    gdLock(false);
+    var back = GD_BACK;
+    GD_BACK = null;
+    if (!back || !back.focus || !document.contains(back)) {
+      back = kind ? document.querySelector('[data-guide="' + kind + '"]') : null;
+    }
+    if (back && back.focus) {
+      try { back.focus({ preventScroll: true }); } catch (e) { /* 老浏览器忽略参数 */ }
+    }
+  }
+
+  function gdOpen(kind) {
+    if (!kind) return;
+    if (gdOpenEl()) gdClose();
+    GD_BACK = document.activeElement;
+    gdShown()[kind] = 1;
+    if (kind === "chart") { chGuideOpen(0); return; }
+    guideOpen(kind);
+  }
+
+  /* 常驻入口：左下角一枚「指引」，四页各对应一份引导，随时可重开。
+     挂在 body、#view 之外——#view 的 transform 会把 fixed 变成"跟着内容滚"。 */
+  function gdFab(parts) {
+    var kind = guideKindOf(parts);
+    var el = document.getElementById("gd-fab");
+    if (!kind) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement("button");
+      el.type = "button";
+      el.id = "gd-fab";
+      el.className = "gd-fab";
+      el.innerHTML = '<span class="gd-fab-i" aria-hidden="true">?</span><b class="gd-fab-t"></b>';
+      el.addEventListener("click", function () {
+        var k = el.getAttribute("data-guide");
+        if (k) gdOpen(k);
+      });
+      document.body.appendChild(el);
+    }
+    el.setAttribute("data-guide", kind);
+    var label = GD_LABEL[kind] || "使用指引";
+    el.setAttribute("aria-label", label + "（可随时重看，弹窗可拖动）");
+    el.setAttribute("title", label + "：随时可重看");
+    var t = el.querySelector(".gd-fab-t");
+    if (t) t.textContent = label;
+  }
 
   function guideKindOf(parts) {
     if (!parts) return "";
     /* v69：首页（无 hash 或 #/）——第一次打开平台就会落在这里 */
     if (!parts.length) return "home";
     if (parts[0] === "graph") return "graph";
-    /* 工具台里的「概念关系图编辑器」是同一个编辑器，共用一份引导与一个「已读」标记 */
+    /* 工具台里的「概念关系图编辑器」是同一个编辑器，共用一份引导 */
     if (parts[0] === "tools" && parts[1] === "path") return "graph";
     if (parts[0] === "reader") return "reader";
+    /* v79：图表导引并入统一调度，不再由 bindChartTool 自己判路由 */
+    if (parts[0] === "tools" && parts[1] === "chart") return "chart";
     return "";
   }
 
-  function guideSeen(kind) {
-    var g = GUIDE[kind];
-    if (!g) return true;
-    if (GUIDE_SEEN[kind]) return true;
-    try { if (localStorage.getItem(g.key)) return true; } catch (e) { /* 隐私模式等 */ }
-    try { if (sessionStorage.getItem(g.key)) return true; } catch (e) { /* 同上 */ }
-    return false;
-  }
-
-  function guideMark(kind) {
-    var g = GUIDE[kind];
-    if (!g) return;
-    GUIDE_SEEN[kind] = 1;
-    try { localStorage.setItem(g.key, "1"); } catch (e) { /* 存不了就靠内存 */ }
-    try { sessionStorage.setItem(g.key, "1"); } catch (e) { /* 同上 */ }
-  }
-
-  function guideClose(mark) {
-    var m = document.getElementById("gd-mask");
-    if (!m) return;
-    var kind = m.getAttribute("data-kind");
-    if (mark !== false) guideMark(kind);
-    document.removeEventListener("keydown", guideKey, true);
-    m.remove();
-    /* 焦点交回它来时的位置（通常是正文），读屏用户不会「丢焦点」 */
-    var back = guideBackFocus;
-    guideBackFocus = null;
-    if (back && back.focus && document.contains(back)) {
-      try { back.focus({ preventScroll: true }); } catch (e) { /* 老浏览器忽略参数 */ }
-    }
-  }
+  /* 兼容旧调用点：关闭一律走统一层 */
+  function guideClose() { gdClose(); }
 
   /* Esc 关闭 + Tab 在卡片内循环（aria-modal 的对话框不该把焦点漏回背景） */
   function guideKey(ev) {
     var m = document.getElementById("gd-mask");
     if (!m) return;
-    if (ev.key === "Escape") { ev.preventDefault(); guideClose(true); return; }
+    if (ev.key === "Escape") { ev.preventDefault(); gdClose(); return; }
     if (ev.key !== "Tab") return;
     var f = m.querySelectorAll("button, [href], input, [tabindex]:not([tabindex='-1'])");
     if (!f.length) return;
@@ -12827,7 +13018,7 @@
     var g = GUIDE[kind];
     if (!g || !document.body) return;
     if (document.getElementById("gd-mask")) return;   /* 已经开着就不再叠一层 */
-    guideBackFocus = document.activeElement;
+    if (!GD_BACK) GD_BACK = document.activeElement;
     /* v69：首页导览是分步形态，交给专门的渲染器 */
     if (g.steps) { guideOpenSteps(kind, g); return; }
     var rows = g.rows.map(function (r) {
@@ -12851,11 +13042,13 @@
         "</div>" +
       "</div>";
     document.body.appendChild(mask);
-    mask.querySelector(".gd-ok").addEventListener("click", function () { guideClose(true); });
-    mask.querySelector(".gd-skip").addEventListener("click", function () { guideClose(true); });
-    mask.querySelector(".gd-x").addEventListener("click", function () { guideClose(true); });
+    gdEnhance(mask, mask.querySelector(".gd-card"), kind);
+    gdLock(true);
+    mask.querySelector(".gd-ok").addEventListener("click", function () { gdClose(); });
+    mask.querySelector(".gd-skip").addEventListener("click", function () { gdClose(); });
+    mask.querySelector(".gd-x").addEventListener("click", function () { gdClose(); });
     /* 点遮罩关；点卡片内部不关（冒泡到 mask 时 target 才会是 mask 本身） */
-    mask.addEventListener("click", function (ev) { if (ev.target === mask) guideClose(true); });
+    mask.addEventListener("click", function (ev) { if (ev.target === mask) gdClose(); });
     document.addEventListener("keydown", guideKey, true);
     /* 等入场动画起势再落焦点，避免焦点环在位移过程中被画在错位置 */
     setTimeout(function () {
@@ -12867,14 +13060,14 @@
 
   /* v69：首页导览的分步渲染器。每步一格（功能名 + 一句话 + 去看看），
      底部圆点直接跳步；「一页看完」切成既有 gd-rows 单页形态，再点「分步看」切回。
-     关闭路径（× / 跳过 / Esc / 点遮罩 / 末步「开始使用」）统一走 guideClose(true)——
-     与 graph/reader 相同：只要关过一次，就写「已读」不再自动弹。 */
+     关闭路径（× / 跳过 / Esc / 点遮罩 / 末步「开始使用」）统一走 gdClose()——
+     与另外三份一致：默认不写任何标记，勾了「今日不再弹出」才记今天。 */
   function guideOpenSteps(kind, g) {
     var step = 0, flat = false;
     var mask = document.createElement("div");
     mask.id = "gd-mask";
     mask.className = "gd-mask";
-    mask.setAttribute("data-kind", kind);   /* guideClose 靠它回写「已读」 */
+    mask.setAttribute("data-kind", kind);   /* gdClose 靠它找键与恢复焦点 */
     mask.innerHTML =
       '<div class="gd-card gd-steps" role="dialog" aria-modal="true" aria-labelledby="gd-title" aria-describedby="gd-lede">' +
         '<button type="button" class="gd-x" aria-label="关闭引导">×</button>' +
@@ -12895,6 +13088,8 @@
         "</div>" +
       "</div>";
     document.body.appendChild(mask);
+    gdEnhance(mask, mask.querySelector(".gd-card"), kind);
+    gdLock(true);
 
     var stage = mask.querySelector(".gd-stage"),
         dots = mask.querySelectorAll(".gd-dot"),
@@ -12926,14 +13121,14 @@
     }
 
     next.addEventListener("click", function () {
-      if (flat) { guideClose(true); return; }
+      if (flat) { gdClose(); return; }
       if (step < g.steps.length - 1) { step++; paint(); }
-      else guideClose(true);
+      else gdClose();
     });
     prev.addEventListener("click", function () { if (step > 0) { step--; paint(); } });
     flatBtn.addEventListener("click", function () { flat = !flat; paint(); });
-    mask.querySelector(".gd-skip").addEventListener("click", function () { guideClose(true); });
-    mask.querySelector(".gd-x").addEventListener("click", function () { guideClose(true); });
+    mask.querySelector(".gd-skip").addEventListener("click", function () { gdClose(); });
+    mask.querySelector(".gd-x").addEventListener("click", function () { gdClose(); });
     for (var di = 0; di < dots.length; di++) {
       (function (d) {
         d.addEventListener("click", function () {
@@ -12941,7 +13136,7 @@
         });
       })(dots[di]);
     }
-    mask.addEventListener("click", function (ev) { if (ev.target === mask) guideClose(true); });
+    mask.addEventListener("click", function (ev) { if (ev.target === mask) gdClose(); });
     document.addEventListener("keydown", guideKey, true);
     setTimeout(function () {
       try { next.focus({ preventScroll: true }); } catch (e) { next.focus(); }
@@ -12949,32 +13144,41 @@
     paint();
   }
 
-  /* 路由钩子：进到这两页且没看过才排队弹出；离开页面则收起并记为已读 */
+  /* 路由钩子：四份引导统一在这里调度。
+     触发条件（全部满足才弹）：路由命中某个 kind、当前没有别的引导开着、本会话还没为
+     这个 kind 自动弹过、今天没勾「今日不再」、开屏帘已撤、图表页的面板已渲染。
+     离开页面时把开着的引导收起（不写任何标记——是否不再打扰由「今日不再」决定）。 */
   function guideOnRoute(parts) {
     var kind = guideKindOf(parts);
-    var open = document.getElementById("gd-mask");
+    var open = gdOpenEl();
     if (open) {
-      if (open.getAttribute("data-kind") === kind) return;  /* 同页重渲染不重弹 */
-      guideClose(true);
+      if ((open.getAttribute("data-kind") || "") === kind) return;  /* 同页重渲染不重弹 */
+      gdClose();
     }
-    if (!kind || guideSeen(kind)) return;
-    /* 等本页渲染、滚动复位与入场动画起势之后再弹，遮罩出现时页面已停稳 */
+    if (!kind || gdShown()[kind] || gdOffDay(kind)) return;
+    /* 不在这里写 GD_SHOWN：要等真正弹出来（gdOpen）才记，否则排程期间用户
+       换了页、这一次没弹成，本会话后面就再也不弹了（v79 自测踩到过）。 */
     var tries = 0;
     function arm() {
-      if (document.getElementById("gd-mask")) return;
+      if (gdOpenEl()) return;
       if (guideKindOf(hashParts().parts) !== kind) return;   /* 期间已经换页 */
-      /* 开屏帘 z 2000 盖在引导（z 1400）之上：帘子还在就先别弹，
-         否则用户只看见帘子，引导等于白开。等它撤掉再弹。
+      /* 开屏帘 z 2000 盖在引导之上：帘子还在就先别弹，否则用户只看见帘子。
          首次访客必然先撞见帘子（要滚动/点击才退场），首页导览多等一会——
-         120 次 × 500ms = 1 分钟，超出才放弃；graph/reader 走到时帘子通常已撤。 */
+         120 次 × 500ms = 1 分钟，超出才放弃；别的页走到时帘子通常已撤。 */
       if (document.getElementById("intro-veil")) {
         if (++tries > (kind === "home" ? 120 : 30)) return;
         setTimeout(arm, 500);
         return;
       }
-      guideOpen(kind);
+      /* 图表导引要等面板画出来：v74 的图与样例都依赖 #ch-data 就位 */
+      if (kind === "chart" && !document.getElementById("ch-data")) {
+        if (++tries > 40) return;
+        setTimeout(arm, 250);
+        return;
+      }
+      gdOpen(kind);
     }
-    setTimeout(arm, 240);
+    setTimeout(arm, GD_DELAY);
   }
 
   function route() {
@@ -13113,6 +13317,8 @@
     if (after) after();
     /* v65：首次进入概念关系图 / 阅读器时弹一次引导（已读判断与收起都在函数内） */
     guideOnRoute(parts);
+    /* v79：左下角常驻「指引」入口，随页切换（首页/关系图/阅读器/图表四页才有） */
+    gdFab(parts);
 
     /* 换页进场动画：重挂 class 重放 keyframes（减动效偏好下由 CSS 关掉） */
     app.classList.remove("page-in");
