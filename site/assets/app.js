@@ -2118,6 +2118,13 @@
         '<div class="rel-wrap">' + (rels || '<span class="empty">暂无</span>') + "</div>" +
       "</div>" +
 
+      (trelData(t)
+        ? '<div class="block">' +
+          '<p class="b-label">关系图谱<span class="b-hint">以本条为中心 · 拖动节点可整理布局 · 点节点跳词条</span></p>' +
+          '<div class="trel" data-trel="' + esc(t.id) + '" role="img" aria-label="以「' + esc(t.term) + '」为中心的关联词条关系图"></div>' +
+        "</div>"
+        : "") +
+
       '<div class="block">' +
         '<p class="b-label">原典直引<span class="b-hint">可原文引用 · 需标版本页码</span></p>' +
         originals +
@@ -2130,6 +2137,258 @@
       "</div>" +
 
       "</article>";
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     词条关系图谱（v72）：词条页内嵌、以当前词条为中心的力导向图。
+     数据取一跳关联 + 二跳邻居（按被多少条路径指向取优，总量封顶），
+     边保留子图内部全部关联——这样密度与整站关系网一致，不会画成星形。
+     零依赖：自写斥力/弹簧/向心模拟，requestAnimationFrame 驱动，
+     alpha 衰减到阈值即停（每帧自查容器还挂在不在，换页自动断电）。
+     节点可拖（pointer events），位移小于阈值视为点击 → 跳转词条。
+     ══════════════════════════════════════════════════════════════════ */
+  var TREL_MAX = 22;
+
+  /* 画布尺寸：宽容器用横版，窄容器（手机/半屏）用竖版——
+     viewBox 跟着容器走，等比缩放后字号才不会小到没法读 */
+  function trelDims(w) {
+    return w < 520 ? { W: 420, H: 560 } : { W: 680, H: 420 };
+  }
+
+  /* 门类 → 节点色。中心恒用主红；三板块与一般词各占一色，
+     与示例图「多数暗红 + 少量绿/蓝/紫/青」的读感一致 */
+  function trelColor(dom) {
+    return dom === "dom-zx"   ? "#1c6b46" :   /* 哲学：绿 */
+           dom === "dom-kx"   ? "#3a6b8a" :   /* 科社：蓝 */
+           dom === "dom-ybci" ? "#2b8a8a" :   /* 一般词：青 */
+           dom === "dom-zzjj" ? "#640a0e" :   /* 政经：主红 */
+                                "#7c6335";   /* 兜底：金褐 */
+  }
+
+  /* 子图数据：null = 无关联（不渲染图块） */
+  function trelData(t) {
+    var r1 = (t.related || []).filter(function (r) { return BY_ID[r.id]; });
+    if (!r1.length) return null;
+    var nodes = [{ id: t.id, term: t.term, dom: t.domain, hop: 0 }];
+    var seen = {}; seen[t.id] = 1;
+    var links = [];
+    r1.forEach(function (r) {
+      seen[r.id] = 1;
+      nodes.push({ id: r.id, term: BY_ID[r.id].term, dom: BY_ID[r.id].domain, hop: 1 });
+      links.push({ a: t.id, b: r.id });
+    });
+    /* 二跳候选：被几条一跳路径共同指向的优先——它们才是结构上的「枢纽」 */
+    var cand = {};
+    r1.forEach(function (r) {
+      (BY_ID[r.id].related || []).forEach(function (r2) {
+        if (r2.id !== t.id && BY_ID[r2.id] && !seen[r2.id]) cand[r2.id] = (cand[r2.id] || 0) + 1;
+      });
+    });
+    Object.keys(cand).sort(function (x, y) { return cand[y] - cand[x]; })
+      .slice(0, TREL_MAX - nodes.length)
+      .forEach(function (id) {
+        seen[id] = 1;
+        nodes.push({ id: id, term: BY_ID[id].term, dom: BY_ID[id].domain, hop: 2 });
+      });
+    var inS = {};
+    nodes.forEach(function (n) { inS[n.id] = 1; });
+    nodes.forEach(function (n) {
+      if (!n.hop) return;
+      (BY_ID[n.id].related || []).forEach(function (r) {
+        if (inS[r.id] && n.id < r.id) links.push({ a: n.id, b: r.id });
+      });
+    });
+    return { nodes: nodes, links: links };
+  }
+
+  function trelInit() {
+    var box = document.querySelector("[data-trel]");
+    if (!box) return;
+    var t = BY_ID[box.getAttribute("data-trel")];
+    var G = trelData(t);
+    if (!G) return;
+
+    var DM = trelDims(box.clientWidth || 680);
+    var TREL_W = DM.W, TREL_H = DM.H;
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + TREL_W + " " + TREL_H);
+    svg.setAttribute("aria-hidden", "true");
+    box.appendChild(svg);
+    var gE = document.createElementNS(NS, "g");    /* 边：最底层 */
+    svg.appendChild(gE);
+    var gN = document.createElementNS(NS, "g");    /* 圆：中层 */
+    svg.appendChild(gN);
+    var gT = document.createElementNS(NS, "g");    /* 标签：顶层——后画的圆不许盖先画节点的字 */
+    svg.appendChild(gT);
+
+    /* 确定性初始位置：中心钉死画布中央，一跳内圈、二跳外圈均匀铺开 */
+    var cx = TREL_W / 2, cy = TREL_H / 2;
+    var R1X = TREL_W > TREL_H ? 136 : 98, R1Y = TREL_W > TREL_H ? 100 : 124;
+    var R2X = TREL_W > TREL_H ? 258 : 160, R2Y = TREL_W > TREL_H ? 152 : 218;
+    var i1 = 0, i2 = 0;
+    var n1 = G.nodes.filter(function (n) { return n.hop === 1; }).length;
+    G.nodes.forEach(function (n) {
+      n.x = cx; n.y = cy; n.vx = 0; n.vy = 0;
+      if (n.hop === 1) {
+        var a1 = Math.PI * 2 * i1 / Math.max(1, n1) - Math.PI / 2;
+        n.x = cx + Math.cos(a1) * R1X; n.y = cy + Math.sin(a1) * R1Y; i1++;
+      } else if (n.hop === 2) {
+        var a2 = Math.PI * 2 * i2 / Math.max(1, G.nodes.length - 1 - n1) - Math.PI / 2 + 0.35;
+        n.x = cx + Math.cos(a2) * R2X; n.y = cy + Math.sin(a2) * R2Y; i2++;
+      }
+    });
+    var byId = {};
+    G.nodes.forEach(function (n) { byId[n.id] = n; });
+
+    /* 一次性把 DOM 骨架画出来，模拟只更新 transform —— 不每帧重建节点。
+       圆在 gN 层、标签在 gT 层：后画的圆永远盖不住先画节点的字。 */
+    var eL = {};
+    G.links.forEach(function (l) {
+      var ln = document.createElementNS(NS, "line");
+      ln.setAttribute("class", "trel-e" + (l.a === t.id || l.b === t.id ? " h1" : ""));
+      ln.setAttribute("data-a", l.a); ln.setAttribute("data-b", l.b);
+      gE.appendChild(ln);
+      eL[l.a + "|" + l.b] = ln;
+    });
+    G.nodes.forEach(function (n) {
+      var r = n.hop === 0 ? 15 : n.hop === 1 ? 9 : 6.5;
+      var g = document.createElementNS(NS, "g");
+      g.setAttribute("class", "trel-n" + (n.hop === 0 ? " c0" : n.hop === 1 ? " c1" : " c2"));
+      g.setAttribute("data-nid", n.id);
+      var c = document.createElementNS(NS, "circle");
+      c.setAttribute("r", r);
+      c.setAttribute("fill", n.hop === 0 ? "#640a0e" : trelColor(n.dom));
+      var ti = document.createElementNS(NS, "title");
+      ti.textContent = n.term + "（点击查看词条）";
+      g.appendChild(ti); g.appendChild(c);
+      gN.appendChild(g);
+      var tx = document.createElementNS(NS, "text");
+      tx.setAttribute("class", "trel-t" + (n.hop === 0 ? " c0" : ""));
+      tx.setAttribute("data-nid", n.id);
+      tx.setAttribute("x", r + 4); tx.setAttribute("y", 4);
+      tx.textContent = n.term;
+      gT.appendChild(tx);
+      n.el = g; n.tEl = tx; n.r = r;
+    });
+
+    /* 力导向：斥力（O(n²)，n≤22 无压力）+ 弹簧 + 向心 + 越界回推 */
+    var alpha = 1;
+    function tick() {
+      var i, j, a, b, dx, dy, d2, d;
+      for (i = 0; i < G.nodes.length; i++) {
+        a = G.nodes[i];
+        for (j = i + 1; j < G.nodes.length; j++) {
+          b = G.nodes[j];
+          dx = a.x - b.x; dy = a.y - b.y;
+          d2 = dx * dx + dy * dy;
+          if (d2 < 1) { dx = (i % 2 ? 1 : -1) * 0.7; dy = 0.7; d2 = 1; }
+          d = Math.sqrt(d2);
+          var f = 3400 / d2 * alpha;          /* 库仑斥力 */
+          var fx = dx / d * f, fy = dy / d * f;
+          a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+          var minD = a.r + b.r + 42;          /* 硬防重叠（余量含标签）：贴上直接推开 */
+          if (d < minD) {
+            var push = (minD - d) * 0.32;
+            a.vx += dx / d * push; a.vy += dy / d * push;
+            b.vx -= dx / d * push; b.vy -= dy / d * push;
+          }
+        }
+      }
+      G.links.forEach(function (l) {
+        a = byId[l.a]; b = byId[l.b];
+        dx = b.x - a.x; dy = b.y - a.y;
+        d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var rest = (l.a === t.id || l.b === t.id) ? 150 : 112;
+        var k = (d - rest) * 0.028 * alpha;
+        if (a.loose || b.loose) k *= 0.12;   /* 拖过的节点：弹簧大幅松劲，拖到哪留在哪 */
+        var fx2 = dx / d * k, fy2 = dy / d * k;
+        a.vx += fx2; a.vy += fy2; b.vx -= fx2; b.vy -= fy2;
+      });
+      G.nodes.forEach(function (n) {
+        if (n.hop === 0) { n.x = cx; n.y = cy; n.vx = n.vy = 0; return; }
+        if (n.pin) { n.vx = n.vy = 0; return; }   /* 拖拽中：钉在手指处，只影响别人 */
+        n.vx += (cx - n.x) * (n.loose ? 0.002 : 0.016); n.vy += (cy - n.y) * (n.loose ? 0.002 : 0.016);
+        n.vx *= 0.82; n.vy *= 0.82;                                /* 阻尼 */
+        n.x += Math.max(-14, Math.min(14, n.vx));
+        n.y += Math.max(-14, Math.min(14, n.vy));
+        n.x = Math.max(34, Math.min(TREL_W - 34, n.x));
+        n.y = Math.max(26, Math.min(TREL_H - 26, n.y));
+      });
+    }
+    function paint() {
+      G.nodes.forEach(function (n) {
+        var tr = "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")";
+        n.el.setAttribute("transform", tr);
+        n.tEl.setAttribute("transform", tr);
+      });
+      Object.keys(eL).forEach(function (k) {
+        var l = eL[k], a = byId[l.getAttribute("data-a")], b = byId[l.getAttribute("data-b")];
+        l.setAttribute("x1", a.x.toFixed(1)); l.setAttribute("y1", a.y.toFixed(1));
+        l.setAttribute("x2", b.x.toFixed(1)); l.setAttribute("y2", b.y.toFixed(1));
+      });
+    }
+
+    /* 拖拽 vs 点击：pointerdown 记起点，move 超 6px 进拖拽（记进
+       __trelDragged），up 后的 click 里据此区分——拖过的不当点击。
+       点击跳转走 hash，innerHTML 一换，下面的模拟循环自停。 */
+    var drag = null;
+    function hitNode(ev) {
+      var g = ev.target.closest && ev.target.closest("[data-nid]");
+      return g ? byId[g.getAttribute("data-nid")] : null;
+    }
+    svg.addEventListener("pointerdown", function (ev) {
+      var n = hitNode(ev);
+      if (!n || n.hop === 0) return;
+      drag = { n: n, x0: ev.clientX, y0: ev.clientY, moved: false, pid: ev.pointerId };
+      /* 不在这里 setPointerCapture：capture 会把后续 click 的 target 重定向到
+         svg 本身，点击跳转就废了。等真拖起来（move 超 6px）再捕获。 */
+    });
+    svg.addEventListener("pointermove", function (ev) {
+      if (!drag) return;
+      if (!drag.moved) {
+        if (Math.abs(ev.clientX - drag.x0) + Math.abs(ev.clientY - drag.y0) <= 6) return;
+        drag.moved = true;
+        drag.n.pin = true; drag.n.loose = false;
+        try { svg.setPointerCapture(drag.pid); } catch (e) { /* 无伤大雅 */ }
+      }
+      var rc = svg.getBoundingClientRect();
+      drag.n.x = (ev.clientX - rc.left) / rc.width * TREL_W;
+      drag.n.y = (ev.clientY - rc.top) / rc.height * TREL_H;
+      drag.n.x = Math.max(34, Math.min(TREL_W - 34, drag.n.x));
+      drag.n.y = Math.max(26, Math.min(TREL_H - 26, drag.n.y));
+      drag.n.vx = drag.n.vy = 0;
+      alpha = Math.max(alpha, 0.45);          /* 拖动重启模拟，邻居跟着让位 */
+      paint();
+    });
+    svg.addEventListener("pointerup", function () {
+      if (drag) {
+        if (drag.moved) {
+          svg.__trelDragged = true;
+          drag.n.pin = false;                 /* 释放钉住 */
+          drag.n.loose = true;                /* 松劲：不再被弹簧拽回 rest 位 */
+          alpha = Math.min(alpha, 0.3);       /* 轻整理：邻居让位但不把节点拽回去 */
+        }
+        drag = null;
+      }
+    });
+    svg.addEventListener("pointercancel", function () {
+      if (drag) { drag.n.pin = false; drag = null; }
+    });
+    svg.addEventListener("click", function (ev) {
+      if (svg.__trelDragged) { svg.__trelDragged = false; return; }
+      var n = hitNode(ev);
+      if (n && n.hop !== 0 && n.id !== t.id) location.hash = "#/t/" + n.id;
+    });
+
+    /* 模拟循环：alpha 衰减到 0.02 停；每帧先自查容器还在不在文档里——
+       换页 innerHTML 重建后这个 svg 已成孤儿，循环必须自己断电 */
+    (function loop() {
+      if (!box.isConnected) return;
+      if (alpha > 0.02) { tick(); alpha *= 0.988; paint(); }
+      requestAnimationFrame(loop);
+    })();
+    paint();
   }
 
   /* ══════════════════════════════════════════════════════════════════
@@ -12336,7 +12595,7 @@
     if (ae && ae.closest && ae.closest(".navlinks")) { try { ae.blur(); } catch (e) { /* 旧浏览器不给 blur 也无所谓 */ } }
 
     if (!parts.length) { html = viewHome(); after = function () { homePager(); homeDuoInit(); }; }
-    else if (parts[0] === "t") { html = viewTerm(parts[1] || ""); after = deepFlash; }
+    else if (parts[0] === "t") { html = viewTerm(parts[1] || ""); after = function () { deepFlash(); trelInit(); }; }
     else if (parts[0] === "c") html = viewCat(parts[1] || "", q);
 
     /* 索引（v43 两页合一）：#/idx?m=alpha|tag[&l=A][&k=place] */

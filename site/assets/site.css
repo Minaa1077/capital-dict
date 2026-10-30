@@ -6426,3 +6426,60 @@ body.pj-on .to-top { display: none !important; }
   .ch-cfg input[type="text"] { min-width: 0; width: 100%; }
   .ch-rec { padding: .55rem .65rem; }
 }
+
+
+
+
+/* ══════════════════════════════════════════════════════════════
+   v72 词条关系图谱（词条页内嵌力导向图）
+   米白卡片 + 暗红主节点 + 门类分色；圆在 gN 层、标签在 gT 顶层
+   （后画的圆盖不住先画节点的字）。追加在文件末尾。
+   ══════════════════════════════════════════════════════════════ */
+.trel {
+  border: 1px solid var(--rule);
+  border-radius: .4rem;
+  background: #fcf8ef;
+  overflow: hidden;
+  line-height: 0;                /* 吃掉 inline 空隙，SVG 贴满 */
+}
+.trel svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.trel-e {
+  stroke: #d8c89f;               /* --rule-2 金线 */
+  stroke-width: 1;
+  opacity: .75;
+}
+.trel-e.h1 { stroke: #b09a68; stroke-width: 1.6; opacity: .9; }
+.trel-n { cursor: pointer; touch-action: none; }
+.trel-n.c0 { cursor: default; }
+.trel-n circle {
+  stroke: #fdfaf2;
+  stroke-width: 2;
+  transition: stroke-width .15s ease;
+}
+.trel-n:hover circle { stroke-width: 3.5; }
+.trel-t {
+  font-family: var(--sans);
+  font-size: 12px;
+  fill: var(--ink-2);
+  paint-order: stroke;
+  stroke: #fcf8ef;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;          /* 字不挡命中——圆才是热区 */
+}
+.trel-t.c0 {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--red-deep);
+}
+
+/* 窄屏：trelInit 按容器宽换竖版 viewBox（420×560），等比后字号仍可读 */
+@media (max-width: 640px) {
+  .trel { border-radius: .3rem; }
+}

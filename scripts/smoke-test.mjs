@@ -1773,6 +1773,27 @@ check("v70：使用手册改为十五件口径并收录图表生成",
   text().includes("十五件工具") && text().includes("图表生成") && text().includes("导出 PNG 或 SVG"));
 await goto("#/");
 
+/* ---- v72：词条关系图谱（词条页内嵌力导向图） ---- */
+await goto("#/t/shengyujiazhi");
+await wait(900);
+check("v72：有关联的词条出现「关系图谱」图块",
+  !!doc.querySelector(".trel[data-trel='shengyujiazhi']") &&
+  text().includes("关系图谱"));
+check("v72：图谱 SVG 已渲染且节点数 = 一跳+二跳（≤22）", (() => {
+  const ns = doc.querySelectorAll(".trel .trel-n");
+  return ns.length >= 7 && ns.length <= 22;
+})());
+check("v72：边已连出（≥ 一跳数），中心节点唯一且加大",
+  doc.querySelectorAll(".trel .trel-e").length >= 6 &&
+  doc.querySelectorAll(".trel .trel-n.c0").length === 1);
+check("v72：节点标题可读（title 含词条名与点击提示）",
+  (doc.querySelector(".trel .trel-n title") || {}).textContent?.includes("点击查看词条"));
+await goto("#/t/yihua");
+await wait(500);
+check("v72：无关联词条（一般词「异化」）不出图块、不空挂容器",
+  text().includes("关系图谱") === false && doc.querySelector(".trel") === null);
+await goto("#/");
+
 /* ---- 未知路由 ---- */
 await goto("#/nope");
 check("未知路由有兜底", text().includes("页面不存在"));
