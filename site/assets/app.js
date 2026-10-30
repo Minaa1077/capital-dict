@@ -204,7 +204,7 @@
   function subName(id) { return (SUBS[id] && SUBS[id].name) || id; }
   function subShort(id) { return (SUBS[id] && SUBS[id].short) || subName(id); }
   /* 「板块·方向」合并短标注（如「哲学·基本原理」）；没有方向数据时退回板块短名；
-     aux 补充栏（一般词）的 category 与 domain 同义，不叠加二次标注 */
+     aux 补充栏（通用术语）的 category 与 domain 同义，不叠加二次标注 */
   function domSubLabel(t) {
     var s = (t && t.category && SUBS[t.category]) ? "·" + subShort(t.category) : "";
     var d = catShort(t && t.domain);
@@ -1071,7 +1071,7 @@
   function chips(t) {
     var catChip = catChips(t);
     var out = [catChip];
-    var catTxt = catChip.replace(/<[^>]*>/g, "");   // aux 补充栏的分类标注与「一般词」标签同文，去重
+    var catTxt = catChip.replace(/<[^>]*>/g, "");   // aux 补充栏的分类标注与「通用术语」标签同文，去重
     (t.tags || []).forEach(function (g) {
       if (g === catTxt) return;
       out.push('<span class="chip">' + esc(g) + "</span>");
@@ -1131,7 +1131,7 @@
   }
 
   /* 门类导航：把知识板块的门类卡片直接铺开——站点只有这一个分类维度，不需要页签切换
-     （aux=true 的补充栏「一般词」不上首页，只在总览与门类页出现） */
+     （aux=true 的补充栏「通用术语」不上首页，只在总览与门类页出现） */
   function taxBlock() {
     var tx = TAXES[0] || { id: "domain", name: "知识板块", cats: [] };
     return '<div class="tax"><div class="card-grid" data-cat-cards data-tax-panel="' + esc(tx.id) + '">' +
@@ -1162,7 +1162,7 @@
         ((TAXES[0] && TAXES[0].cats) || []).filter(function (c) { return !c.aux; }).reduce(function (acc, d) {
           return acc + ((SUB_TX && SUB_TX.cats) || []).map(function (s) {
             var n = termsInSub(d.id, s.id).length;
-            if (n === 0) return "";   // 组合为空（如各板块下的「·一般词」）不列
+            if (n === 0) return "";   // 组合为空（如各板块下的「·通用术语」）不列
             return '<a class="sib" href="#/c/' + esc(d.id) + "?sub=" + esc(s.id) + '">' +
               esc(catShort(d.id)) + "·" + esc(subShort(s.id)) + "<em>" + n + "</em></a>";
           }).join("");
@@ -1943,7 +1943,7 @@
 
     var sibs;
     if (sub) {
-      /* 组合导航只列该板块下确有词条的方向——aux 补充栏（一般词）不在三大板块下挂 0 条组合 */
+      /* 组合导航只列该板块下确有词条的方向——aux 补充栏（通用术语）不在三大板块下挂 0 条组合 */
       sibs = ((SUB_TX && SUB_TX.cats) || []).map(function (s) {
         var n = termsInSub(cid, s.id).length;
         if (n === 0 && s.id !== sub) return "";
@@ -2158,12 +2158,12 @@
     return w < 520 ? { W: 420, H: 560 } : { W: 680, H: 420 };
   }
 
-  /* 门类 → 节点色。中心恒用主红；三板块与一般词各占一色，
+  /* 门类 → 节点色。中心恒用主红；三板块与通用术语各占一色，
      与示例图「多数暗红 + 少量绿/蓝/紫/青」的读感一致 */
   function trelColor(dom) {
     return dom === "dom-zx"   ? "#1c6b46" :   /* 哲学：绿 */
            dom === "dom-kx"   ? "#3a6b8a" :   /* 科社：蓝 */
-           dom === "dom-ybci" ? "#2b8a8a" :   /* 一般词：青 */
+           dom === "dom-ybci" ? "#2b8a8a" :   /* 通用术语：青 */
            dom === "dom-zzjj" ? "#640a0e" :   /* 政经：主红 */
                                 "#7c6335";   /* 兜底：金褐 */
   }
@@ -8509,11 +8509,11 @@
       tip: "行名里带「合计 / 总计 / 期末 / 利润」的那一行会画成汇总柱。" },
 
     { type: "pie", title: "平台词条按板块占比",
-      rows: [["板块", "条目数"], ["哲学", 94], ["政治经济学", 217], ["科学社会主义", 79], ["一般词", 142]],
+      rows: [["板块", "条目数"], ["哲学", 94], ["政治经济学", 217], ["科学社会主义", 79], ["通用术语", 185]],
       cfg: { catCol: 0, valCols: [1] },
       use: "3–6 类看占比，谁最大、谁差不多大，一眼就分出来。",
-      scene: "532 条词条在四个板块间的分布。",
-      points: ["政治经济学 217 条，占 40.8%，接近总量的四成。", "哲学与一般词几乎持平（94 与 142，差 9 个百分点）。"],
+      scene: "575 条词条在四个板块间的分布。",
+      points: ["政治经济学 217 条，占 37.7%，稳居第一。", "通用术语 185 条紧随其后，占 32.2%，是 v78 补录后的第二大门类。"],
       tip: "类别超过 6 个、或要精确比大小，换条形图（本工具会在 >12 类时合并「其他」）。" },
 
     { type: "donut", title: "三卷篇幅占比（千字）",
@@ -12755,7 +12755,7 @@
       lede: "认全这四件，这个站就会用了；其余内容慢慢逛。",
       steps: [
         { name: "词条检索", href: "#/idx",
-          text: TERMS.length + " 条词条——除《资本论》术语外，另有按通用词典释义的一般词补栏；支持汉字、全拼与拼音首字母缩写（如 syjz = 剩余价值）。顶栏搜索框全站可用，能直达词条、原典引文与争鸣观点。" },
+          text: TERMS.length + " 条词条——除《资本论》术语外，另有按通用词典释义的通用术语补栏；支持汉字、全拼与拼音首字母缩写（如 syjz = 剩余价值）。顶栏搜索框全站可用，能直达词条、原典引文与争鸣观点。" },
         { name: "马克思画传", href: "#/pictorial",
           text: "卷轴式画册：马克思的生平按年代铺开，图像、手迹与说明卡逐段展开，像翻一本可以滚动的传记。" },
         { name: "概念关系图", href: "#/graph",
