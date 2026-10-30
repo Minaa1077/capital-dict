@@ -8305,10 +8305,11 @@
         });
       }
     }
-    if (a.needWiden) {   // 右图例：把先画的主体裁剪问题交给二次渲染——重算一次
+    if (a.needWiden || a.needTaller) {   // 右图例占宽 / 旋转标签占高：二次渲染重算
       a.parts = [];
       items.length = 0; a.notes.length = 0;
-      a.m = m = { t: 30 + (lg === "top" ? 30 : 0) + (cfg.sub ? 20 : 0), r: 26, b: 46, l: 64 };
+      a.m = m = { t: 30 + (lg === "top" ? 30 : 0) + (cfg.sub ? 20 : 0), r: 26,
+        b: a.needTaller ? (a.bottomNeed || 46) : 46, l: 64 };
       if (lg === "right") m.r = 200;
       draw(a, P);
       if (items.length && lg === "right") {
@@ -8379,13 +8380,34 @@
     var m = a.m, pw = a.W - m.l - m.r, y0 = a.H - m.b, n = labels.length;
     var bw = pw / Math.max(1, n);
     var every = Math.ceil(n / Math.floor(pw / 58));       // 抽稀：每 58px 至多一个标签
+    /* 旋转与否：抽稀后每个标签槽横向放得下最长词，就保持水平（更易读） */
+    var slot = bw * every, maxW = 0;
+    labels.forEach(function (s, i) {
+      if (i % every === 0) maxW = Math.max(maxW, chTextW(s, 11.5));
+    });
+    if (rot && slot >= maxW + 16) rot = false;
+    var maxDrop = 0;
     labels.forEach(function (s, i) {
       if (i % every !== 0) return;
-      var x = m.l + bw * (i + 0.5), t = chCut(s, rot ? 12 : 9);
-      parts_push(a, '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#6d6459" ' +
-        (rot ? 'transform="rotate(-42 ' + x + " " + (y0 + 16) + ')" text-anchor="end"' : 'text-anchor="middle"') +
-        ">" + chSvgEsc(t) + "</text>");
+      var x = m.l + bw * (i + 0.5);
+      if (rot) {
+        /* 旋转：截到 8 字防左下溢出，全称放 <title> 悬停可见；
+           记录最长标签的竖向落差，交给外层二次渲染加高底边距 */
+        var t = chCut(s, 8), L = chTextW(t, 11.5);
+        maxDrop = Math.max(maxDrop, L * 0.67);            // sin42°≈0.67
+        parts_push(a, '<text x="' + x + '" y="' + (y0 + 16) + '" font-size="11.5" fill="#6d6459" ' +
+          'transform="rotate(-42 ' + x + " " + (y0 + 16) + ')" text-anchor="end">' +
+          chSvgEsc(t) + (s.length > 8 ? "<title>" + chSvgEsc(s) + "</title>" : "") + "</text>");
+      } else {
+        var t2 = chCut(s, Math.max(2, Math.min(12, Math.floor((slot - 10) / 11.5))));
+        parts_push(a, '<text x="' + x + '" y="' + (y0 + 17) + '" font-size="11.5" fill="#6d6459" text-anchor="middle">' +
+          chSvgEsc(t2) + (t2 !== s ? "<title>" + chSvgEsc(s) + "</title>" : "") + "</text>");
+      }
     });
+    if (rot) {
+      var need = Math.ceil(38 + maxDrop);                 // 16 锚点偏移 + 落差 + 脚注空间
+      if (need > m.b) { a.needTaller = true; a.bottomNeed = need; }
+    }
     parts_push(a, '<line x1="' + m.l + '" y1="' + y0 + '" x2="' + (m.l + pw) + '" y2="' + y0 +
       '" stroke="' + a.th.axis + '" stroke-width="1.2"/>');
     return { bw: bw, cx: function (i) { return m.l + bw * (i + 0.5); } };
