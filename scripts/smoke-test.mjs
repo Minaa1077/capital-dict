@@ -1908,12 +1908,54 @@ check("v79：阅读器的「指引」入口指向使用提示", (() => {
 })());
 await goto("#/tools");
 await wait(160);
-check("v79：工具台总览不属于四页，入口自动收起", !doc.getElementById("gd-fab"));
+check("v79：工具台总览不属于五页，入口自动收起", !doc.getElementById("gd-fab"));
+
+/* ---- v80：文本分析工具的引导（复用 v79 统一外壳） ---- */
+delete window.__gdShown;   /* 保证测的是「首次进入」 */
+await goto("#/tools/tt");
+await wait(900);
+check("v80：首次进入文本分析页自动弹出引导（kind=tt，4 行操作 + 拖动条 + 今日不再）", (() => {
+  const m = doc.getElementById("gd-mask");
+  return !!m && m.getAttribute("data-kind") === "tt" &&
+    m.querySelectorAll(".gd-row").length === 4 &&
+    !!m.querySelector(".gd-grip") && !!m.querySelector(".gd-today input");
+})());
+check("v80：Esc 关闭；未勾「今日不再」不落标记，会话内不再自动弹", (() => {
+  doc.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+  try {
+    return !doc.getElementById("gd-mask") &&
+      !window.localStorage.getItem("capital-guide-tt-v1") &&
+      !window.sessionStorage.getItem("capital-guide-tt-v1");
+  } catch (e) { return !doc.getElementById("gd-mask"); }
+})());
+check("v80：文本分析页左下角「指引」入口指向分析指引", (() => {
+  const f = doc.getElementById("gd-fab");
+  return !!f && f.getAttribute("data-guide") === "tt" && f.textContent.includes("分析指引");
+})());
+check("v80：手动重开正常（可随时重复弹出）", (() => {
+  doc.getElementById("gd-fab").click();
+  const m = doc.getElementById("gd-mask");
+  return !!m && m.getAttribute("data-kind") === "tt";
+})());
+check("v80：勾「今日不再」后关闭写入当天日期，清会话标记当天也不弹", (() => {
+  const cb = doc.querySelector("#gd-mask .gd-today input");
+  cb.checked = true;
+  doc.querySelector("#gd-mask .gd-ok").click();
+  const d = new Date();
+  const today = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  const saved = window.localStorage.getItem("capital-guide-tt-v1") === today;
+  delete window.__gdShown;
+  const closed = !doc.getElementById("gd-mask");
+  doc.querySelector(".gd-fab").click();
+  const re = !!doc.getElementById("gd-mask");   /* 手动重开不受当日限制 */
+  doc.querySelector("#gd-mask .gd-x").click();
+  return saved && closed && !doc.querySelector("#ta-out")?.closest("#gd-mask") && re;
+})());
 
 /* 清场：别把今日标记留给后面的用例 */
 try {
   ["capital-guide-graph-v1", "capital-guide-reader-v1", "capital-guide-home-v1",
-    "capital-chart-guide-v1"].forEach((k) => {
+    "capital-chart-guide-v1", "capital-guide-tt-v1"].forEach((k) => {
     window.localStorage.removeItem(k);
     window.sessionStorage.removeItem(k);
   });
