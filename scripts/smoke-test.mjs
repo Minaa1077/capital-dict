@@ -243,8 +243,9 @@ check("带 loc 定位标记的条目必须已核对（verify=true）",
   }
   check("已核引文一律标注到具体出处（页／版／条）", bad.length === 0, bad.slice(0, 4).join("；"));
 }
-// 学界争鸣栏（阐释层）：结构必须完整；标为「已核」的文献，引注必须落到具体页码。
-// 这一层受著作权保护，只能自己重写释义，因此每方立场都必须自带出处，不接受无出处的转述。
+// 学界争鸣栏（阐释层）：结构必须完整；凡带文献者必须已核并落到具体页码。
+// v82 起未核文献已从数据中删除：立场可以没有文献（保留观点转述），
+// 但**有文献就必须是已核的**，且不允许再出现「文献待核」字样。
 {
   // 期刊文可跳页（「第20—24、73页」）；报纸文依见报日期，不印页码
   const PAGES = /第[\d一二三四五六七八九十]+(?:—[\d一二三四五六七八九十]+)?(?:、[\d一二三四五六七八九十]+)*页/;
@@ -257,13 +258,14 @@ check("带 loc 定位标记的条目必须已核对（verify=true）",
       if (!Array.isArray(g.stances) || !g.stances.length) bad.push(t.term + "：议题下无立场");
       for (const s of g.stances || []) {
         if (!s.view || !String(s.view).trim()) bad.push(t.term + "：立场缺观点转述");
-        if (!s.cite || !String(s.cite).trim()) bad.push(t.term + "：立场缺出处");
-        else if (s.verified && !(PAPER.test(s.cite) || (PAGES.test(s.cite) && YEARED.test(s.cite))))
-          bad.push(t.term + "：已核文献引注未落到页码");
+        if (s.cite && !s.verified) bad.push(t.term + "：留下未核文献");
+        if (s.cite && !(PAPER.test(s.cite) || (PAGES.test(s.cite) && YEARED.test(s.cite))))
+          bad.push(t.term + "：文献引注未落到页码");
+        if (/文献待核/.test(s.cite || "")) bad.push(t.term + "：仍有「文献待核」字样");
       }
     }
   }
-  check("争鸣栏结构合法（议题有焦点 · 立场有转述与出处）", bad.length === 0, bad.slice(0, 3).join("；"));
+  check("争鸣栏结构合法（议题有焦点 · 立场有转述 · 有文献者必已核）", bad.length === 0, bad.slice(0, 3).join("；"));
 }
 check("争鸣栏无残留旧占位模板", !DATA.terms.some((t) =>
   (t.scholars || []).some((s) => s.placeholder || typeof s.view === "string")));
@@ -835,14 +837,25 @@ check("文本分析：聚类网络图默认按簇着色，切「按知识板块�
     !!net3.querySelector(".ta-tbl");   // 簇成员表回来了
 })());
 window.CAPITAL_IO.ttClearDocs();
-/* 这条是「冻结普查」：库中带 cite 的争鸣立场总数——每次补录争鸣后须同步更新此数 */
-const REF_CENSUS = 630;
-check(`争鸣引注普查：${REF_CENSUS} 条引注总数保持稳定`, (() => {
+/* 两条「冻结普查」：立场总数与带文献的立场数。
+   v82 删除了 143 条未核文献（同著录在别处已核的 2 条改标已核），
+   立场总数不变、带文献数 485+2=487。每次补录文献后两数都要同步更新。 */
+const STANCE_CENSUS = 630, CITE_CENSUS = 487;
+check(`争鸣普查：${STANCE_CENSUS} 方立场总数保持稳定`, (() => {
   let n = 0;
   for (const t of window.CAPITAL_DATA.terms) {
-    for (const g of t.scholars || []) for (const st of g.stances || []) if (st.cite) n++;
+    for (const g of t.scholars || []) n += (g.stances || []).length;
   }
-  return n === REF_CENSUS;
+  return n === STANCE_CENSUS;
+})());
+check(`争鸣引注普查：${CITE_CENSUS} 条已核引注（且无未核残条）`, (() => {
+  let n = 0, bad = 0;
+  for (const t of window.CAPITAL_DATA.terms) {
+    for (const g of t.scholars || []) for (const st of g.stances || []) {
+      if (st.cite) { n++; if (!st.verified) bad++; }
+    }
+  }
+  return n === CITE_CENSUS && bad === 0;
 })());
 
 /* —— 笔记板（思维导图）：渲染、加节点、改文字、导入词条、导出 Markdown —— */
@@ -1963,6 +1976,22 @@ check("v81：.contemp 暗色文字走 --ink-2（浅色硬编码 #3a2a28 不动�
   const css = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
   return css.includes('[data-theme="dark"] .contemp { color: var(--ink-2); }') &&
     /--ink-2:\s*#d6cdb9/.test(css);
+})());
+
+/* ---- v82：删除「文献待核」文献条目 ---- */
+check("v82：产物全文（含数据与代码）不再出现「文献待核」四个字", !/文献待核/.test(html));
+check("v82：没有文献的立场只渲染立场与观点，不渲染空出处行", (() => {
+  /* 劳动力词条有一方「二分必然论」在 v82 删除了未核文献 */
+  const t = DATA.terms.find((x) => x.id === "laodongli");
+  const g = (t.scholars || [])[0];
+  const s = (g.stances || []).find((x) => !x.cite);
+  return !!s && !!s.view && typeof s.verified === "undefined";
+})());
+check("v82：仍带文献的立场全部标为已核", (() => {
+  let bad = 0;
+  for (const t of DATA.terms) for (const g of t.scholars || []) for (const s of g.stances || [])
+    if (s.cite && !s.verified) bad++;
+  return bad === 0;
 })());
 
 /* 清场：别把今日标记留给后面的用例 */

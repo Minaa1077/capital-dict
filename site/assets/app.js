@@ -900,8 +900,7 @@
           return '<a class="r-item r-hit r-deep" data-i="' + idx++ + '" data-deep="' + esc(x.t.id) +
             '" href="#/t/' + esc(x.t.id) + '">' + P(x.t, x.side || "争鸣") +
             '<span class="r-snip">' + hlSnippet(x.text, q) + "</span>" +
-            '<span class="r-cite">' + esc(x.cite || "") +
-            (x.verified ? "" : "（文献待核）") + "</span></a>";
+            '<span class="r-cite">' + esc(x.cite || "") + "</span></a>";
         }).join("");
       }
       if (deep.notes.length) {
@@ -2030,13 +2029,15 @@
     var scholars = hasStance(t)
       ? (t.scholars || []).map(function (g) {
           var stances = (g.stances || []).map(function (s) {
-            var chip = s.verified
+            /* v82：未核文献已从数据中删除；仍有文献的立场一律是已核的。
+               没有文献的立场不再渲染空出处行（保留立场与观点原文）。 */
+            var chip = s.cite
               ? ' <span class="chip ok" style="margin-left:.4rem" title="文献的作者、篇名、刊名、年、期、页码已逐项核对公开权威来源">文献已核</span>'
-              : ' <span class="chip warn" style="margin-left:.4rem">文献待核</span>';
+              : "";
             return '<div class="stance">' +
               (s.side ? '<p class="s-side">' + esc(s.side) + "</p>" : "") +
               '<p class="s-view">' + esc(s.view) + "</p>" +
-              '<p class="s-cite">' + esc(s.cite || "") + chip + "</p>" +
+              (s.cite ? '<p class="s-cite">' + esc(s.cite) + chip + "</p>" : "") +
               "</div>";
           }).join("");
           return '<div class="debate">' +
@@ -14127,7 +14128,7 @@
       fs.innerHTML = "<strong>词条 " + s.total + " 条</strong> · 原典引文已补录 " + s.quoted +
         " 条并核到具体出处（图书给印刷页、报纸给见报日期）；另 " + s.pending +
         " 条已写明应引何处、待补原文。学界争鸣已写入 " + s.scholarTopic + " 条（" + s.scholarStance +
-        " 方立场，其中 " + s.scholarCited + " 方文献已核），未核到的一律标「待核」。" +
+        " 方立场，其中 " + s.scholarCited + " 方附已核文献）。" +
         "";
     }
 
