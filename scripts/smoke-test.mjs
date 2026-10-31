@@ -1952,6 +1952,19 @@ check("v80：勾「今日不再」后关闭写入当天日期，清会话标记�
   return saved && closed && !doc.querySelector("#ta-out")?.closest("#gd-mask") && re;
 })());
 
+/* ---- v81：暗色模式两处文字对比度修复（样式断言；实测对比度由 probe-v81-dark 把守） ---- */
+check("v81：暗色下门类卡衬底 ::after 换深棕墨渐变、打印态回纸色", (() => {
+  const css = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
+  return css.includes('[data-theme="dark"] .hp .tax .card.card-cv .c-fig::after') &&
+    css.includes("rgba(23, 20, 15, .95) 0%") &&
+    css.includes("rgba(253, 250, 245, .95) 0%");
+})());
+check("v81：.contemp 暗色文字走 --ink-2（浅色硬编码 #3a2a28 不动）", (() => {
+  const css = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
+  return css.includes('[data-theme="dark"] .contemp { color: var(--ink-2); }') &&
+    /--ink-2:\s*#d6cdb9/.test(css);
+})());
+
 /* 清场：别把今日标记留给后面的用例 */
 try {
   ["capital-guide-graph-v1", "capital-guide-reader-v1", "capital-guide-home-v1",
