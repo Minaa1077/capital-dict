@@ -2042,13 +2042,13 @@
           }).join("");
           return '<div class="debate">' +
             '<p class="d-focus"><span class="d-tag">争鸣</span>' + esc(g.focus || "") + "</p>" +
-            (stances || '<p class="empty">该议题的各方观点待补。</p>') +
+            (stances || '<p class="empty">暂无争鸣。</p>') +
             "</div>";
         }).join("")
       : (t.scholars_lead
         ? '<p class="debate-lead"><span class="dl-tag">本条可争之处</span>' + esc(t.scholars_lead) +
-          '<br><span class="dl-hint">此处应转述 2—3 篇代表性研究（含不同判断），按「参见 作者：《篇名》，《刊名》年(期)：页码。」标注出处；文献尚未补录。</span></p>'
-        : '<p class="empty">本条的学界争鸣尚未补录。</p>');
+          '<br><span class="dl-hint">暂无争鸣</span></p>'
+        : '<p class="empty">暂无争鸣。</p>');
 
     var cr = t.credit || {};
 

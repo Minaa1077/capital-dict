@@ -269,6 +269,12 @@ check("带 loc 定位标记的条目必须已核对（verify=true）",
 }
 check("争鸣栏无残留旧占位模板", !DATA.terms.some((t) =>
   (t.scholars || []).some((s) => s.placeholder || typeof s.view === "string")));
+/* v83：未补文献的争鸣占位文案统一为「暂无争鸣」，旧说明文字全链路清零 */
+check("争鸣栏旧待补录说明文字已清零（源码 + 数据）",
+  !/此处应转述|各方观点待补|学界争鸣尚未补录|待下一轮核录补入/.test(html) &&
+  !DATA.terms.some((t) => /待下一轮核录补入/.test(t.scholars_lead || "")));
+check("争鸣栏新占位文案「暂无争鸣」已就位（三条渲染分支）",
+  (html.match(/暂无争鸣/g) || []).length >= 3);
 check("空门类标待补的渲染分支仍保留（防回归）", /class="pend"/.test(html));
 check("门类卡片无进度条", doc.querySelectorAll(".c-bar").length === 0);
 check("CSS 含 [hidden] 显示兜底", !!doc.querySelector("style") && doc.querySelector("style").textContent.includes("[hidden]"));
