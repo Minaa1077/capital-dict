@@ -13,8 +13,12 @@
  *     ③ 两个独立件：pathflow.html、marx-pictorial.html 必须同目录，否则演示里那两路
  *        只剩降级说明卡。
  *
- * 若将来确实要改「创作说明」正文：生成器已随页面移除，需先从 PHASE3.md/PHASE4.md
- * 记载的 v58 代码状态恢复 cmBind 那一段，或直接改 docx（正文 972 字，六要素结构固定）。
+ * 2026-11-03 起文档改为脚本现生成（不再手改 XML）：
+ *   python tools/submission/make-statement.py      → 创作说明 docx ×2 ＋ tmp/statement-blocks.json
+ *   python tools/pdf/make-pdf.py tmp/statement-blocks.json "dist/投稿材料/…创作说明.pdf"
+ *   python tools/submission/make-ledger.py         → 核验台账 xlsx
+ *   python tools/submission/make-transparency.py   → 逐条透明记录 docx
+ * 顺序：先跑上面四个，再跑本脚本（本脚本只校验文档在不在，并拷离线件与更新日志）。
  */
 import { readFile, mkdir, copyFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
@@ -84,6 +88,16 @@ try {
 } catch (e) {
   console.log("！marx-pictorial.html 未找到（先跑 node pictorial/scripts/build-pictorial.mjs）：" +
     ((e && e.message) || e).toString().split("\n")[0]);
+}
+
+/* 更新日志：随投稿包一起交（源文件在仓库根目录，这里逐字节拷入）。 */
+const LOG = "投稿材料更新日志.md";
+try {
+  const buf = await readFile(P(LOG));
+  await copyFile(P(LOG), resolve(OUT, LOG));
+  made.push([LOG, buf]);
+} catch {
+  console.log("！更新日志缺失：" + LOG + "（在仓库根目录）");
 }
 
 const md5 = (b) => createHash("md5").update(b).digest("hex").slice(0, 12);
