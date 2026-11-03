@@ -20,7 +20,7 @@
  *   python tools/submission/make-transparency.py   → 逐条透明记录 docx
  * 顺序：先跑上面四个，再跑本脚本（本脚本只校验文档在不在，并拷离线件与更新日志）。
  */
-import { readFile, mkdir, copyFile } from "node:fs/promises";
+import { readFile, mkdir, copyFile, unlink } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,13 +30,16 @@ const P = (...s) => resolve(ROOT, ...s);
 const OUT = P("dist/投稿材料");
 
 /* 五个文档：成品已在包内，内容冻结，只做存在性校验与体积登记。
-   体积只用于肉眼核对「有没有被空文件顶替」，不当作断言。 */
+   体积只用于肉眼核对「有没有被空文件顶替」，不当作断言。
+   命名按主办方要求：成果类别＋成果题目＋材料类型
+   （成果类别 AIGC创意作品／成果题目《资本论》学习平台／材料类型 创作说明…） */
 const DOCS = [
-  "AIGC创意作品《资本论学习平台》创作说明.docx",
-  "AIGC创意作品《资本论学习平台》创作说明.pdf",
-  "AIGC创意作品《资本论学习平台》创作说明（含附表）.docx",
-  "AIGC创意作品《资本论学习平台》核验台账.xlsx",
-  "AIGC创意作品《资本论学习平台》逐条透明记录.docx",
+  "AIGC创意作品《资本论》学习平台创作说明.docx",
+  "AIGC创意作品《资本论》学习平台创作说明.pdf",
+  "AIGC创意作品《资本论》学习平台创作说明（含附表）.docx",
+  "AIGC创意作品《资本论》学习平台核验台账.xlsx",
+  "AIGC创意作品《资本论》学习平台逐条透明记录.docx",
+  "AIGC创意作品《资本论》学习平台投稿登记表.docx",
 ];
 
 const made = [];
@@ -56,7 +59,7 @@ for (const name of DOCS) {
 }
 
 /* 离线演示材料：唯一每次都要重拷的件。它与 dist 主产物必须同一份字节。 */
-const offline = "AIGC创意作品《资本论学习平台》离线演示材料.html";
+const offline = "AIGC创意作品《资本论》学习平台作品（离线演示材料）.html";
 let offlineBuf = null;
 try {
   offlineBuf = await readFile(P("dist/capital-dict-offline.html"));
@@ -68,7 +71,9 @@ try {
 }
 
 /* 概念关系图编辑器是独立件（v39 起），与主文件同目录才会被内嵌。
-   投稿包里少这一份，工具台那一件就只剩说明卡 —— 所以必须一并带上。 */
+   投稿包里少这一份，工具台那一件就只剩说明卡 —— 所以必须一并带上。
+   ⚠ 这两个配套件**不改名**：作品内是 <iframe src="pathflow.html"> 这类同目录相对引用，
+     改名即断链；在投稿登记表的材料清单里按「作品组件」单列说明。 */
 try {
   const buf = await readFile(P("dist/pathflow.html"));
   await copyFile(P("dist/pathflow.html"), resolve(OUT, "pathflow.html"));
@@ -90,17 +95,37 @@ try {
     ((e && e.message) || e).toString().split("\n")[0]);
 }
 
-/* 更新日志：随投稿包一起交（源文件在仓库根目录，这里逐字节拷入）。 */
+/* 更新日志：随投稿包一起交（源文件在仓库根目录，这里逐字节拷入）。
+   文件名同样按「成果类别＋成果题目＋材料类型」命名，材料类型写作「材料更新日志」。 */
 const LOG = "投稿材料更新日志.md";
+const LOG_AS = "AIGC创意作品《资本论》学习平台材料更新日志.md";
 try {
   const buf = await readFile(P(LOG));
-  await copyFile(P(LOG), resolve(OUT, LOG));
-  made.push([LOG, buf]);
+  await copyFile(P(LOG), resolve(OUT, LOG_AS));
+  made.push([LOG_AS, buf]);
 } catch {
   console.log("！更新日志缺失：" + LOG + "（在仓库根目录）");
 }
 
 const md5 = (b) => createHash("md5").update(b).digest("hex").slice(0, 12);
+
+/* 旧命名残留清理：v85 起文件改名为「成果类别＋成果题目＋材料类型」，
+   旧件若还留在包里，会被当成附件一起发出去。这里按旧名逐个删，删不掉不算错。 */
+const LEGACY = [
+  "AIGC创意作品《资本论学习平台》创作说明.docx",
+  "AIGC创意作品《资本论学习平台》创作说明.pdf",
+  "AIGC创意作品《资本论学习平台》创作说明（含附表）.docx",
+  "AIGC创意作品《资本论学习平台》核验台账.xlsx",
+  "AIGC创意作品《资本论学习平台》逐条透明记录.docx",
+  "AIGC创意作品《资本论学习平台》离线演示材料.html",
+  "投稿材料更新日志.md",
+];
+for (const n of LEGACY) {
+  try {
+    await unlink(resolve(OUT, n));
+    console.log("－ 已清理旧命名文件：" + n);
+  } catch { /* 不存在即正常 */ }
+}
 
 made.forEach(([n, b]) => {
   console.log("✓ " + n + "  " + (b.length / 1024).toFixed(1) + " KB  md5 " + md5(b));
