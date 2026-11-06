@@ -14132,6 +14132,11 @@
         "";
     }
 
+    // 页脚版权年份按本机日期现算：静态页交稿后放几年也不会停在旧年份。
+    // HTML 里先写死一个年份兜底（脚本没跑到时也读得通），这里只负责改写。
+    var fy = document.getElementById("footYear");
+    if (fy) { fy.textContent = String(new Date().getFullYear()); }
+
     // 今天来过（打卡）；悬浮台的连续天数靠它
     LR.touchDay();
 

@@ -686,6 +686,15 @@ check("页脚只报数据状态，不含创作说明入口", (() => {
   return f && /词条/.test(f.textContent) && !/创作说明/.test(f.textContent);
 })());
 
+check("页脚版权行：符号 + 当前年份 + 所有者 + 保留所有权利，一条不缺", (() => {
+  const c = doc.querySelector(".foot .foot-copy");
+  if (!c) return false;
+  const s = c.textContent.replace(/\s+/g, "");
+  const y = String(new Date().getFullYear());
+  return s.includes("©") && s.includes(y) && s.includes("米吉昶") && s.includes("保留所有权利") &&
+    c.querySelector("#footYear") !== null;
+}));
+
 
 /* ---- 写作辅助三件：关键词矩阵 · 笔记板 · 多语术语对照表 ---- */
 const WIO = window.CAPITAL_IO;

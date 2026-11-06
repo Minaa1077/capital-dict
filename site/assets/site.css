@@ -2029,6 +2029,51 @@ body.pj-on .dock, body.pj-on .topbar { display: none !important; }
 .foot p { max-width: var(--maxw); margin: .34rem auto; }
 .foot a { color: #f0dfb4; }
 
+/* ---- 版权行：页脚最底部，与上面三段体例说明用一条细金线隔开 ----
+   1. 选择器写成 .foot p.foot-copy（0,2,1）而不是 .foot-copy（0,1,0）：
+      上面那条 .foot p（0,1,1）会把 margin 抢回去，版权行就贴不到分隔线下方。
+   2. 用 flex + wrap：宽屏时 © 2026 米吉昶 · 保留所有权利 一行居中，
+      窄屏到 320px 也只在「·」处折成两行，不会出现半截孤字换行。
+   3. 颜色不取令牌、直接写奶金：页脚在明暗两套主题下都是深红通栏，
+      用 --ink-3 会在黑夜模式里变灰、和金线糊在一起。 */
+.foot p.foot-copy {
+  margin: .85rem auto 0;
+  padding-top: .7rem;
+  border-top: 1px solid rgba(193, 168, 119, .32);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: .1rem .45rem;
+  font-size: .78rem;
+  line-height: 1.7;
+  letter-spacing: .02em;
+  text-align: center;
+  color: #e6d3a6;
+}
+.foot-copy .foot-copy-sym { font-size: .95em; }
+.foot-copy .foot-copy-owner { color: #f0dfb4; font-weight: 600; }
+.foot-copy .foot-copy-dot { opacity: .65; }
+@media (max-width: 700px) {
+  .foot p.foot-copy { font-size: .76rem; gap: .1rem .35rem; }
+}
+
+/* ---- 版权行给右下角悬浮控件让位（≤1400px 生效） ----
+   右下角常驻两组 fixed 控件：学习台/桌宠（.dock，右 1.1rem，窄屏 .7rem）
+   与回顶部（.to-top，右 6.7rem、宽 3rem ⇒ 左缘在 vw−155px；窄屏 vw−144px）。
+   版权行是通栏居中，视口 ≤1400px 时右端会伸进这两列控件底下被盖住
+   （实测 390px 宽时「保留所有权利」被回顶部键压住一半）。
+   处理：不加大页脚高度，而是给版权行盒子一个固定的右外边距 9.75rem
+   （156px；加上页脚自身 1.05rem 内距，盒缘距视口右缘 172.8px，
+   越过 to-top 左缘安全线 163px），盒子靠左排；
+   文字在盒内仍居中，窄屏自然折成两三行，不出孤字。 */
+@media (max-width: 1400px) {
+  .foot p.foot-copy {
+    max-width: min(var(--maxw), calc(100% - 9.75rem));
+    margin: .85rem 9.75rem 0 auto;
+  }
+}
+
 /* ---- 窄屏 hero 收缩 ---- */
 @media (max-width: 700px) {
   .hero { padding: 1.4rem 1.2rem 1.3rem; margin: .8rem 0 1.6rem; }
@@ -2050,6 +2095,9 @@ body.pj-on .dock, body.pj-on .topbar { display: none !important; }
   }
   .foot { background: #fff !important; color: #000 !important; border-top: 1px solid #999 !important; }
   .foot a { color: #000 !important; }
+  /* 版权行的奶金是给深红通栏配的，纸面上必须落回黑字，否则打印近乎不可见 */
+  .foot p.foot-copy { color: #000 !important; border-top-color: #999 !important; }
+  .foot-copy .foot-copy-owner, .foot-copy .foot-copy-dot { color: #000 !important; }
 }
 
 /* ============================================================
