@@ -6794,3 +6794,18 @@ body.pj-on .gd-fab { display: none !important; }
    换成暗色次级正文色 --ink-2（#d6cdb9，对 #33231f 对比 ≈ 9.6，AA 大幅达标）；
    浅色模式零改动——此规则只存在于 [data-theme="dark"] 作用域。 */
 [data-theme="dark"] .contemp { color: var(--ink-2); }
+
+/* —— v88：首页名言一行排版 ——
+   换行根因：`.hero p { max-width: 34rem }`（0,1,1）压过 `.hero-quote`（0,1,0），
+   名言 40 字在 544px 列宽内必然折行。本条用 0,2,0 提权解除列宽；
+   ≥760px 视口加 nowrap 强制单行，字号随视口/视高微收防中宽窗口溢出；
+   <760px 维持自然换行（手机上单行会截断），打印时恢复换行防出界。 */
+@media (min-width: 760px) {
+  .hero .hero-quote {
+    max-width: none; white-space: nowrap;
+    font-size: min(1.06rem, 2.05vh, 2.1vw);
+  }
+}
+@media print {
+  .hero .hero-quote { white-space: normal; font-size: 1.06rem; }
+}

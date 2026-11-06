@@ -57,10 +57,10 @@ if (doc.getElementById("intro-veil")) {
   doc.body.classList.remove("iv-lock");
 }
 
-let failed = 0;
+let failed = 0, total = 0;
 function check(label, cond, detail) {
   const ok = !!cond;
-  if (!ok) failed++;
+  total++; if (!ok) failed++;
   console.log(`${ok ? "✓" : "✗"} ${label}${detail ? "  — " + detail : ""}`);
 }
 
@@ -96,6 +96,8 @@ async function fireDownload(_sel, btnSel) {
 }
 
 check("首页渲染", text().includes("《资本论》学习平台") && text().includes("在科学上没有平坦的大道"), text().slice(0, 60) + "…");
+check("首页名言出处以句号收尾（v88）", (view().querySelector(".hero-src") || { textContent: "" }).textContent.includes("第 24 页。"));
+check("首页名言一行排版规则在样式内（v88）", [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n").includes("white-space: nowrap"));
 check("首页标题在上、副标题在下", (() => {
   const h1 = view().querySelector(".hero h1");
   const p = view().querySelector(".hero > p:not(.kicker)");
@@ -2070,5 +2072,5 @@ check("未知路由有兜底", text().includes("页面不存在"));
 
 check("无未捕获脚本错误", errors.length === 0, errors.slice(0, 2).join(" | "));
 
-console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}`);
+console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}｜共 ${total} 项`);
 process.exit(failed === 0 ? 0 : 1);
