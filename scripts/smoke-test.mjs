@@ -139,7 +139,7 @@ const DATA = window.CAPITAL_DATA;
 const TAX = DATA.meta.taxonomies;
 const TOTAL = DATA.terms.length;
 const colCount = (tx, cid) => DATA.terms.filter((t) => t[tx.field] === cid).length;
-check("词条规模已达 575 条（390 术语 + 185 通用术语）", TOTAL === 575, `实际 ${TOTAL} 条`);
+check("词条规模已达 810 条（625 术语 + 185 通用术语）", TOTAL === 810, `实际 ${TOTAL} 条`);
 check(`数据里两套分类均已配平（已有 = 计划 = ${TOTAL}）`, TAX.every((tx) => {
   const have = tx.cats.reduce((a, c) => a + colCount(tx, c.id), 0);
   const plan = tx.cats.reduce((a, c) => a + (c.planned || 0), 0);
@@ -439,7 +439,8 @@ await goto("#/c/dom-zx?sub=sub-jb");
 check("组合筛选页：标题按「板块·方向」合并标注",
   view().querySelector("h1").textContent.trim() === "哲学·基本原理");
 check("组合筛选页：只列该组合词条，方向导航 6 支且当前高亮",
-  view().querySelectorAll(".term-list li").length === 55 &&
+  view().querySelectorAll(".term-list li").length ===
+    window.CAPITAL_DATA.terms.filter((t) => t.domain === "dom-zx" && t.category === "sub-jb").length &&
   view().querySelectorAll(".sibs .sib").length === 6 &&
   !!view().querySelector(".sibs .sib.on"));
 await goto("#/c/dom-zx?sub=nope-x");
@@ -627,7 +628,7 @@ check("关系图页：标题、统计与整页单 h1", (() => {
   const h1 = view().querySelector("h1.page-title");
   return !!h1 && h1.textContent.trim() === "概念关系图" &&
     view().querySelectorAll("h1").length === 1 &&
-    /全站 575 条词条、1347 条关系/.test(text());
+    /全站 810 条词条、2040 条关系/.test(text());
 })());
 check("关系图页：内嵌 pathflow（iframe 指向同目录 pathflow.html，且未加 lazy）", (() => {
   const f = view().querySelector(".graph-page .pfe-frame");
@@ -900,16 +901,16 @@ check("笔记板：导出的 Markdown 按层级缩进，含根与子节点", (()
 })());
 
 /* —— 多语术语对照表 —— */
-check("多语对照表：默认列全站 575 条，中英德三列齐", (() => {
+check("多语对照表：默认列全站 810 条，中英德三列齐", (() => {
   const rows = view().querySelectorAll("#mt-out .mt-tbl tbody tr");
   const head = [...view().querySelectorAll("#mt-out .mt-tbl thead th")].map((x) => x.textContent);
   return rows.length === window.CAPITAL_DATA.terms.length &&
     head.join(",") === "中文,英文,德文,别名,知识板块";
 })());
-check("多语对照表：英文名 575 条都有，德文空着的就是没有（不拿别的语言充数）", (() => {
+check("多语对照表：英文名 810 条都有，德文空着的就是没有（不拿别的语言充数）", (() => {
   const body = WIO.mtRows().slice(1);
   const deData = window.CAPITAL_DATA.terms.filter((t) => t.de).length;
-  return body.length === 575 && body.every((r) => r[1]) &&
+  return body.length === 810 && body.every((r) => r[1]) &&
     body.filter((r) => r[2]).length === deData && deData > 40 && deData < 60;
 })());
 check("多语对照表：切「仅有德文原名」正好剩那些条", (() => {
